@@ -191,7 +191,7 @@ body.cliente-mode .cliente-badge { display: flex !important; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v100</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v105</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -625,7 +625,7 @@ async function hacerLogin() {
 // Claves que SÍ se sincronizan (contenido de trabajo compartido)
 var CLAVES_SYNC = ['cat','cfg','electro_johnson_v1','exg_inst_v1','exm_inst_v1',
   'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1',
-  'logo','map_costados','map_regletas','modmap_v15','params','pnum','prices',
+  'logo','map_costados','map_regletas','modmap_v15','modelos_grupos_v1','params','pnum','prices',
   'texto_base_v1','presentacion_base_v1'];
 // (historial_v1 se sincroniza aparte; ultimo_backup y pnum quedan locales)
 
@@ -1500,9 +1500,15 @@ renderCat = function() {
   renderCatContent();
 };
 function _catHead(txt, btnLabel, btnOnclick){
+  var botones='';
+  if (Array.isArray(btnLabel)) {
+    btnLabel.forEach(function(par){ botones += '<button class="btn bgh bsm" onclick="'+par[1]+'">'+par[0]+'</button>'; });
+  } else if (btnLabel) {
+    botones = '<button class="btn bgh bsm" onclick="'+btnOnclick+'">'+btnLabel+'</button>';
+  }
   return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'
     +'<span style="font-size:.8rem;color:var(--muted)">'+txt+'</span>'
-    +(btnLabel?'<button class="btn bgh bsm" onclick="'+btnOnclick+'">'+btnLabel+'</button>':'')
+    +(botones?'<span style="display:flex;gap:6px;flex-wrap:wrap">'+botones+'</span>':'')
     +'</div>';
 }
 function irAEditarPrecios(tab){
@@ -1545,7 +1551,7 @@ function renderCatCR(el, tipo){
     return '<div class="cr"><span class="cmod">'+e.ancho+' \u00d7 '+e.alto+' mm</span>'
       +'<span class="cmed">'+(pvp!=null?pvp.toFixed(2)+' \u20ac':'\u2014')+'</span></div>';
   }).join('');
-  el.innerHTML = _catHead(claves.length+' medidas \u00b7 precio seg\u00fan la calidad elegida', '\ud83d\udcb0 Editar precios', "irAEditarPrecios('"+tipo+"')")
+  el.innerHTML = _catHead(claves.length+' medidas \u00b7 precio seg\u00fan la calidad elegida', [['+ Nueva medida',"abrirNuevaMedida('"+tipo+"')"],['\ud83d\udcb0 Editar precios',"irAEditarPrecios('"+tipo+"')"]], '')
     +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+chips+'</div>'
     +filas;
 }
@@ -1553,7 +1559,7 @@ function renderCatExtras(el){
   var exg = ST.exg || {};
   var grupos = Object.keys(exg);
   var total = grupos.reduce(function(a,g){return a+Object.keys(exg[g]).length;},0);
-  var html = _catHead(grupos.length+' familias \u00b7 '+total+' art\u00edculos', '\ud83d\udd27 Editar precios', "irAEditarPrecios('exg')");
+  var html = _catHead(grupos.length+' familias \u00b7 '+total+' art\u00edculos', [['+ Nuevo art\u00edculo','abrirNuevoExtraDesdeCat()'],['\ud83d\udd27 Editar precios',"irAEditarPrecios('exg')"]], '');
   grupos.forEach(function(gr){
     var arts=Object.keys(exg[gr]);
     html += '<div class="cm"><div class="cmh" onclick="this.nextElementSibling.classList.toggle(\'on\')">'
@@ -1572,14 +1578,19 @@ function renderCatFrentes(el){
   });
   var por={}; lista.forEach(function(m){ (por[m.g]=por[m.g]||[]).push(m); });
   var gs=Object.keys(por).sort(function(a,b){return a-b;});
-  var html=_catHead(lista.length+' modelos de fabricante en '+gs.length+' grupos. Los muebles y medidas son los del cat\u00e1logo de Muebles.', null, '');
+  var html=_catHead(lista.length+' modelos en '+gs.length+' grupos. Los muebles y medidas son los del cat\u00e1logo de Muebles.', [['\u2699 Gestionar frentes','abrirGestorFrentes()']], '');
   gs.forEach(function(gnum){
     var arr=por[gnum];
     html+='<div class="cm"><div class="cmh" onclick="this.nextElementSibling.classList.toggle(\'on\')">'
       +'<span>Grupo G'+gnum+'</span><span style="font-size:.77rem;color:var(--muted)">'+arr.length+' modelos \u25be</span></div>'
       +'<div class="cmb">'+arr.map(function(m){
-        return '<div class="cr"><span class="cmod">'+eh(m.modelo)+' <span style="color:var(--muted);font-weight:400">'+eh(m.marca)+'</span></span>'
-          +'<span class="cmed">'+(m.f!=null?Number(m.f).toFixed(2)+' \u20ac':'\u2014')+'</span></div>';
+        var sub = [m.marca, m.material].filter(Boolean).join(' ');
+        return '<div class="cr"><span class="cmod">'+eh(m.modelo)
+          +(m.color?' <span style="color:var(--muted);font-weight:400">'+eh(m.color)+'</span>':'')
+          +(m.acabado?' <span style="color:#8a7a2e;background:#fffbe6;border-radius:4px;padding:0 5px;font-size:.86em">'+eh(m.acabado)+'</span>':'')
+          +(m.gf?' <span style="color:#888;font-size:.82em">'+eh(m.gf)+'</span>':'')
+          +' <span style="color:var(--muted);font-weight:400">'+eh(sub)+'</span></span>'
+          +'<span class="cmed" style="font-size:.82em">'+_frentePrecios(m)+'</span></div>';
       }).join('')+'</div></div>';
   });
   el.innerHTML=html;
@@ -1626,7 +1637,7 @@ function renderCatContent() {
     var nT=Object.keys(cat).length, nM=0, nR=0;
     Object.keys(cat).forEach(function(mm){ var ms=cat[mm]; nM+=Object.keys(ms).length; Object.keys(ms).forEach(function(mo){ nR+=ms[mo].length; }); });
     var hd=document.createElement('div');
-    hd.innerHTML=_catHead(nT+' tipos \u00b7 '+nM+' modelos \u00b7 '+nR+' referencias. Los precios se ven en el Explorador de arriba.','\ud83d\udcb0 Editar precios',"irAEditarPrecios('muebles')");
+    hd.innerHTML=_catHead(nT+' tipos \u00b7 '+nM+' modelos \u00b7 '+nR+' referencias. Los precios se ven en el Explorador de arriba.',[['+ Nuevo mueble','abrirNuevoMueble()'],['\ud83d\udcb0 Editar precios',"irAEditarPrecios('muebles')"]],'');
     el.appendChild(hd);
   }
   Object.entries(cat).forEach(function(entry){
@@ -5765,7 +5776,7 @@ function fichaTaller() {
       return '<tr>'
         +'<td style="padding:5px 8px;border:1px solid #ccc">'+(i+1)+'</td>'
         +'<td style="padding:5px 8px;border:1px solid #ccc"><strong>'+eh(l.m)+'</strong>'+(ext?'<br><small>+ '+eh(ext)+'</small>':'')+'</td>'
-        +'<td style="padding:5px 8px;border:1px solid #ccc">'+(g.tipo==='electro'?eh([l.marca,l.modelo].filter(Boolean).join(' '))+(l.notas?'<br><small style="color:#555">'+eh(l.notas)+'</small>':''):eh(l.mo))+'</td>'
+        +'<td style="padding:5px 8px;border:1px solid #ccc">'+(g.tipo==='electro'?eh([l.marca,l.modelo].filter(Boolean).join(' '))+(l.notas?'<br><small style="color:#555">'+eh(l.notas)+'</small>':''):(g.tipo==='frentes'&&g.frenteRef?eh(l.mo)+'<br><small style="color:#555">'+eh(_frenteRefStr(g.frenteRef))+'</small>':eh(l.mo)))+'</td>'
         +'<td style="padding:5px 8px;border:1px solid #ccc;text-align:center">'+(l.med==='\u2014'?'\u2014':l.med+' cm')+'</td>'
         +'<td style="padding:5px 8px;border:1px solid #ccc;text-align:center">'+l.und+'</td>'
         +'<td style="padding:5px 8px;border:1px solid #ccc;font-size:.78rem">'+eh(herr)+'</td>'
@@ -7185,12 +7196,12 @@ function toggleListaGrupos() {
       +'<thead><tr style="background:#f5f5f5;color:#666">'
       +'<th style="padding:5px 10px;text-align:left">Marca</th>'
       +'<th style="padding:5px 10px;text-align:left">Modelo / Acabado</th>'
-      +'<th style="padding:5px 10px;text-align:right">Frente \u20ac</th></tr></thead><tbody>';
+      +'<th style="padding:5px 10px;text-align:right">Caj\u00f3n / Puerta \u20ac</th></tr></thead><tbody>';
     modelos.forEach(function(m, i){
       html += '<tr style="border-top:1px solid var(--line);background:'+(i%2?'#fafafa':'#fff')+'">'
         +'<td style="padding:5px 10px;color:#888">'+eh(m.marca)+'</td>'
-        +'<td style="padding:5px 10px;font-weight:500">'+eh(m.modelo)+'</td>'
-        +'<td style="padding:5px 10px;text-align:right;color:#2d6a4f">'+(m.f!=null?m.f.toFixed(2):'\u2014')+'</td></tr>';
+        +'<td style="padding:5px 10px;font-weight:500">'+eh(_frenteDesc(m))+'</td>'
+        +'<td style="padding:5px 10px;text-align:right;color:#2d6a4f;font-size:.86em">'+_frentePrecios(m)+'</td></tr>';
     });
     html += '</tbody></table></div>';
   }
@@ -7443,6 +7454,7 @@ function descargarCopiaSeguridad() {
   };
   var claves = ['cat','cfg','electro_johnson_v1','exg_inst_v1','exm_inst_v1',
     'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1','historial_v1',
+    'modelos_grupos_v1',
     'logo','map_costados','map_regletas','modmap_v15','params','pnum','prices',
     'texto_base_v1','presentacion_base_v1'];
   claves.forEach(function(k){
@@ -8032,6 +8044,537 @@ function cerrarElectroEditor(){
     }
   } catch(e){}
 }
+
+
+
+// ══════════════════════════════════════════════════════════
+// V101: ALTAS desde el Catálogo — extras, medidas (costados/regletas) y muebles
+// ══════════════════════════════════════════════════════════
+
+// ── Extras: reutiliza el modal existente, con refresco del catálogo ──
+function abrirNuevoExtraDesdeCat(){
+  try { abrirNuevoExtra(); } catch(e){}
+  if (!document.getElementById('ne-cat')) {
+    try { renderSettings(); abrirNuevoExtra(); } catch(e){ toast('No se pudo abrir el alta de extras'); }
+  }
+}
+var _gneV101 = (typeof guardarNuevoExtra==='function') ? guardarNuevoExtra : null;
+if (_gneV101) {
+  guardarNuevoExtra = function(){
+    _gneV101();
+    try {
+      var pc=document.getElementById('pc');
+      if (pc && pc.classList.contains('on') && typeof _catTab!=='undefined' && _catTab==='extras') renderCatContent();
+    } catch(e){}
+  };
+}
+
+// ── Costados / Regletas: alta de medida ──
+function abrirNuevaMedida(tipo){
+  var cals = tipo==='costados' ? CALS_COSTADOS : CALS_REGLETAS;
+  var est = 'width:100%;padding:6px 7px;font-size:.84rem;border:1px solid var(--line);border-radius:6px;box-sizing:border-box';
+  var lb = 'display:block;font-size:.66rem;color:var(--muted);margin-bottom:2px;text-transform:uppercase';
+  var m = document.getElementById('NM-MODAL');
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'NM-MODAL';
+    m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900;align-items:center;justify-content:center;padding:14px';
+    document.body.appendChild(m);
+  }
+  var precios = cals.map(function(c,i){
+    return '<div><span style="'+lb+'">'+eh(c)+'</span><input type="number" step="0.01" id="nm-p'+i+'" placeholder="\u2014" style="'+est+';text-align:right"></div>';
+  }).join('');
+  m.innerHTML = '<div style="background:#fff;border-radius:12px;padding:16px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto">'
+    +'<h3 style="margin:0 0 10px">\u2795 Nueva medida de '+(tipo==='costados'?'costado':'regleta')+'</h3>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+    +'<div><span style="'+lb+'">Ancho (mm)</span><input type="number" id="nm-ancho" style="'+est+'"></div>'
+    +'<div><span style="'+lb+'">Alto (mm)</span><input type="number" id="nm-alto" style="'+est+'"></div>'
+    +'</div>'
+    +'<div style="font-size:.72rem;color:var(--muted);margin-bottom:6px">Coste por calidad \u00b7 deja vac\u00edo si no existe en esa calidad</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'+precios+'</div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end">'
+    +'<button class="btn bgh bsm" onclick="document.getElementById(\'NM-MODAL\').style.display=\'none\'">Cancelar</button>'
+    +'<button class="btn bp bsm" onclick="guardarNuevaMedida(\''+tipo+'\')">Guardar</button>'
+    +'</div></div>';
+  m.style.display = 'flex';
+}
+function guardarNuevaMedida(tipo){
+  var cals = tipo==='costados' ? CALS_COSTADOS : CALS_REGLETAS;
+  var mapa = tipo==='costados' ? MAP_COSTADOS : MAP_REGLETAS;
+  var a = parseInt(document.getElementById('nm-ancho').value);
+  var al = parseInt(document.getElementById('nm-alto').value);
+  if (!a || !al || a<=0 || al<=0) { toast('Indica ancho y alto en mm'); return; }
+  var key = a+'x'+al;
+  if (mapa[key] && !confirm('La medida '+a+'\u00d7'+al+' ya existe. \u00bfSobrescribir sus precios?')) return;
+  var prices = cals.map(function(c,i){
+    var v = document.getElementById('nm-p'+i).value;
+    return v==='' ? null : (parseFloat(v)||0);
+  });
+  if (prices.every(function(p){return p==null;})) { toast('Pon al menos un precio'); return; }
+  mapa[key] = {ancho:a, alto:al, prices:prices};
+  var arbol = ST.cats && ST.cats[tipo];
+  if (arbol) {
+    if (!arbol[String(a)]) arbol[String(a)] = {};
+    if (!arbol[String(a)][String(al)]) arbol[String(a)][String(al)] = ['\u2014'];
+  }
+  save();
+  try { localStorage.setItem('map_costados', JSON.stringify(MAP_COSTADOS)); localStorage.setItem('map_regletas', JSON.stringify(MAP_REGLETAS)); } catch(e){}
+  document.getElementById('NM-MODAL').style.display='none';
+  renderGroups();
+  try { if (document.getElementById('pc').classList.contains('on')) renderCatContent(); } catch(e){}
+  toast('Medida '+a+'\u00d7'+al+' a\u00f1adida \u2713');
+}
+
+// ── Muebles: asistente de alta con "copiar composición" ──
+var _nmuHerr = [];
+function _nmuListaHerrajes(){
+  var pares = {}, refs = (ST.params&&ST.params.herrajes_ref)||{};
+  Object.keys(MODMAP||{}).forEach(function(k){
+    (MODMAP[k].herrajes||[]).forEach(function(h){
+      var id = h.n+'|'+String(h.p);
+      if (!pares[id]) pares[id] = {n:h.n, p:h.p, c:0};
+      pares[id].c++;
+    });
+  });
+  _nmuHerr = Object.keys(pares).map(function(k){return pares[k];}).sort(function(x,y){return y.c-x.c;});
+  return _nmuHerr;
+}
+function _nmuPrecioHerr(p){
+  var refs = (ST.params&&ST.params.herrajes_ref)||{};
+  return typeof p==='string' ? (refs[p]||0) : (p||0);
+}
+function nmuFilaHerraje(sel, cant, nombreOtro, precioOtro){
+  var opts = _nmuHerr.map(function(h,i){
+    return '<option value="'+i+'"'+(sel===i?' selected':'')+'>'+eh(h.n)+' \u00b7 '+_nmuPrecioHerr(h.p).toFixed(2)+'\u20ac</option>';
+  }).join('');
+  var esOtro = sel==='otro';
+  return '<div class="nmu-hrow" style="display:grid;grid-template-columns:1fr 58px 30px;gap:6px;margin-bottom:6px;align-items:center">'
+    +'<select onchange="nmuToggleOtro(this)" style="padding:6px;font-size:.8rem;border:1px solid var(--line);border-radius:6px;min-width:0">'+opts
+    +'<option value="otro"'+(esOtro?' selected':'')+'>Otro\u2026</option></select>'
+    +'<input type="number" class="nmu-hc" value="'+(cant||1)+'" min="1" style="padding:6px;text-align:center;border:1px solid var(--line);border-radius:6px">'
+    +'<button onclick="this.parentElement.remove()" style="border:1px solid #d33;color:#d33;background:#fff;border-radius:6px;padding:4px;cursor:pointer">\u2715</button>'
+    +'<div class="nmu-otro" style="grid-column:1/4;'+(esOtro?'':'display:none;')+'margin-top:2px"><div style="display:grid;grid-template-columns:2fr 1fr;gap:6px">'
+    +'<input class="nmu-hn" placeholder="Nombre del herraje" value="'+eh(nombreOtro||'')+'" style="padding:6px;font-size:.8rem;border:1px solid var(--line);border-radius:6px">'
+    +'<input class="nmu-hp" type="number" step="0.5" placeholder="\u20ac" value="'+(precioOtro!=null?precioOtro:'')+'" style="padding:6px;text-align:right;border:1px solid var(--line);border-radius:6px">'
+    +'</div></div></div>';
+}
+function nmuToggleOtro(sel){
+  var fila = sel.closest('.nmu-hrow');
+  fila.querySelector('.nmu-otro').style.display = sel.value==='otro' ? '' : 'none';
+}
+function nmuAddHerraje(){
+  document.getElementById('NMU-HERR').insertAdjacentHTML('beforeend', nmuFilaHerraje(0,1));
+}
+function abrirNuevoMueble(){
+  _nmuListaHerrajes();
+  var est = 'width:100%;padding:6px 7px;font-size:.84rem;border:1px solid var(--line);border-radius:6px;box-sizing:border-box';
+  var lb = 'display:block;font-size:.64rem;color:var(--muted);margin-bottom:2px;text-transform:uppercase';
+  var m = document.getElementById('NMU-MODAL');
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'NMU-MODAL';
+    m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900;align-items:center;justify-content:center;padding:12px';
+    document.body.appendChild(m);
+  }
+  var tiposDL = Object.keys((ST.cats&&ST.cats.muebles)||{}).map(function(t){return '<option value="'+eh(t)+'">';}).join('');
+  var copiaDL = Object.keys(MODMAP||{}).map(function(k){return '<option value="'+eh(k)+'">';}).join('');
+  function grid(pref){
+    return CALS.map(function(c,i){
+      return '<div><span style="'+lb+'">'+eh(c)+'</span><input type="number" step="0.01" id="'+pref+i+'" placeholder="\u2014" style="'+est+';text-align:right"></div>';
+    }).join('');
+  }
+  m.innerHTML = '<div style="background:#fff;border-radius:12px;padding:16px;max-width:520px;width:100%;max-height:92vh;overflow-y:auto">'
+    +'<h3 style="margin:0 0 10px">\u2795 Nuevo mueble</h3>'
+    +'<div style="display:flex;gap:6px;margin-bottom:12px">'
+    +'<input id="nmu-copia" list="NMU-DL" placeholder="Copiar composici\u00f3n de\u2026 (busca un mueble)" style="'+est+';flex:1">'
+    +'<datalist id="NMU-DL">'+copiaDL+'</datalist>'
+    +'<button class="btn bgh bsm" onclick="nmuCopiar()">Copiar</button>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
+    +'<div><span style="'+lb+'">Tipo</span><input id="nmu-tipo" list="NMU-TIPOS" style="'+est+'"><datalist id="NMU-TIPOS">'+tiposDL+'</datalist></div>'
+    +'<div><span style="'+lb+'">Medida (cm)</span><input id="nmu-med" style="'+est+'"></div>'
+    +'</div>'
+    +'<div style="margin-bottom:8px"><span style="'+lb+'">Modelo</span><input id="nmu-modelo" placeholder="2 PUERTAS, 1 GAVETERO 2 CACEROLEROS\u2026" style="'+est+'"></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
+    +'<div><span style="'+lb+'">Casco \u20ac (coste)</span><input type="number" id="nmu-casco" step="0.5" style="'+est+';text-align:right"></div>'
+    +'<div><span style="'+lb+'">Montaje (minutos)</span><input type="number" id="nmu-montaje" step="1" style="'+est+';text-align:right"></div>'
+    +'</div>'
+    +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><strong style="font-size:.85rem">Puertas / frentes</strong>'
+    +'<span style="font-size:.72rem;color:var(--muted)">unidades:</span><input type="number" id="nmu-cant1" value="1" min="0" style="width:56px;padding:5px;text-align:center;border:1px solid var(--line);border-radius:6px"></div>'
+    +'<div style="font-size:.7rem;color:var(--muted);margin-bottom:5px">Precio de UNA puerta en cada calidad (vac\u00edo = no disponible)</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">'+grid('nmu-f1-')+'</div>'
+    +'</div>'
+    +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><strong style="font-size:.85rem">Cajones / gavetas</strong>'
+    +'<span style="font-size:.72rem;color:var(--muted)">unidades:</span><input type="number" id="nmu-cant2" value="0" min="0" style="width:56px;padding:5px;text-align:center;border:1px solid var(--line);border-radius:6px"></div>'
+    +'<div style="font-size:.7rem;color:var(--muted);margin-bottom:5px">Precio de UN frente de caj\u00f3n en cada calidad</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">'+grid('nmu-f2-')+'</div>'
+    +'</div>'
+    +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:14px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong style="font-size:.85rem">Herrajes</strong>'
+    +'<button class="btn bgh bsm" onclick="nmuAddHerraje()">+ herraje</button></div>'
+    +'<div id="NMU-HERR"></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end">'
+    +'<button class="btn bgh bsm" onclick="document.getElementById(\'NMU-MODAL\').style.display=\'none\'">Cancelar</button>'
+    +'<button class="btn bp bsm" onclick="guardarNuevoMueble()">Guardar mueble</button>'
+    +'</div></div>';
+  m.style.display='flex';
+}
+function nmuCopiar(){
+  var k = document.getElementById('nmu-copia').value.trim();
+  var f = MODMAP[k];
+  if (!f) { toast('Elige un mueble de la lista'); return; }
+  // tipo/modelo/medida a partir del nombre
+  var tipos = Object.keys((ST.cats&&ST.cats.muebles)||{}).sort(function(a,b){return b.length-a.length;});
+  var tipo = tipos.filter(function(t){return k.indexOf(t+' ')===0;})[0] || k.split(' ')[0];
+  var resto = k.slice(tipo.length).trim().split(' ');
+  var med = /^\d+$/.test(resto[resto.length-1]) ? resto.pop() : '';
+  document.getElementById('nmu-tipo').value = tipo;
+  document.getElementById('nmu-modelo').value = resto.join(' ');
+  document.getElementById('nmu-med').value = med;
+  document.getElementById('nmu-casco').value = f.casco||0;
+  document.getElementById('nmu-montaje').value = f.montaje||0;
+  document.getElementById('nmu-cant1').value = f.cant1||0;
+  document.getElementById('nmu-cant2').value = f.cant2||0;
+  CALS.forEach(function(c,i){
+    document.getElementById('nmu-f1-'+i).value = (f.f1&&f.f1[i]!=null)?f.f1[i]:'';
+    document.getElementById('nmu-f2-'+i).value = (f.f2&&f.f2[i]!=null)?f.f2[i]:'';
+  });
+  var cont=document.getElementById('NMU-HERR'); cont.innerHTML='';
+  (f.herrajes||[]).forEach(function(h){
+    var idx=_nmuHerr.findIndex(function(x){return x.n===h.n && String(x.p)===String(h.p);});
+    if (idx>=0) cont.insertAdjacentHTML('beforeend', nmuFilaHerraje(idx, h.c));
+    else cont.insertAdjacentHTML('beforeend', nmuFilaHerraje('otro', h.c, h.n, _nmuPrecioHerr(h.p)));
+  });
+  toast('Composici\u00f3n copiada \u2713 ajusta y guarda');
+}
+function guardarNuevoMueble(){
+  var tipo = document.getElementById('nmu-tipo').value.trim().toUpperCase();
+  var modelo = document.getElementById('nmu-modelo').value.trim().toUpperCase();
+  var med = document.getElementById('nmu-med').value.trim();
+  if (!tipo || !modelo || !med) { toast('Rellena tipo, modelo y medida'); return; }
+  var key = (tipo+' '+modelo+' '+med).replace(/\s+/g,' ');
+  if (MODMAP[key] && !confirm('"'+key+'" ya existe. \u00bfSobrescribir su ficha?')) return;
+  function leerGrid(pref){
+    return CALS.map(function(c,i){
+      var v=document.getElementById(pref+i).value;
+      return v==='' ? null : (parseFloat(v)||0);
+    });
+  }
+  var herr=[];
+  document.querySelectorAll('#NMU-HERR .nmu-hrow').forEach(function(fila){
+    var sel=fila.querySelector('select');
+    var c=parseInt(fila.querySelector('.nmu-hc').value)||0;
+    if (c<=0) return;
+    if (sel.value==='otro') {
+      var n=fila.querySelector('.nmu-hn').value.trim();
+      var p=parseFloat(fila.querySelector('.nmu-hp').value)||0;
+      if (n) herr.push({n:n, p:p, c:c});
+    } else {
+      var h=_nmuHerr[parseInt(sel.value)];
+      if (h) herr.push({n:h.n, p:h.p, c:c});
+    }
+  });
+  MODMAP[key] = {
+    nombre:key,
+    casco: parseFloat(document.getElementById('nmu-casco').value)||0,
+    montaje: parseFloat(document.getElementById('nmu-montaje').value)||0,
+    cant1: parseInt(document.getElementById('nmu-cant1').value)||0,
+    f1: leerGrid('nmu-f1-'),
+    cant2: parseInt(document.getElementById('nmu-cant2').value)||0,
+    f2: leerGrid('nmu-f2-'),
+    herrajes: herr
+  };
+  try { repararCatalogoMuebles(); } catch(e){}
+  save();
+  document.getElementById('NMU-MODAL').style.display='none';
+  renderGroups();
+  try { if (document.getElementById('pc').classList.contains('on')) renderCatContent(); } catch(e){}
+  toast('Mueble "'+key+'" a\u00f1adido \u2713');
+}
+
+
+
+// ══════════════════════════════════════════════════════════
+// V102: gestor de frentes (marca/modelo/grupo/acabado), persistencia y taller
+// ══════════════════════════════════════════════════════════
+
+// ── Persistencia + migración (acabado) ──
+var _saveMG_V102 = save;
+save = function(){ _saveMG_V102(); try { localStorage.setItem('modelos_grupos_v1', JSON.stringify(MODELOS_GRUPOS)); } catch(e){} };
+
+// V103: parser de frentes → marca / material / modelo / color / acabado / grupo fabricante
+function _capFr(s){ return s ? (s.charAt(0).toUpperCase()+s.slice(1).toLowerCase()) : s; }
+function _parseFrenteV3(m){
+  if (m.gf !== undefined) return; // ya parseado (idempotente)
+  var marca = m.marca||'', modelo = m.modelo||'', material = m.material||'';
+  var mm = /^MONPUERTAS\s+(LACA|LAMINADO|MADERA)\b/i.exec(marca);
+  if (mm) { material = _capFr(mm[1]); marca = 'MONPUERTAS'; }
+  else if (marca === 'MONPUERTAS' && ['Laca','Laminado','Madera'].indexOf(m.acabado) >= 0 && !material) { material = m.acabado; }
+  var s = modelo, acab='', color='', gf='';
+  [['BRILLO','Brillo'],['MATE','Mate'],['SATINADO','Satinado'],['DECORADO','Decorado']].forEach(function(t){
+    if (new RegExp('\\b'+t[0]+'\\b','i').test(s)) { acab = t[1]; s = s.replace(new RegExp('\\b'+t[0]+'\\b','ig'),''); }
+  });
+  var cols = [['BLANCA','Blanca'],['BLANCO','Blanco'],['COLOR','Color']];
+  for (var c=0;c<cols.length;c++){ if (new RegExp('\\b'+cols[c][0]+'\\b','i').test(s)){ color=cols[c][1]; s=s.replace(new RegExp('\\b'+cols[c][0]+'\\b','ig'),''); break; } }
+  var mgr = /\bGRUPO\s*(\d+)\b/i.exec(s), mg = /\(?\bG-?\s?(\d+)\)?/.exec(s);
+  if (mgr) { gf='Grupo '+mgr[1]; s=s.replace(/\bGRUPO\s*\d+\b/ig,''); }
+  else if (mg) { gf='G-'+mg[1]; s=s.replace(/\(?\bG-?\s?\d+\)?/g,''); }
+  var limpio = s.replace(/\s+/g,' ').replace(/^[\s\-\u00b7()]+|[\s\-\u00b7()]+$/g,'');
+  if (!limpio) limpio = gf || modelo;
+  m.marca=marca; m.material=material; m.modelo=limpio; m.color=color; m.acabado=acab; m.gf=gf;
+}
+
+(function(){
+  try {
+    var s = localStorage.getItem('modelos_grupos_v1');
+    if (s) { var d = JSON.parse(s); if (Array.isArray(d) && d.length) { MODELOS_GRUPOS.length=0; d.forEach(function(x){ MODELOS_GRUPOS.push(x); }); } }
+  } catch(e){}
+  var cambiado=false;
+  MODELOS_GRUPOS.forEach(function(m){ if (m.gf === undefined) { _parseFrenteV3(m); cambiado=true; } });
+  if (cambiado) { try { localStorage.setItem('modelos_grupos_v1', JSON.stringify(MODELOS_GRUPOS)); } catch(e){} }
+})();
+
+// ── Representación de un modelo elegido ──
+function _frentePrecios(m){
+  var c = (m.f!=null && isFinite(m.f)) ? Number(m.f).toFixed(2) : null;
+  var p = (m.p!=null && isFinite(m.p)) ? Number(m.p).toFixed(2) : null;
+  if (c==null && p==null) return '\u2014';
+  return (c?('caj\u00f3n '+c):'') + (c&&p?' \u00b7 ':'') + (p?('puerta '+p):'') + ' \u20ac';
+}
+function _frenteCampos(o){
+  var p = [o.marca||''];
+  if (o.material) p.push(o.material);
+  if (o.modelo) p.push(o.modelo);
+  if (o.color) p.push(o.color);
+  if (o.acabado) p.push(o.acabado);
+  if (o.gf) p.push(o.gf);
+  var s = p.filter(Boolean).join(' \u00b7 ');
+  if (o.g) s += ' (G'+o.g+')';
+  return s;
+}
+// Nombre corto (modelo + color + acabado + gf), sin marca ni grupo de precio
+function _frenteDesc(m){
+  var p = [m.modelo||''];
+  if (m.color) p.push(m.color);
+  if (m.acabado) p.push(m.acabado);
+  if (m.gf) p.push(m.gf);
+  return p.filter(Boolean).join(' \u00b7 ');
+}
+function _optStrFrente(m){ return _frenteCampos(m); }
+function _frenteRefStr(r){ return r ? _frenteCampos(r) : ''; }
+
+// ── Datalist para el selector del presupuesto ──
+function _buildFrenteDatalist(){
+  var dl = document.getElementById('FRG-DL');
+  if (!dl) { dl = document.createElement('datalist'); dl.id = 'FRG-DL'; document.body.appendChild(dl); }
+  var vistos = {};
+  dl.innerHTML = MODELOS_GRUPOS.filter(function(m){
+    return !/COSTADO|REGLETA/i.test((m.marca||'')+' '+(m.modelo||''));
+  }).map(function(m){
+    var v = _optStrFrente(m);
+    if (vistos[v]) return ''; vistos[v]=1;
+    return '<option value="'+eh(v)+'">';
+  }).join('');
+}
+try { _buildFrenteDatalist(); } catch(e){}
+
+// ── Elegir modelo al presupuestar (fija la calidad por el grupo) ──
+function setFrenteModelo(gid, val){
+  var g = ST.groups.find(function(x){return x.id===gid;});
+  if (!g) return;
+  val = String(val||'').trim();
+  if (!val) { delete g.frenteRef; renderLines(gid); upBan(); return; }
+  var hit = MODELOS_GRUPOS.filter(function(m){ return !/COSTADO|REGLETA/i.test((m.marca||'')+' '+(m.modelo||'')); })
+                          .filter(function(m){ return _optStrFrente(m) === val; })[0];
+  if (hit) {
+    g.frenteRef = {marca:hit.marca, material:hit.material||'', modelo:hit.modelo, color:hit.color||'', acabado:hit.acabado||'', gf:hit.gf||'', g:Number(hit.g)};
+    var cal = CALS[Number(hit.g)-1];
+    if (cal) g.cal = cal;
+    renderGroups(); upBan();
+    toast('Frente: '+_frenteRefStr(g.frenteRef)+' \u00b7 calidad '+(cal||'')+' \u2713');
+  } else {
+    // Texto libre: se guarda para el taller, sin tocar la calidad
+    g.frenteRef = {marca:'', modelo:val, acabado:'', g:null};
+    renderLines(gid); upBan();
+    toast('Frente anotado para taller (sin grupo)');
+  }
+}
+
+// ── GESTOR de frentes (alta/baja/mover grupo/editar) ──
+var _frgFiltro = '';
+function frgReal(idx){ return MODELOS_GRUPOS[idx]; }
+function frgIndicesFiltrados(){
+  var q = _frgFiltro.toUpperCase();
+  var res = [];
+  MODELOS_GRUPOS.forEach(function(m, i){
+    if (/COSTADO|REGLETA/i.test((m.marca||'')+' '+(m.modelo||''))) return;
+    var txt = ((m.marca||'')+' '+(m.material||'')+' '+(m.modelo||'')+' '+(m.color||'')+' '+(m.acabado||'')+' '+(m.gf||'')+' G'+m.g).replace(/\s+/g,' ').toUpperCase();
+    if (!q || txt.indexOf(q) >= 0) res.push(i);
+  });
+  return res;
+}
+function frgSet(idx, campo, val){
+  var m = MODELOS_GRUPOS[idx]; if (!m) return;
+  if (campo === 'g') m.g = Math.max(1, Math.min(8, parseInt(val)||1));
+  else if (campo === 'f') m.f = parseFloat(val)||0;
+  else if (campo === 'p') m.p = parseFloat(val)||0;
+  else m[campo] = String(val||'').trim();
+  save();
+}
+function frgDel(idx){
+  var m = MODELOS_GRUPOS[idx]; if (!m) return;
+  if (!confirm('\u00bfEliminar "'+_optStrFrente(m)+'"?')) return;
+  MODELOS_GRUPOS.splice(idx, 1);
+  save(); renderGestorFrentes();
+}
+function frgAdd(){
+  MODELOS_GRUPOS.unshift({marca:'', material:'', modelo:'NUEVO MODELO', color:'', acabado:'', gf:'', g:1, f:0, p:0, r:null});
+  save(); _frgFiltro=''; 
+  var fi=document.getElementById('FRG-FILTRO'); if(fi) fi.value='';
+  renderGestorFrentes();
+  var inp = document.querySelector('#FRG-LIST input[data-campo="modelo"]');
+  if (inp) { inp.focus(); inp.select(); }
+}
+function frgFiltrar(q){ _frgFiltro = String(q||''); renderGestorFrentes(); }
+function renderGestorFrentes(){
+  var cont = document.getElementById('FRG-LIST'); if (!cont) return;
+  var idxs = frgIndicesFiltrados();
+  var TOPE = _frgFiltro ? 250 : 60;
+  var mostrar = idxs.slice(0, TOPE);
+  var est = 'width:100%;padding:5px 6px;font-size:.82rem;border:1px solid var(--line);border-radius:6px;box-sizing:border-box';
+  var lb = 'display:block;font-size:.62rem;color:var(--muted);margin-bottom:1px;text-transform:uppercase';
+  var gopts = '';
+  for (var k=1;k<=8;k++) gopts += '<option value="'+k+'">G'+k+' \u00b7 '+eh(CALS[k-1]||('G'+k))+'</option>';
+  cont.innerHTML = mostrar.map(function(idx){
+    var m = MODELOS_GRUPOS[idx];
+    var sel = gopts.replace('value="'+m.g+'"', 'value="'+m.g+'" selected');
+    return '<div style="border:1px solid var(--line);border-radius:8px;padding:8px 9px;margin-bottom:7px;background:#fff">'
+      +'<div style="display:flex;gap:7px;align-items:center;margin-bottom:6px">'
+      +'<input data-campo="modelo" value="'+eh(m.modelo||'')+'" onchange="frgSet('+idx+',\'modelo\',this.value)" style="flex:1;font-weight:600;padding:5px 7px;border:1px solid var(--line);border-radius:6px;min-width:0" title="'+eh(_frenteCampos(m))+'">'
+      +'<button onclick="frgDel('+idx+')" title="Eliminar" style="border:1px solid #d33;color:#d33;background:#fff;border-radius:6px;padding:3px 8px;cursor:pointer">\u2715</button>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">'
+      +'<div><span style="'+lb+'">Marca</span><input value="'+eh(m.marca||'')+'" onchange="frgSet('+idx+',\'marca\',this.value)" style="'+est+'"></div>'
+      +'<div><span style="'+lb+'">Material</span><input value="'+eh(m.material||'')+'" placeholder="Laca, Laminado\u2026" onchange="frgSet('+idx+',\'material\',this.value)" style="'+est+'"></div>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">'
+      +'<div><span style="'+lb+'">Color</span><input value="'+eh(m.color||'')+'" placeholder="Blanco, Color\u2026" onchange="frgSet('+idx+',\'color\',this.value)" style="'+est+'"></div>'
+      +'<div><span style="'+lb+'">Acabado</span><input value="'+eh(m.acabado||'')+'" placeholder="Brillo, Mate\u2026" onchange="frgSet('+idx+',\'acabado\',this.value)" style="'+est+';background:#fffbe6"></div>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1.2fr;gap:6px;margin-bottom:6px">'
+      +'<div><span style="'+lb+'">Grupo fabricante</span><input value="'+eh(m.gf||'')+'" placeholder="Grupo 1, G-54\u2026" onchange="frgSet('+idx+',\'gf\',this.value)" style="'+est+'"></div>'
+      +'<div><span style="'+lb+'">Grupo precio (calidad)</span><select onchange="frgSet('+idx+',\'g\',this.value)" style="'+est+'">'+sel+'</select></div>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+      +'<div><span style="'+lb+'">Frente caj\u00f3n \u20ac</span><input type="number" step="0.01" value="'+(m.f!=null?m.f:'')+'" onchange="frgSet('+idx+',\'f\',this.value)" style="'+est+';text-align:right"></div>'
+      +'<div><span style="'+lb+'">Frente puerta \u20ac</span><input type="number" step="0.01" value="'+(m.p!=null?m.p:'')+'" onchange="frgSet('+idx+',\'p\',this.value)" style="'+est+';text-align:right"></div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+  var cnt = document.getElementById('FRG-COUNT');
+  if (cnt) cnt.textContent = idxs.length + ' modelo(s)' + (idxs.length>mostrar.length ? ' \u00b7 mostrando '+mostrar.length+', afina el filtro' : '');
+}
+function abrirGestorFrentes(){
+  var m = document.getElementById('FRG-MODAL');
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'FRG-MODAL';
+    m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900;align-items:center;justify-content:center;padding:10px';
+    document.body.appendChild(m);
+  }
+  m.innerHTML = '<div style="background:#fff;border-radius:12px;padding:14px;max-width:560px;width:100%;max-height:92vh;display:flex;flex-direction:column">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+    +'<h3 style="margin:0">\ud83d\udeaa Gestionar frentes</h3>'
+    +'<button class="btn bgh bsm" onclick="cerrarGestorFrentes()">Cerrar</button></div>'
+    +'<div style="font-size:.76rem;color:var(--muted);margin-bottom:8px">Marca \u00b7 modelo \u00b7 acabado \u00b7 grupo. El grupo fija la calidad/precio. Los cambios se guardan y sincronizan.</div>'
+    +'<div style="display:flex;gap:7px;margin-bottom:10px">'
+    +'<input id="FRG-FILTRO" placeholder="\ud83d\udd0d Filtrar (marca, modelo, acabado, G3\u2026)" oninput="frgFiltrar(this.value)" style="flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:6px;min-width:0">'
+    +'<button class="btn bp bsm" onclick="frgAdd()" style="white-space:nowrap">+ Nuevo</button></div>'
+    +'<div id="FRG-COUNT" style="font-size:.72rem;color:var(--muted);margin-bottom:6px"></div>'
+    +'<div id="FRG-LIST" style="overflow-y:auto;flex:1"></div>'
+    +'</div>';
+  m.style.display = 'flex';
+  _frgFiltro=''; renderGestorFrentes();
+}
+function cerrarGestorFrentes(){
+  var m = document.getElementById('FRG-MODAL'); if (m) m.style.display='none';
+  try { _buildFrenteDatalist(); } catch(e){}
+  try { if (document.getElementById('pc').classList.contains('on') && typeof _catTab!=='undefined' && _catTab==='frentes') renderCatContent(); } catch(e){}
+}
+
+// Incluir acabado en el buscador antiguo de grupos (Configuración)
+try {
+  if (typeof searchGrupo === 'function') {
+    var _sgV102 = searchGrupo;
+    // (el filtro de searchGrupo ya concatena marca+modelo; reforzamos con acabado vía envoltura de datos)
+  }
+} catch(e){}
+
+
+
+// V102b: inyectar el selector de modelo en el cuerpo real del grupo de frentes
+var _rgFrentePickV102 = renderGroups;
+renderGroups = function(){
+  _rgFrentePickV102();
+  ST.groups.forEach(function(g){
+    if (g.tipo !== 'frentes') return;
+    var body = document.getElementById('gb'+g.id);
+    if (!body || body.querySelector('.frmodelo-pick')) return;
+    var alr = body.querySelector('.alr');
+    var div = document.createElement('div');
+    div.className = 'frmodelo-pick';
+    div.style.cssText = 'margin:8px 0 2px';
+    div.innerHTML = '<span style="display:block;font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;margin-bottom:2px">Modelo de frente (opcional \u00b7 sale solo en la ficha de taller)</span>'
+      +'<input id="af-fmodelo'+g.id+'" list="FRG-DL" placeholder="Busca: marca \u00b7 modelo \u00b7 acabado\u2026" value="'+(g.frenteRef?eh(_frenteRefStr(g.frenteRef)):'')+'" onchange="setFrenteModelo('+g.id+',this.value)" style="width:100%;box-sizing:border-box;padding:6px 9px;border:1px solid var(--line);border-radius:6px">';
+    if (alr) body.insertBefore(div, alr); else body.appendChild(div);
+    if (!body.querySelector('.frente-precio-cal')) {
+      var pc = document.createElement('div');
+      pc.className = 'frente-precio-cal';
+      pc.style.cssText = 'margin:2px 0 6px';
+      if (alr) body.insertBefore(pc, alr); else body.appendChild(pc);
+    }
+    _updFrentePrecio(g.id);
+  });
+};
+
+// V105: precio de frente que calcula el sistema, por calidad, para el mueble elegido
+function _updFrentePrecio(gid){
+  var cont = document.querySelector('#gb'+gid+' .frente-precio-cal');
+  if (!cont) return;
+  var g = ST.groups.find(function(x){return x.id===gid;});
+  var mSel = document.getElementById('am'+gid), moSel = document.getElementById('amo'+gid), medSel = document.getElementById('amed'+gid);
+  if (!g || g.tipo!=='frentes' || !mSel || !moSel) { cont.innerHTML=''; return; }
+  var m = mSel.value, mo = moSel.value, med = medSel ? medSel.value : '—';
+  if (!m || !mo) { cont.innerHTML = '<span style="font-size:.7rem;color:var(--muted)">Elige el mueble para ver el precio del frente por calidad.</span>'; return; }
+  if (typeof precioSoloFrente !== 'function') { cont.innerHTML=''; return; }
+  var chips = CALS.map(function(cal, i){
+    var v = precioSoloFrente(m, mo, med, cal);
+    var txt = (v!=null && isFinite(v)) ? (Math.round(v*100)/100).toFixed(2) : '—';
+    var activo = (cal === g.cal);
+    return '<span style="display:inline-block;padding:2px 7px;margin:2px 3px 2px 0;border-radius:8px;font-size:.72rem;'
+      + (activo ? 'background:var(--verde,#2d6a4f);color:#fff;font-weight:600' : 'background:#eef1f4;color:#445')
+      + '" title="'+eh(cal)+'">G'+(i+1)+' '+txt+'€</span>';
+  }).join('');
+  var actual = precioSoloFrente(m, mo, med, g.cal);
+  var actTxt = (actual!=null && isFinite(actual)) ? (Math.round(actual*100)/100).toFixed(2)+'€' : '—';
+  cont.innerHTML = '<div style="font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;margin-bottom:2px">'
+    + 'Precio del frente que aplica el sistema · por calidad (sin montaje) · <b style="color:var(--verde,#2d6a4f)">actual: '+actTxt+'</b></div>'
+    + '<div style="line-height:1.7">'+chips+'</div>';
+}
+
+// Refrescar el lector al cambiar mueble/modelo/medida
+var _onMFP = onM;   onM  = function(gid){ _onMFP(gid);  try{ _updFrentePrecio(gid); }catch(e){} };
+var _onMoFP = onMo; onMo = function(gid){ _onMoFP(gid); try{ _updFrentePrecio(gid); }catch(e){} };
+document.addEventListener('change', function(e){
+  var t = e.target;
+  if (t && t.id && t.id.indexOf('amed')===0) {
+    var gid = parseInt(t.id.replace('amed',''));
+    if (!isNaN(gid)) { try{ _updFrentePrecio(gid); }catch(err){} }
+  }
+});
 
 </script>
 <footer class="np" style="text-align:center;padding:18px 12px 22px;font-size:.79rem;color:#8888aa">
