@@ -83,7 +83,7 @@ select:disabled{background:var(--bg);color:var(--muted);cursor:not-allowed}
 .cr:last-child{border-bottom:none}
 .cmod{font-weight:500;flex:1 1 150px;min-width:0;word-break:break-word;overflow-wrap:anywhere}
 .cmed{color:var(--muted);flex:0 0 auto;margin-left:auto;white-space:nowrap;text-align:right}
-@media print{nav,.np,.toast{display:none!important}body{background:#fff}.pg{display:block!important;padding:0;max-width:100%}#pp{display:block!important}#pb,#ps,#pc{display:none!important}.card{box-shadow:none;padding:0;margin-bottom:10px}}
+@media print{nav,.np,.toast,#SYNC-IND,#toast,#LOGIN-OVERLAY{display:none!important}body{background:#fff}.pg{display:block!important;padding:0;max-width:100%}#pp{display:block!important}#pb,#ps,#pc{display:none!important}.card{box-shadow:none;padding:0;margin-bottom:10px}}
 @page { margin: 1.5cm 1.2cm 1.8cm 1.2cm; }
 .pf{background:#fff;max-width:780px;margin:0 auto;font-size:.83rem;line-height:1.5}
 .pfh{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px;padding-bottom:16px;border-bottom:3px solid var(--ink)}
@@ -191,7 +191,7 @@ body.cliente-mode .cliente-badge { display: flex !important; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v105</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v106</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -230,8 +230,8 @@ body.cliente-mode .cliente-badge { display: flex !important; }
 <div id="HISTMOD" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:10px;padding:26px;width:620px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div style="font-family:'DM Serif Display',serif;font-size:1.15rem">Historial de presupuestos</div>
-      <button class="btn bp bsm" onclick="saveToHistory()">+ Guardar el actual</button>
+      <div style="font-family:'DM Serif Display',serif;font-size:1.15rem">Proyectos guardados</div>
+      <div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="guardarProyecto()">&#x1F4BE; Guardar</button><button class="btn bgh bsm" onclick="guardarComoNuevo()">Guardar como nuevo</button></div>
     </div>
     <input id="HIST-SEARCH" type="text" placeholder="&#x1F50D; Buscar por cliente, nombre o fecha..." oninput="renderHistList()" autocomplete="off" style="width:100%;padding:12px 14px;font-size:.95rem;border:1.5px solid var(--line);border-radius:8px;margin-bottom:13px;box-sizing:border-box">
     <div id="HIST-LIST"></div>
@@ -302,9 +302,9 @@ body.cliente-mode .cliente-badge { display: flex !important; }
       <div class="menu-wrap">
         <button class="btn bgh" style="color:#fff;border-color:rgba(255,255,255,.2)" onclick="toggleMenu('m-file')">&#x1F4BE; Archivo &#x25BE;</button>
         <div class="menu-drop" id="m-file">
-          <a onclick="saveBudgetFile();closeMenus()">&#x1F4BE; Guardar como archivo</a>
+          <a onclick="guardarProyecto();closeMenus()">&#x1F4BE; Guardar proyecto</a><a onclick="saveBudgetFile();closeMenus()">&#x1F4BE; Guardar como archivo</a>
           <label style="display:block"><span>&#x1F4C2; Abrir desde archivo</span><input type="file" accept=".json" style="display:none" onchange="loadBudgetFile(event);closeMenus()"></label>
-          <a onclick="openHistory();closeMenus()">&#x1F558; Historial</a>
+          <a onclick="openHistory();closeMenus()">&#x1F4C1; Proyectos guardados</a>
           <a onclick="subirTodoALaNube();closeMenus()" style="border-top:1px solid #eee">&#x2601;&#xFE0F; Subir mis datos a la nube</a>
           <a onclick="bajarTodoDeLaNube();closeMenus()">&#x2601;&#xFE0F; Bajar datos de la nube</a>
           <a onclick="supaLogout()" style="border-top:1px solid #eee;color:#c0392b">&#x1F511; Cerrar sesi&#xF3;n</a>
@@ -1167,6 +1167,7 @@ function upBan(){
 function newBudget(){
   if(!confirm('Nuevo presupuesto? Se perder\u00e1n los datos actuales.')) return;
   ST.groups=[];
+  ST.proyectoActual=null;
   document.getElementById('FC').value='';
   document.getElementById('FD').value='';
   document.getElementById('FT').value='';
@@ -4290,7 +4291,7 @@ function renderHistList() {
     var nLineas = (d.groups||[]).reduce(function(s,g){return s+(g.lines||[]).length;},0);
     return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;margin-bottom:7px">'
       +'<div style="flex:1;min-width:0">'
-      +'<div style="font-weight:600;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+eh(d.nombre||d.cliente||'Sin nombre')+'</div>'
+      +'<div style="font-weight:600;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+eh(d.nombre||d.cliente||'Sin nombre')+((ST.proyectoActual && _budgetId(d)===ST.proyectoActual.id)?' <span style="font-size:.66rem;font-weight:600;color:#2d6a4f;background:#d8f3dc;border-radius:8px;padding:1px 6px;vertical-align:middle">\u25cf en edici\u00f3n</span>':'')+'</div>'
       +'<div style="font-size:.79rem;color:var(--muted)">'+fecha+' \u00b7 '+nLineas+' elementos \u00b7 '+(d.total!=null?d.total.toFixed(2)+' \u20ac':'')+(d.images&&d.images.length?' \u00b7 '+d.images.length+' img':'')+'</div>'
       +'</div>'
       +'<button class="btn bp bsm" onclick="loadFromHistory('+i+')">Cargar</button>'
@@ -4310,8 +4311,9 @@ function loadFromHistory(i) {
   var d = h[i]; if (!d) return;
   if (totalL() > 0 && !confirm('Cargar "'+(d.nombre||'')+'"? Se perder\u00e1 el presupuesto actual si no lo has guardado.')) return;
   applyBudget(d);
+  ST.proyectoActual = { id: _budgetId(d), nombre: d.nombre || d.cliente || '' };
   document.getElementById('HISTMOD').style.display = 'none';
-  toast('Presupuesto cargado \u2713');
+  toast('Proyecto cargado \u2713');
 }
 
 function deleteFromHistory(i) {
@@ -8575,6 +8577,95 @@ document.addEventListener('change', function(e){
     if (!isNaN(gid)) { try{ _updFrentePrecio(gid); }catch(err){} }
   }
 });
+
+
+
+// ══════════════════════════════════════════════════════════
+// V106: guardar proyectos con sobreescritura (Guardar / Guardar como nuevo)
+// ══════════════════════════════════════════════════════════
+if (typeof ST !== 'undefined' && ST.proyectoActual === undefined) ST.proyectoActual = null;
+
+function _guardarProyectoComun(d) {
+  var id = _budgetId(d);
+  // upsert por id: quitar cualquier versión previa y poner esta la primera
+  var h = getHistory().filter(function(x){ return _budgetId(x) !== id; });
+  h.unshift(d);
+  if (h.length > 30) h = h.slice(0, 30);
+  if (typeof supaGuardarClave === 'function') { try { supaGuardarClave(id, JSON.stringify(d)); } catch(e){} }
+  var ok = setHistory(h);
+  if (!ok) {
+    var sinImg = JSON.parse(JSON.stringify(d)); sinImg.images = [];
+    h[0] = sinImg; ok = setHistory(h);
+    if (ok) toast('Guardado sin im\u00e1genes (espacio lleno)');
+  }
+  try { clearDirty(); } catch(e){}
+  try { renderHistList(); } catch(e){}
+  try { _updProyectoBadge(); } catch(e){}
+  return ok;
+}
+
+function guardarProyecto() {
+  if (!totalL() && !document.getElementById('FC').value) { toast('Presupuesto vac\u00edo'); return; }
+  var d = serializeBudget();
+  var act = ST.proyectoActual;
+  var existe = act && getHistory().some(function(x){ return _budgetId(x) === act.id; });
+  if (existe) {
+    d.id = act.id;                         // mismo id → sobreescribe (local y nube)
+    d.fecha_guardado = new Date().toISOString();
+    d.nombre = act.nombre;
+    _guardarProyectoComun(d);
+    toast('\u201c'+ (act.nombre||'Proyecto') +'\u201d actualizado \u2713');
+  } else {
+    var def = (d.cliente || 'Sin cliente') + ' \u2014 ' + (d.fecha || '');
+    var name = prompt('Nombre del proyecto:', def);
+    if (name === null) return;
+    d.nombre = name || def;
+    ST.proyectoActual = { id: _budgetId(d), nombre: d.nombre };
+    _guardarProyectoComun(d);
+    toast('Proyecto guardado \u2713');
+  }
+}
+
+function guardarComoNuevo() {
+  if (!totalL() && !document.getElementById('FC').value) { toast('Presupuesto vac\u00edo'); return; }
+  var d = serializeBudget();               // id nuevo (por la hora)
+  var def = (d.cliente || 'Sin cliente') + ' \u2014 ' + (d.fecha || '');
+  var name = prompt('Nombre del NUEVO proyecto (se guarda como copia aparte):', def);
+  if (name === null) return;
+  d.nombre = name || def;
+  ST.proyectoActual = { id: _budgetId(d), nombre: d.nombre };
+  _guardarProyectoComun(d);
+  toast('Guardado como nuevo \u2713');
+}
+
+// Indicador del proyecto en edición (junto al cliente)
+function _updProyectoBadge() {
+  var cont = document.getElementById('PROY-BADGE');
+  if (!cont) {
+    var fc = document.getElementById('FC');
+    if (!fc) return;
+    cont = document.createElement('div');
+    cont.id = 'PROY-BADGE';
+    cont.className = 'np';
+    cont.style.cssText = 'font-size:.74rem;color:#2d6a4f;margin:2px 0 6px;min-height:1em';
+    fc.parentNode.insertBefore(cont, fc.nextSibling);
+  }
+  if (ST.proyectoActual && ST.proyectoActual.nombre) {
+    cont.innerHTML = '\ud83d\udcc1 Editando: <b>'+eh(ST.proyectoActual.nombre)+'</b> <span style="color:var(--muted);font-weight:400">\u00b7 \u201cGuardar\u201d sobreescribe este proyecto</span>';
+  } else {
+    cont.innerHTML = '<span style="color:var(--muted)">Proyecto sin guardar \u00b7 \u201cGuardar\u201d pedir\u00e1 un nombre</span>';
+  }
+}
+
+// Mantener el indicador al día tras cargar/crear/aplicar
+var _abV106 = applyBudget;
+applyBudget = function(d){ _abV106(d); try{ _updProyectoBadge(); }catch(e){} };
+setTimeout(function(){ try{ _updProyectoBadge(); }catch(e){} }, 400);
+
+
+// Refrescar indicador tras Nuevo presupuesto
+var _nbV106 = newBudget;
+newBudget = function(){ _nbV106(); try{ _updProyectoBadge(); }catch(e){} };
 
 </script>
 <footer class="np" style="text-align:center;padding:18px 12px 22px;font-size:.79rem;color:#8888aa">
