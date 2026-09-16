@@ -191,7 +191,7 @@ body.cliente-mode .cliente-badge { display: flex !important; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v107</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v108</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -4510,9 +4510,11 @@ showPDF = function() {
         if (_desc > 0) {
           var _tras = sub - _desc;
           var _etiq = (g.descTipo==='eur') ? ((_desc*_mul).toFixed(2)+' \u20ac') : (g.desc+'% = '+(_desc*_mul).toFixed(2)+' \u20ac');
-          return '<div class="pfsb" style="font-size:.82rem;padding-top:6px;color:#888">Subtotal '+eh(g.name)+': '+(sub*_mul).toFixed(2)+' \u20ac</div>'
+          return '<div style="break-inside:avoid;page-break-inside:avoid">'
+            +'<div class="pfsb" style="font-size:.82rem;padding-top:6px;color:#888">Subtotal '+eh(g.name)+': '+(sub*_mul).toFixed(2)+' \u20ac</div>'
             +'<div style="font-size:.82rem;color:#a03030">Descuento: -'+_etiq+'</div>'
-            +'<div class="pfsb" style="font-size:.86rem">Total '+eh(g.name)+': <strong style="font-size:.95rem;color:#2d6a4f">'+(_tras*_mul).toFixed(2)+' \u20ac</strong>'+(_esElec?' <span style="font-size:.72rem;color:#888">(IVA incl.)</span>':'')+'</div>';
+            +'<div class="pfsb" style="font-size:.86rem">Total '+eh(g.name)+': <strong style="font-size:.95rem;color:#2d6a4f">'+(_tras*_mul).toFixed(2)+' \u20ac</strong>'+(_esElec?' <span style="font-size:.72rem;color:#888">(IVA incl.)</span>':'')+'</div>'
+            +'</div>';
         }
         return '<div class="pfsb" style="font-size:.86rem;padding-top:6px">Total '+eh(g.name)+': <strong style="font-size:.95rem;color:#2d6a4f">'+(sub*_mul).toFixed(2)+' \u20ac</strong>'+(_esElec?' <span style="font-size:.72rem;color:#888">(IVA incl.)</span>':'')+'</div>';
       })();
