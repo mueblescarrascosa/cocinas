@@ -191,7 +191,7 @@ body.cliente-mode .cliente-badge { display: flex !important; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v106</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v107</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -321,7 +321,7 @@ body.cliente-mode .cliente-badge { display: flex !important; }
       <div><lbl>Cliente</lbl><input type="text" id="FC" placeholder="Nombre" oninput="upBan()"></div>
       <div><lbl>Direcci&#243;n</lbl><input type="text" id="FD" placeholder="Direcci&#243;n"></div>
       <div><lbl>Tel&#233;fono</lbl><input type="text" id="FT" placeholder="Tel&#233;fono"></div>
-      <div><lbl>Fecha</lbl><input type="text" id="FF"></div><div style="width:130px"><lbl>IVA</lbl><select id="F-IVA" onchange="upBan()"><option value="21">21%</option><option value="10">10% (reforma)</option></select></div><div style="width:110px"><lbl>Validez (d&#237;as)</lbl><input type="number" id="F-VALIDEZ" value="30" min="1" step="5"></div>
+      <div><lbl>Fecha</lbl><input type="text" id="FF"></div><div style="width:130px"><lbl>IVA</lbl><select id="F-IVA" onchange="upBan()"><option value="21">21%</option><option value="10">10% (reforma)</option></select></div><div style="display:flex;align-items:center;gap:5px;margin-left:4px"><input type="checkbox" id="F-ELECTRO-IVA" style="width:16px;height:16px" onchange="upBan()"><label for="F-ELECTRO-IVA" style="font-size:.78rem;cursor:pointer">Electrodom&#233;sticos aparte (precio con IVA)</label></div><div style="width:110px"><lbl>Validez (d&#237;as)</lbl><input type="number" id="F-VALIDEZ" value="30" min="1" step="5"></div>
       <div style="width:150px"><lbl>Entrega estimada</lbl><input type="text" id="F-PLAZO" placeholder="4-6 semanas"></div>
       <div style="width:110px"><lbl>Se&#241;al (%)</lbl><input type="number" id="F-SENAL" value="40" min="0" max="100" step="5" onchange="upBan()"></div>
     </div>
@@ -4456,9 +4456,15 @@ showPDF = function() {
   var logoH=ST.logo?'<img src="'+ST.logo+'" style="max-height:185px;max-width:360px;object-fit:contain">':'<div class="pflogt">'+eh(c.emp||'Tu Empresa')+'</div>';
 
   var totalShown = 0;
+  var _elecAp = !!(document.getElementById('F-ELECTRO-IVA') && document.getElementById('F-ELECTRO-IVA').checked);
+  var _ivaG = getIVA();
+  var electroCI = 0;
   var gh=ST.groups.filter(function(g){return g.lines.length;}).map(function(g){
     var col=GCOLS[g.ci],sub=0;
     var ti=TIPOS[g.tipo||'muebles'];
+    var _esElec = _elecAp && (g.tipo==='electro');
+    var _det2 = detalle || _esElec;
+    var _mul = _esElec ? (1 + _ivaG/100) : 1;
     var rows=g.lines.map(function(l,i){
       var p=unitPVP(l,g);
       var lt=fxG(lineTotal(l,g), g);
@@ -4466,14 +4472,14 @@ showPDF = function() {
       var extRows='';
       (l.extras||[]).forEach(function(ex){
         var exAdj = extraPVP(ex, g);
-        extRows+='<tr><td></td><td style="padding:3px 8px;color:#888;font-size:.75rem" colspan="'+(detalle?4:3)+'">\u2514 '+eh(ex.n)+'</td>'
-          +(detalle?'<td class="tr" style="padding:3px 8px;color:#888;font-size:.75rem">+'+fx(exAdj).toFixed(2)+' \u20ac</td><td></td>':'')
+        extRows+='<tr><td></td><td style="padding:3px 8px;color:#888;font-size:.75rem" colspan="'+(_det2?4:3)+'">\u2514 '+eh(ex.n)+'</td>'
+          +(_det2?'<td class="tr" style="padding:3px 8px;color:#888;font-size:.75rem">+'+(fx(exAdj)*_mul).toFixed(2)+' \u20ac</td><td></td>':'')
           +'</tr>';
       });
       var _ffEx = (l.extras||[]).some(function(ex){return ex.freefold;}) ? freefoldCascoFrenteExtra(l, g) : 0;
       if (_ffEx > 0) {
-        extRows+='<tr><td></td><td style="padding:3px 8px;color:#7B3FA0;font-size:.75rem" colspan="'+(detalle?4:3)+'">\u2514 casco+frente\u00d72 (FREEFOLD)</td>'
-          +(detalle?'<td class="tr" style="padding:3px 8px;color:#7B3FA0;font-size:.75rem">+'+fx(_ffEx).toFixed(2)+' \u20ac</td><td></td>':'')
+        extRows+='<tr><td></td><td style="padding:3px 8px;color:#7B3FA0;font-size:.75rem" colspan="'+(_det2?4:3)+'">\u2514 casco+frente\u00d72 (FREEFOLD)</td>'
+          +(_det2?'<td class="tr" style="padding:3px 8px;color:#7B3FA0;font-size:.75rem">+'+(fx(_ffEx)*_mul).toFixed(2)+' \u20ac</td><td></td>':'')
           +'</tr>';
       }
       return '<tr>'
@@ -4482,19 +4488,20 @@ showPDF = function() {
         +'<td style="padding:6px 8px">'+(g.tipo==='electro'?eh([l.marca,l.modelo].filter(Boolean).join(' ')):eh(l.mo))+'</td>'
         +'<td style="padding:6px 8px;text-align:center">'+(g.tipo==='electro'?'\u2014':(l.med==='\u2014'?'\u2014':l.med+' cm'))+'</td>'
         +'<td style="padding:6px 8px;text-align:center">'+l.und+'</td>'
-        +(detalle
-          ?'<td class="tr" style="padding:6px 8px">'+(p!==null?fx(p).toFixed(2)+' \u20ac':'\u2014')+'</td>'
-           +'<td class="tr" style="padding:6px 8px">'+lt.toFixed(2)+' \u20ac</td>'
+        +(_det2
+          ?'<td class="tr" style="padding:6px 8px">'+((g.tipo==='electro'||p!==null)?(((g.tipo==='electro')?(l.und?lt/l.und:lt):fx(p))*_mul).toFixed(2)+' \u20ac':'\u2014')+'</td>'
+           +'<td class="tr" style="padding:6px 8px">'+(lt*_mul).toFixed(2)+' \u20ac</td>'
           :'')
         +'</tr>'+extRows;
     }).join('');
-    totalShown += (sub - descuentoGrupo(g, sub));
+    var _neto = sub - descuentoGrupo(g, sub);
+    if (_esElec) electroCI += _neto * _mul; else totalShown += _neto;
     return '<div class="pft" style="border-bottom-color:'+col+'">'
       +'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+col+';margin-right:6px;vertical-align:middle"></span>'
       +eh(g.name)+' <span style="font-size:.77rem;color:#888;margin-left:4px">'+ti.label+' \u00b7 '+g.cal+'</span></div>'
       +'<table class="pfi"><thead><tr><th style="width:28px">#</th><th>Elemento</th><th>Modelo</th>'
       +'<th style="width:78px;text-align:center">Med.</th><th style="width:40px;text-align:center">Ud.</th>'
-      +(detalle
+      +(_det2
         ?'<th style="width:100px;text-align:right">P.unit.</th><th style="width:100px;text-align:right">Total</th>'
         :'')
       +'</tr></thead><tbody>'+rows+'</tbody></table>'
@@ -4502,16 +4509,17 @@ showPDF = function() {
         var _desc = descuentoGrupo(g, sub);
         if (_desc > 0) {
           var _tras = sub - _desc;
-          var _etiq = (g.descTipo==='eur') ? (_desc.toFixed(2)+' \u20ac') : (g.desc+'% = '+_desc.toFixed(2)+' \u20ac');
-          return '<div class="pfsb" style="font-size:.82rem;padding-top:6px;color:#888">Subtotal '+eh(g.name)+': '+sub.toFixed(2)+' \u20ac</div>'
+          var _etiq = (g.descTipo==='eur') ? ((_desc*_mul).toFixed(2)+' \u20ac') : (g.desc+'% = '+(_desc*_mul).toFixed(2)+' \u20ac');
+          return '<div class="pfsb" style="font-size:.82rem;padding-top:6px;color:#888">Subtotal '+eh(g.name)+': '+(sub*_mul).toFixed(2)+' \u20ac</div>'
             +'<div style="font-size:.82rem;color:#a03030">Descuento: -'+_etiq+'</div>'
-            +'<div class="pfsb" style="font-size:.86rem">Total '+eh(g.name)+': <strong style="font-size:.95rem;color:#2d6a4f">'+_tras.toFixed(2)+' \u20ac</strong></div>';
+            +'<div class="pfsb" style="font-size:.86rem">Total '+eh(g.name)+': <strong style="font-size:.95rem;color:#2d6a4f">'+(_tras*_mul).toFixed(2)+' \u20ac</strong>'+(_esElec?' <span style="font-size:.72rem;color:#888">(IVA incl.)</span>':'')+'</div>';
         }
-        return '<div class="pfsb" style="font-size:.86rem;padding-top:6px">Total '+eh(g.name)+': <strong style="font-size:.95rem;color:#2d6a4f">'+sub.toFixed(2)+' \u20ac</strong></div>';
+        return '<div class="pfsb" style="font-size:.86rem;padding-top:6px">Total '+eh(g.name)+': <strong style="font-size:.95rem;color:#2d6a4f">'+(sub*_mul).toFixed(2)+' \u20ac</strong>'+(_esElec?' <span style="font-size:.72rem;color:#888">(IVA incl.)</span>':'')+'</div>';
       })();
   }).join('');
 
   var ivaPct=getIVA();var iva=totalShown*ivaPct/100;
+  var _apT = (typeof _elecAp!=='undefined' && _elecAp && electroCI>0);
   document.getElementById('PF').innerHTML=
     // ═══ PORTADA (primera página) ═══
     '<div class="pfportada" style="position:relative;page-break-after:always;break-after:page;min-height:240mm;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:20px 30px;text-align:center;box-sizing:border-box;overflow:hidden">'+TESELACIONES_PORTADA
@@ -4547,9 +4555,16 @@ showPDF = function() {
     +'<div><div class="cll">Tel\u00e9fono</div><div class="clv">'+eh(tel)+'</div></div>'
     +'<div><div class="cll">Fecha</div><div class="clv">'+fecha+'</div></div></div>'
     +gh
-    +'<div class="pftots"><table><tr><td>Total sin IVA</td><td style="text-align:right">'+totalShown.toFixed(2)+' \u20ac</td></tr>'
-    +'<tr><td>IVA '+ivaPct+'%</td><td style="text-align:right">'+iva.toFixed(2)+' \u20ac</td></tr>'
-    +'<tr class="tf"><td>TOTAL con IVA</td><td style="text-align:right">'+(totalShown+iva).toFixed(2)+' \u20ac</td></tr></table></div>'
+    +'<div class="pftots"><table>'
+    +(_apT
+      ? '<tr><td>Mobiliario (sin IVA)</td><td style="text-align:right">'+totalShown.toFixed(2)+' \u20ac</td></tr>'
+        +'<tr><td>IVA '+ivaPct+'%</td><td style="text-align:right">'+iva.toFixed(2)+' \u20ac</td></tr>'
+        +'<tr><td>Electrodom\u00e9sticos (IVA incl.)</td><td style="text-align:right">'+electroCI.toFixed(2)+' \u20ac</td></tr>'
+        +'<tr class="tf"><td>TOTAL</td><td style="text-align:right">'+(totalShown+iva+electroCI).toFixed(2)+' \u20ac</td></tr>'
+      : '<tr><td>Total sin IVA</td><td style="text-align:right">'+totalShown.toFixed(2)+' \u20ac</td></tr>'
+        +'<tr><td>IVA '+ivaPct+'%</td><td style="text-align:right">'+iva.toFixed(2)+' \u20ac</td></tr>'
+        +'<tr class="tf"><td>TOTAL con IVA</td><td style="text-align:right">'+(totalShown+iva).toFixed(2)+' \u20ac</td></tr>')
+    +'</table></div>'
     +(condTxt?'<div class="pfcond"><h4>Condiciones</h4>'+eh(condTxt).replace(/\n/g,'<br>')+'</div>':'')
     +(textoExp?'<div class="pftexto" style="page-break-before:always;break-before:page;padding-top:20px"><div style="font-family:\'DM Serif Display\',serif;font-size:1.3rem;color:#1a1a2e;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #c9a84a">Informaci\u00f3n del proyecto</div><div style="font-size:.9rem;line-height:1.8;color:#333;text-align:justify">'+formatearTextoTecnico(textoExp)+'</div></div>':'');
 
@@ -5230,6 +5245,7 @@ var _sbV28 = serializeBudget;
 serializeBudget = function() {
   var d = _sbV28();
   d.iva = getIVA();
+  d.electroIvaAparte = !!(document.getElementById('F-ELECTRO-IVA') && document.getElementById('F-ELECTRO-IVA').checked);
   d.validez = parseFloat((document.getElementById('F-VALIDEZ')||{}).value)||30;
   d.condiciones = (document.getElementById('F-COND')||{}).value||'';
   return d;
@@ -5239,6 +5255,7 @@ applyBudget = function(d) {
   _abV28(d);
   var fi = document.getElementById('F-IVA');
   if (fi && d.iva) fi.value = String(d.iva);
+  var fea = document.getElementById('F-ELECTRO-IVA'); if (fea) fea.checked = !!d.electroIvaAparte;
   var fv = document.getElementById('F-VALIDEZ');
   if (fv && d.validez) fv.value = d.validez;
   var fc = document.getElementById('F-COND');
