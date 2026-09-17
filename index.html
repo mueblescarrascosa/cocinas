@@ -83,7 +83,7 @@ select:disabled{background:var(--bg);color:var(--muted);cursor:not-allowed}
 .cr:last-child{border-bottom:none}
 .cmod{font-weight:500;flex:1 1 150px;min-width:0;word-break:break-word;overflow-wrap:anywhere}
 .cmed{color:var(--muted);flex:0 0 auto;margin-left:auto;white-space:nowrap;text-align:right}
-@media print{nav,.np,.toast,#SYNC-IND,#toast,#LOGIN-OVERLAY{display:none!important}body{background:#fff}.pg{display:block!important;padding:0;max-width:100%}#pp{display:block!important}#pb,#ps,#pc{display:none!important}.card{box-shadow:none;padding:0;margin-bottom:10px}}
+@media print{nav,.np,.toast,#SYNC-IND,#toast,#LOGIN-OVERLAY,#BACKUP-AVISO{display:none!important}body{background:#fff}.pg{display:block!important;padding:0;max-width:100%}#pp{display:block!important}#pb,#ps,#pc{display:none!important}.card{box-shadow:none;padding:0;margin-bottom:10px}}
 @page { margin: 1.5cm 1.2cm 1.8cm 1.2cm; }
 .pf{background:#fff;max-width:780px;margin:0 auto;font-size:.83rem;line-height:1.5}
 .pfh{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px;padding-bottom:16px;border-bottom:3px solid var(--ink)}
@@ -191,7 +191,7 @@ body.cliente-mode .cliente-badge { display: flex !important; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v108</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v109</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -680,6 +680,12 @@ async function supaGuardarClave(clave, valor) {
 
 // Cargar TODAS las claves sincronizadas desde la nube al arrancar
 async function supaCargarTodo() {
+  // Si venimos de una recarga por sincronización, los datos ya están frescos: no volver a descargar
+  if (sessionStorage.getItem('_recargaSync')) {
+    sessionStorage.removeItem('_recargaSync');
+    _mostrarEstadoSync('ok', '\u2601 Datos sincronizados \u2713');
+    return true;
+  }
   _mostrarEstadoSync('cargando', '\u2601 Sincronizando datos...');
   var algunaError = false;
   var huboCambios = false;
@@ -720,7 +726,7 @@ async function supaCargarTodo() {
   if (huboCambios && !sessionStorage.getItem('_recargaSync')) {
     sessionStorage.setItem('_recargaSync', '1');
     _mostrarEstadoSync('cargando', '\u2601 Aplicando datos de la nube...');
-    setTimeout(function(){ location.reload(); }, 600);
+    setTimeout(function(){ location.reload(); }, 250);
     return true;
   }
   sessionStorage.removeItem('_recargaSync');
