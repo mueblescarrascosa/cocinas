@@ -191,7 +191,7 @@ body.cliente-mode .cliente-badge { display: flex !important; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v109</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v113</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -623,7 +623,7 @@ async function hacerLogin() {
 // Usa la misma tabla 'presupuestos', cada dato con su clave
 // ══════════════════════════════════════════════════════════
 // Claves que SÍ se sincronizan (contenido de trabajo compartido)
-var CLAVES_SYNC = ['cat','cfg','electro_johnson_v1','exg_inst_v1','exm_inst_v1',
+var CLAVES_SYNC = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
   'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1',
   'logo','map_costados','map_regletas','modmap_v15','modelos_grupos_v1','params','pnum','prices',
   'texto_base_v1','presentacion_base_v1'];
@@ -5404,8 +5404,8 @@ lineTotal = function(l, g) {
     return base;
   }
   if (g.tipo === 'electro') {
-    var e = (l.eIdx != null && ST.electro[l.eIdx]) ? ST.electro[l.eIdx] 
-            : (ST.electro||[]).find(function(x){ return x.n === l.m; });
+    var e = (ST.electro||[]).find(function(x){ return x.n === l.m; })
+            || (l.eIdx != null ? ST.electro[l.eIdx] : null);
     if (!e) return 0;
     var unit = pvpElectro(e.coste) + (e.inst||0);
     var base = Math.round(unit * l.und * 100)/100;
@@ -5578,7 +5578,7 @@ serializeBudget = function() {
 var _abV31 = applyBudget;
 applyBudget = function(d) {
   _abV31(d);
-  if (d.electro) ST.electro = d.electro;
+  if (d.electro && d.electro.length) { if(!ST.electro) ST.electro=[]; var _nomE={}; ST.electro.forEach(function(e){_nomE[e.n]=1;}); var _addE=false; d.electro.forEach(function(e){ if(e&&e.n&&!_nomE[e.n]){ST.electro.push(e);_nomE[e.n]=1;_addE=true;} }); if(_addE) save(); }
   if (d.margen_electro !== undefined) ST.params.margen_electro = d.margen_electro;
 };
 
@@ -7479,7 +7479,7 @@ function descargarCopiaSeguridad() {
     _version: (document.getElementById('APPVER')||{}).textContent || 'v?',
     datos: {}
   };
-  var claves = ['cat','cfg','electro_johnson_v1','exg_inst_v1','exm_inst_v1',
+  var claves = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
     'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1','historial_v1',
     'modelos_grupos_v1',
     'logo','map_costados','map_regletas','modmap_v15','params','pnum','prices',
@@ -7637,7 +7637,7 @@ function anadirArticuloRapido(gid, cat, art) {
 // ══════════════════════════════════════════════════════════
 (function(){
   var PRESENTACION_DEFAULT = "MUEBLES CARRASCOSA\n\nGracias por confiar en nosotros para su proyecto de cocina.\n\nMuebles Carrascosa es una empresa familiar fundada por nuestro abuelo en 1969 en Villanueva del Arzobispo. Desde entonces seguimos dedic\u00e1ndonos al dise\u00f1o, fabricaci\u00f3n y montaje de mobiliario de cocina a medida, hoy con la segunda y tercera generaci\u00f3n trabajando juntas, manteniendo el mismo compromiso de siempre: un trabajo bien hecho y cercano.\n\nTrabajamos con materiales de calidad y herrajes de primeras marcas, cuidando cada detalle para ofrecer un resultado duradero, funcional y adaptado a sus necesidades. Nos encargamos de todo el proceso: el asesoramiento inicial, la toma de medidas, la fabricaci\u00f3n y la instalaci\u00f3n final.\n\nA continuaci\u00f3n encontrar\u00e1 el detalle de su presupuesto, as\u00ed como la informaci\u00f3n t\u00e9cnica del proyecto.";
-  var TECNICO_DEFAULT = "INFORMACI\u00d3N T\u00c9CNICA DEL PROYECTO\n\nEste documento detalla las condiciones t\u00e9cnicas del proyecto: qu\u00e9 incluye el presupuesto, las preinstalaciones que debe preparar el cliente y las caracter\u00edsticas del mobiliario. Las medidas y alturas indicadas son orientativas y se miden desde el suelo.\n\n\n1. ALCANCE DEL PRESUPUESTO\n\nEl presupuesto cubre el suministro y montaje del mobiliario de cocina.\n\nNo se incluyen trabajos de alba\u00f1iler\u00eda, fontaner\u00eda, electricidad, gas, alicatado, solado, pintura ni desescombro, ni la modificaci\u00f3n de instalaciones existentes. En caso de ser necesarios, correr\u00e1n por cuenta del cliente o se presupuestar\u00e1n aparte.\n\n\n2. PREINSTALACIONES (a cargo del cliente)\n\nLas instalaciones deben estar terminadas y en las posiciones adecuadas antes de la fecha de montaje.\n\n2.1. Fontaner\u00eda\n- Tomas de agua fr\u00eda y caliente accesibles bajo el fregadero.\n- Desag\u00fces a una altura aproximada de 40-50 cm.\n- Toma de agua y desag\u00fce previstos para el lavavajillas.\n- Para sistema de \u00f3smosis o filtro de agua: prever toma de agua y desag\u00fce adicionales bajo el fregadero, y espacio para el equipo. Consultar antes del montaje.\n\n2.2. Electricidad \u2014 Tomas generales\n- Las tomas de corriente deben situarse a un m\u00ednimo de 50 cm del fregadero y de la placa de cocci\u00f3n (normativa REBT, ITC-BT-25).\n- Se recomienda un m\u00ednimo de 6 tomas en la cocina, con al menos 3-4 sobre la encimera para peque\u00f1os electrodom\u00e9sticos, distribuidas cada 60-80 cm.\n- Conviene prever alguna toma libre adicional para futuras necesidades.\n- Tomas sobre encimera a una altura aproximada de 110 cm (por encima del copete, para enchufar con comodidad).\n\n2.3. Electricidad \u2014 Electrodom\u00e9sticos (cada uno con toma independiente)\n- Frigor\u00edfico: toma a 40-50 cm, lo m\u00e1s cerca posible del aparato.\n- Horno: toma de 16A con toma de tierra, a 20-30 cm.\n- Placa de cocci\u00f3n: en inducci\u00f3n, toma/l\u00ednea de 25A seg\u00fan potencia. Para placas de gas, instalaci\u00f3n por instalador autorizado.\n- Lavavajillas: toma de 16A con toma de tierra, a 40-50 cm.\n- Lavadora (si va en cocina): toma de 16A, a 40-50 cm.\n\n2.4. Electricidad \u2014 Columnas y muebles en altura\n- Columna con horno y microondas: dos tomas (una por aparato) a una altura aproximada de 155 cm.\n- Columna con un solo electrodom\u00e9stico: una toma a una altura aproximada de 120 cm.\n- Semicolumna: una toma a una altura aproximada de 110 cm.\n- Microondas en mueble alto: toma a una altura aproximada de 155 cm.\n\n2.5. Electricidad \u2014 Campana extractora\n- Toma descentrada unos 7 cm respecto al eje, para que no interfiera con el tubo de extracci\u00f3n y quede dentro del embellecedor.\n- Altura aproximada de 185 cm.\n\n2.6. Electricidad \u2014 Iluminaci\u00f3n LED (opcional)\n- Si se desea iluminaci\u00f3n LED bajo los muebles altos o en el interior, debe preverse la instalaci\u00f3n el\u00e9ctrica correspondiente. Consultar con el electricista antes del montaje.\n\n\n3. CARACTER\u00cdSTICAS DEL MOBILIARIO\n\n3.1. Configuraci\u00f3n de muebles bajos\n- Configuraci\u00f3n est\u00e1ndar: patas de 15 cm + mueble de 70 cm.\n- Configuraci\u00f3n recomendada: patas de 10 cm + mueble de 80 cm (ofrece m\u00e1s espacio de almacenamiento y requiere menos z\u00f3calo).\n- La altura final de la encimera quedar\u00e1 entre 87 y 92 cm seg\u00fan la configuraci\u00f3n elegida.\n- En la configuraci\u00f3n de mueble de 80 cm + pata de 10 cm, la encimera no deber\u00e1 superar los 20 mm de grosor, para mantener una altura de trabajo correcta.\n- Para muebles con herraje tipo gola, la configuraci\u00f3n ser\u00e1 obligatoriamente de patas de 10 cm + mueble de 80 cm.\n\n3.2. Fondos \u00fatiles\n- Muebles altos: 33 cm.\n- Muebles bajos: 56 cm.\n- Muebles sobre frigor\u00edfico: aproximadamente 48 cm.\n- Columnas con horno: fondo especial de 48 cm para permitir la ventilaci\u00f3n del aparato. Se garantizar\u00e1 la ventilaci\u00f3n necesaria de cada electrodom\u00e9stico seg\u00fan sus requisitos.\n\n3.3. Herrajes y acabados\n- Cajones y gavetas con gu\u00edas de extracci\u00f3n total y cierre amortiguado (con freno), capacidad de carga hasta 35 kg.\n- Bisagras con cierre amortiguado (con freno) en todas las puertas.\n- Herrajes de calidad con regulaci\u00f3n en altura y profundidad.\n- Patas regulables que permiten nivelar el mueble en suelos irregulares.\n\n\n4. SUMINISTRO E INSTALACI\u00d3N DE ELECTRODOM\u00c9STICOS\n\n- Los electrodom\u00e9sticos suministrados por Muebles Carrascosa incluyen la instalaci\u00f3n sin coste adicional.\n- Si el cliente aporta sus propios electrodom\u00e9sticos, deber\u00e1 comunicarnos sus medidas antes de iniciar el proyecto, para fabricar los muebles correctamente. En este caso, la instalaci\u00f3n tendr\u00e1 un coste que depender\u00e1 de cada electrodom\u00e9stico.\n\n\n5. CONDICIONES DE MONTAJE\n\n- Los muebles altos se instalar\u00e1n a una altura de entre 140 y 150 cm desde el suelo (medida de la parte inferior del mueble), a elecci\u00f3n del cliente.\n- El montaje se realizar\u00e1 una vez las preinstalaciones est\u00e9n finalizadas y las paredes y el suelo en condiciones.\n- Las medidas definitivas se tomar\u00e1n a obra terminada, antes de fabricar.\n- Cualquier modificaci\u00f3n posterior a la aprobaci\u00f3n del presupuesto podr\u00e1 suponer un ajuste en el precio y los plazos.\n\n\n6. GARANT\u00cdA\n\nMobiliario y herrajes con garant\u00eda seg\u00fan fabricante. La garant\u00eda no cubre el uso indebido, golpes, humedad por filtraciones ajenas al mueble ni el desgaste normal.";
+  var TECNICO_DEFAULT = "INFORMACI\u00d3N T\u00c9CNICA DEL PROYECTO\n\nEste documento detalla las condiciones t\u00e9cnicas del proyecto: qu\u00e9 incluye el presupuesto, las preinstalaciones que debe preparar el cliente y las caracter\u00edsticas del mobiliario. Las medidas y alturas indicadas son orientativas y se miden desde el suelo.\n\n\n1. ALCANCE DEL PRESUPUESTO\n\nEl presupuesto cubre el suministro y montaje del mobiliario de cocina.\n\nNo se incluyen trabajos de alba\u00f1iler\u00eda, fontaner\u00eda, electricidad, gas, alicatado, solado, pintura ni desescombro, ni la modificaci\u00f3n de instalaciones existentes. En caso de ser necesarios, correr\u00e1n por cuenta del cliente o se presupuestar\u00e1n aparte.\n\n\n2. PREINSTALACIONES (a cargo del cliente)\n\nLas instalaciones deben estar terminadas y en las posiciones adecuadas antes de la fecha de montaje.\n\n2.1. Fontaner\u00eda\n- Tomas de agua fr\u00eda y caliente accesibles bajo el fregadero.\n- Desag\u00fces a una altura aproximada de 40-50 cm.\n- Toma de agua y desag\u00fce previstos para el lavavajillas.\n- Para sistema de \u00f3smosis o filtro de agua: prever toma de agua y desag\u00fce adicionales bajo el fregadero, y espacio para el equipo. Consultar antes del montaje.\n\n2.2. Electricidad \u2014 Tomas generales\n- Las tomas de corriente deben situarse a un m\u00ednimo de 50 cm del fregadero y de la placa de cocci\u00f3n (normativa REBT, ITC-BT-25).\n- Se recomienda un m\u00ednimo de 6 tomas en la cocina, con al menos 3-4 sobre la encimera para peque\u00f1os electrodom\u00e9sticos, distribuidas cada 60-80 cm.\n- Conviene prever alguna toma libre adicional para futuras necesidades.\n- Tomas sobre encimera a una altura aproximada de 110 cm (por encima del copete, para enchufar con comodidad).\n\n2.3. Electricidad \u2014 Electrodom\u00e9sticos (cada uno con toma independiente)\n- Frigor\u00edfico: toma a 40-50 cm, lo m\u00e1s cerca posible del aparato.\n- Horno: toma de 16A con toma de tierra, a 20-30 cm.\n- Placa de cocci\u00f3n: en inducci\u00f3n, toma/l\u00ednea de 25A seg\u00fan potencia. Para placas de gas, instalaci\u00f3n por instalador autorizado.\n- Lavavajillas: toma de 16A con toma de tierra, a 40-50 cm.\n- Lavadora (si va en cocina): toma de 16A, a 40-50 cm.\n\n2.4. Electricidad \u2014 Columnas y muebles en altura\n- Columna con horno y microondas: dos tomas (una por aparato) a una altura aproximada de 155 cm.\n- Columna con un solo electrodom\u00e9stico: una toma a una altura aproximada de 120 cm.\n- Semicolumna: una toma a una altura aproximada de 110 cm.\n- Microondas en mueble alto: toma a una altura aproximada de 155 cm.\n\n2.5. Electricidad \u2014 Campana extractora\n- Toma descentrada unos 7 cm respecto al eje, para que no interfiera con el tubo de extracci\u00f3n y quede dentro del embellecedor.\n- Altura aproximada de 185 cm.\n\n2.6. Electricidad \u2014 Iluminaci\u00f3n LED (opcional)\n- Si se desea iluminaci\u00f3n LED bajo los muebles altos o en el interior, debe preverse la instalaci\u00f3n el\u00e9ctrica correspondiente. Consultar con el electricista antes del montaje.\n\n\n3. CARACTER\u00cdSTICAS DEL MOBILIARIO\n\n3.1. Configuraci\u00f3n de muebles bajos\n- Configuraci\u00f3n est\u00e1ndar: patas de 15 cm + mueble de 70 cm.\n- Configuraci\u00f3n especial: patas de 10 cm + mueble de 80 cm, +10% sobre el precio base (ofrece m\u00e1s espacio de almacenamiento y requiere menos z\u00f3calo).\n- La altura final de la encimera quedar\u00e1 entre 87 y 92 cm seg\u00fan la configuraci\u00f3n elegida.\n- En la configuraci\u00f3n de mueble de 80 cm + pata de 10 cm, la encimera no deber\u00e1 superar los 20 mm de grosor, para mantener una altura de trabajo correcta.\n- Para muebles con herraje tipo gola, la configuraci\u00f3n ser\u00e1 obligatoriamente de patas de 10 cm + mueble de 80 cm.\n\n3.2. Fondos \u00fatiles\n- Muebles altos: 33 cm.\n- Muebles bajos: 56 cm.\n- Muebles sobre frigor\u00edfico: aproximadamente 48 cm.\n- Columnas con horno: fondo especial de 48 cm para permitir la ventilaci\u00f3n del aparato. Se garantizar\u00e1 la ventilaci\u00f3n necesaria de cada electrodom\u00e9stico seg\u00fan sus requisitos.\n\n3.3. Herrajes y acabados\n- Cajones y gavetas con gu\u00edas de extracci\u00f3n total y cierre amortiguado (con freno), capacidad de carga hasta 35 kg.\n- Bisagras con cierre amortiguado (con freno) en todas las puertas.\n- Herrajes de calidad con regulaci\u00f3n en altura y profundidad.\n- Patas regulables que permiten nivelar el mueble en suelos irregulares.\n\n\n4. SUMINISTRO E INSTALACI\u00d3N DE ELECTRODOM\u00c9STICOS\n\n- Los electrodom\u00e9sticos suministrados por Muebles Carrascosa incluyen la instalaci\u00f3n sin coste adicional.\n- Si el cliente aporta sus propios electrodom\u00e9sticos, deber\u00e1 comunicarnos sus medidas antes de iniciar el proyecto, para fabricar los muebles correctamente. En este caso, la instalaci\u00f3n tendr\u00e1 un coste que depender\u00e1 de cada electrodom\u00e9stico.\n\n\n5. CONDICIONES DE MONTAJE\n\n- Los muebles altos se instalar\u00e1n a una altura de entre 140 y 150 cm desde el suelo (medida de la parte inferior del mueble), a elecci\u00f3n del cliente.\n- El montaje se realizar\u00e1 una vez las preinstalaciones est\u00e9n finalizadas y las paredes y el suelo en condiciones.\n- Las medidas definitivas se tomar\u00e1n a obra terminada, antes de fabricar.\n- Cualquier modificaci\u00f3n posterior a la aprobaci\u00f3n del presupuesto podr\u00e1 suponer un ajuste en el precio y los plazos.\n\n\n6. GARANT\u00cdA\n\nMobiliario y herrajes con garant\u00eda seg\u00fan fabricante. La garant\u00eda no cubre el uso indebido, golpes, humedad por filtraciones ajenas al mueble ni el desgaste normal.";
 
   // --- PRESENTACIÓN (campo F-PRESENT, clave presentacion_base_v1) ---
   var presActual = localStorage.getItem('presentacion_base_v1');
@@ -7663,6 +7663,13 @@ function anadirArticuloRapido(gid, cat, art) {
   );
   if (!tecActual || esNuestroAntiguo) {
     localStorage.setItem('texto_base_v1', TECNICO_DEFAULT);
+  } else {
+    var _t2 = tecActual;
+    // "recomendada" \u2192 "especial"
+    if (_t2.indexOf('Configuraci\u00f3n recomendada') >= 0) _t2 = _t2.split('Configuraci\u00f3n recomendada').join('Configuraci\u00f3n especial');
+    // A\u00f1adir "+10% sobre el precio base" a la configuraci\u00f3n especial (si falta)
+    if (_t2.indexOf('mueble de 80 cm (ofrece') >= 0) _t2 = _t2.split('mueble de 80 cm (ofrece').join('mueble de 80 cm, +10% sobre el precio base (ofrece');
+    if (_t2 !== tecActual) localStorage.setItem('texto_base_v1', _t2);
   }
 })();
 
@@ -8691,6 +8698,135 @@ setTimeout(function(){ try{ _updProyectoBadge(); }catch(e){} }, 400);
 // Refrescar indicador tras Nuevo presupuesto
 var _nbV106 = newBudget;
 newBudget = function(){ _nbV106(); try{ _updProyectoBadge(); }catch(e){} };
+
+
+
+// ══════════════════════════════════════════════════════════
+// V112: electrodomésticos como CATÁLOGO GLOBAL (compartido presupuesto/catálogo)
+// ══════════════════════════════════════════════════════════
+var _saveElecG = save;
+save = function(){ _saveElecG(); try { localStorage.setItem('electro_lista_v1', JSON.stringify(ST.electro||[])); } catch(e){} };
+(function(){
+  try {
+    var s = localStorage.getItem('electro_lista_v1');
+    if (s) { var d = JSON.parse(s); if (Array.isArray(d) && d.length) { ST.electro = d; } }
+    else if (ST.electro && ST.electro.length) { localStorage.setItem('electro_lista_v1', JSON.stringify(ST.electro)); }
+  } catch(e){}
+})();
+
+
+
+// ══════════════════════════════════════════════════════════
+// V113: "Añadir varios" muebles de golpe (selección en bloque por tipo)
+// ══════════════════════════════════════════════════════════
+var _avGid = null, _avTipo = null, _avFiltro = '';
+
+function abrirAnadirVarios(gid) {
+  var g = ST.groups.find(function(x){ return x.id===gid; });
+  if (!g) return;
+  _avGid = gid; _avFiltro = '';
+  var cat = getCat(g);
+  var tipos = Object.keys(cat);
+  if (!tipos.length) { toast('No hay muebles en el cat\u00e1logo'); return; }
+  _avTipo = tipos.indexOf(_avTipo)>=0 ? _avTipo : tipos[0];
+  var m = document.getElementById('AV-MODAL');
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'AV-MODAL';
+    m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900;align-items:center;justify-content:center;padding:10px';
+    document.body.appendChild(m);
+  }
+  var opts = tipos.map(function(t){ return '<option value="'+eh(t)+'"'+(t===_avTipo?' selected':'')+'>'+eh(t)+'</option>'; }).join('');
+  m.innerHTML = '<div style="background:#fff;border-radius:12px;padding:14px;max-width:560px;width:100%;max-height:92vh;display:flex;flex-direction:column">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+    +'<h3 style="margin:0">\u2795 A\u00f1adir varios muebles</h3>'
+    +'<button class="btn bgh bsm" onclick="document.getElementById(\'AV-MODAL\').style.display=\'none\'">Cerrar</button></div>'
+    +'<div style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Elige el tipo y pon cantidades a los que necesites. Se a\u00f1aden todos de una vez.</div>'
+    +'<div style="display:flex;gap:7px;margin-bottom:8px;flex-wrap:wrap">'
+    +'<select id="AV-TIPO" onchange="avSetTipo(this.value)" style="flex:1;min-width:140px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;font-weight:600">'+opts+'</select>'
+    +'<input id="AV-FILTRO" placeholder="\ud83d\udd0d Filtrar modelo" oninput="avFiltrar(this.value)" style="flex:1;min-width:120px;padding:7px 9px;border:1px solid var(--line);border-radius:6px">'
+    +'</div>'
+    +'<div id="AV-LIST" style="overflow-y:auto;flex:1;border:1px solid var(--line);border-radius:8px;padding:4px"></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px">'
+    +'<span id="AV-COUNT" style="font-size:.85rem;color:var(--muted)">0 muebles</span>'
+    +'<button class="btn bp" onclick="avAplicar()">A\u00f1adir</button>'
+    +'</div></div>';
+  m.style.display = 'flex';
+  renderAnadirVarios();
+}
+
+function avSetTipo(t){ _avTipo = t; _avFiltro=''; var fi=document.getElementById('AV-FILTRO'); if(fi) fi.value=''; renderAnadirVarios(); }
+function avFiltrar(q){ _avFiltro = String(q||'').toUpperCase(); renderAnadirVarios(); }
+
+function renderAnadirVarios(){
+  var cont = document.getElementById('AV-LIST'); if (!cont) return;
+  var g = ST.groups.find(function(x){ return x.id===_avGid; }); if (!g) return;
+  var cat = getCat(g);
+  var modelos = cat[_avTipo] || {};
+  var lb = 'font-size:.7rem;color:var(--muted);margin-right:2px';
+  var inp = 'width:38px;text-align:center;padding:3px 2px;border:1px solid var(--line);border-radius:5px;font-size:.82rem';
+  var html = '';
+  Object.keys(modelos).forEach(function(mo){
+    if (_avFiltro && mo.toUpperCase().indexOf(_avFiltro) < 0) return;
+    var medidas = modelos[mo] || [];
+    var celdas = medidas.map(function(med){
+      var mm = (med==='\u2014'||med==='0') ? '' : med;
+      return '<span style="display:inline-flex;align-items:center;gap:3px;margin:0 8px 4px 0">'
+        +'<span style="'+lb+'">'+eh(mm||med)+'</span>'
+        +'<input type="number" min="0" max="99" value="0" data-mo="'+eh(mo)+'" data-med="'+eh(med)+'" oninput="avContar()" style="'+inp+'"></span>';
+    }).join('');
+    html += '<div style="padding:6px 6px;border-bottom:1px solid var(--line)">'
+      +'<div style="font-weight:600;font-size:.84rem;margin-bottom:3px">'+eh(mo)+'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;align-items:center">'+celdas+'</div></div>';
+  });
+  cont.innerHTML = html || '<p style="color:var(--muted);padding:12px;font-size:.83rem">Sin resultados.</p>';
+  avContar();
+}
+
+function avContar(){
+  var total = 0, refs = 0;
+  document.querySelectorAll('#AV-LIST input[type=number]').forEach(function(i){
+    var q = parseInt(i.value)||0; if (q>0){ total += q; refs++; }
+  });
+  var c = document.getElementById('AV-COUNT');
+  if (c) c.textContent = total + ' mueble'+(total===1?'':'s') + (refs? ' ('+refs+' referencia'+(refs===1?'':'s')+')':'');
+}
+
+function avAplicar(){
+  var g = ST.groups.find(function(x){ return x.id===_avGid; }); if (!g) return;
+  var añadidos = 0;
+  document.querySelectorAll('#AV-LIST input[type=number]').forEach(function(i){
+    var q = parseInt(i.value)||0; if (q<=0) return;
+    var mo = i.getAttribute('data-mo'), med = i.getAttribute('data-med');
+    g.lines.push({id:nid(), m:_avTipo, mo:mo, med:med, und:q, extras:[]});
+    añadidos++;
+  });
+  if (!añadidos) { toast('Pon alguna cantidad'); return; }
+  document.getElementById('AV-MODAL').style.display='none';
+  renderLines(_avGid); upBan();
+  toast(añadidos+' referencia'+(añadidos===1?'':'s')+' a\u00f1adida'+(añadidos===1?'':'s')+' \u2713');
+}
+
+// Inyectar el bot\u00f3n "A\u00f1adir varios" en cada grupo de muebles
+var _rgAVv113 = renderGroups;
+renderGroups = function(){
+  _rgAVv113();
+  ST.groups.forEach(function(g){
+    if (g.tipo !== 'muebles') return;
+    var body = document.getElementById('gb'+g.id);
+    if (!body || body.querySelector('.av-btn')) return;
+    var alr = body.querySelector('.alr');
+    if (!alr) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'av-btn';
+    wrap.style.cssText = 'margin:6px 0 2px';
+    wrap.innerHTML = '<button class="btn bgh bsm" onclick="abrirAnadirVarios('+g.id+')" style="font-size:.8rem">\u2795 A\u00f1adir varios de una vez</button>';
+    alr.parentNode.insertBefore(wrap, alr.nextSibling);
+  });
+};
+// Inyectar el bot\u00f3n tambi\u00e9n en el grupo inicial (el envoltorio se define tras el render de arranque)
+try { renderGroups(); } catch(e){}
+setTimeout(function(){ try { renderGroups(); } catch(e){} }, 400);
 
 </script>
 <footer class="np" style="text-align:center;padding:18px 12px 22px;font-size:.79rem;color:#8888aa">
