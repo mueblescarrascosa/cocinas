@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#1a1a2e">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a1a2e'/><text y='68' x='50' text-anchor='middle' font-size='58' font-family='Arial'>🪵</text></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cocinas Carrascosa</title>
+<title>Muebles Carrascosa</title>
 <style>
 /* Cursor mano en todo lo clicable */
 button, select, input[type=checkbox], input[type=radio], input[type=file],
@@ -84,7 +84,54 @@ select:disabled{background:var(--bg);color:var(--muted);cursor:not-allowed}
 .cmod{font-weight:500;flex:1 1 150px;min-width:0;word-break:break-word;overflow-wrap:anywhere}
 .cmed{color:var(--muted);flex:0 0 auto;margin-left:auto;white-space:nowrap;text-align:right}
 @media print{nav,.np,.toast,#SYNC-IND,#toast,#LOGIN-OVERLAY,#BACKUP-AVISO{display:none!important}body{background:#fff}.pg{display:block!important;padding:0;max-width:100%}#pp{display:block!important}#pb,#ps,#pc{display:none!important}.card{box-shadow:none;padding:0;margin-bottom:10px}}
-@page { margin: 1.5cm 1.2cm 1.8cm 1.2cm; }
+@page { size: A4; margin: 10mm 10mm 12mm 10mm; }
+/* Portada */
+.pfportada{position:relative;height:266mm;box-sizing:border-box;padding:14mm 16mm 12mm;display:flex;flex-direction:column;align-items:center;text-align:center;overflow:hidden;background:#fff;break-after:page;page-break-after:always}
+.pp-banda{position:absolute;left:0;right:0;overflow:hidden;z-index:0}
+.pp-banda.sup{top:0;height:62mm}.pp-banda.inf{bottom:0;height:40mm}
+.pp-marco{position:absolute;top:5mm;left:5mm;right:5mm;bottom:5mm;border:1px solid rgba(181,148,58,.5);z-index:1}
+.pp-esq{position:absolute;width:16mm;height:16mm;border:0 solid #b5943a;z-index:1}
+.pp-esq.a{top:2.5mm;left:2.5mm;border-top-width:2px;border-left-width:2px}
+.pp-esq.b{top:2.5mm;right:2.5mm;border-top-width:2px;border-right-width:2px}
+.pp-esq.c{bottom:2.5mm;left:2.5mm;border-bottom-width:2px;border-left-width:2px}
+.pp-esq.d{bottom:2.5mm;right:2.5mm;border-bottom-width:2px;border-right-width:2px}
+.pp-cab,.pp-centro,.pp-pie{position:relative;z-index:2;width:100%}
+.pp-cab{height:44mm;margin-top:4mm;display:flex;align-items:center;justify-content:center}
+.pp-cab img{max-height:34mm;max-width:110mm;object-fit:contain}
+.pp-emp{font-family:'DM Serif Display',serif;font-size:30px;color:#1a1a2e;letter-spacing:.5px}
+.pp-centro{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pp-raya{width:56px;height:2px;background:#c9a84a;margin:0 auto}
+.pp-tit{font-family:'DM Serif Display',serif;font-size:44px;line-height:1.1;color:#1a1a2e;letter-spacing:6px;margin:16px 0 4px}
+.pp-sub{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#b5943a;margin-bottom:18px}
+.pp-para{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#999;margin:26px 0 6px}
+.pp-cli{font-size:24px;font-weight:600;color:#1a1a2e;line-height:1.25;max-width:150mm;margin:0 auto}
+.pp-dir{font-size:13px;color:#777;margin-top:6px}
+.pp-datos{display:flex;justify-content:center;margin:30px auto 0;border-top:1px solid #e4dcc6;border-bottom:1px solid #e4dcc6}
+.pp-datos div{padding:10px 18px;font-size:12px;color:#555;line-height:1.5}
+.pp-datos div+div{border-left:1px solid #e4dcc6}
+.pp-datos span{display:block;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:#aaa}
+.pp-pie{font-size:11px;color:#888;line-height:1.75;padding-top:10px}
+.pp-pie strong{color:#1a1a2e;font-size:12px}
+/* Presentación */
+.pfpresent{break-after:page;page-break-after:always;padding:6mm 4mm 0}
+.pfpresent .ps-tit{font-family:'DM Serif Display',serif;font-size:22px;color:#1a1a2e;margin-bottom:6px}
+.pfpresent .ps-raya{width:56px;height:2px;background:#c9a84a;margin-bottom:18px}
+.pfpresent .ps-txt{font-size:.95rem;line-height:1.9;color:#333;text-align:justify}
+.pfpresent .ps-firma{margin-top:26px;font-family:'DM Serif Display',serif;font-size:1rem;color:#1a1a2e}
+/* Secciones */
+.pfsec{font-family:'DM Serif Display',serif;font-size:1.3rem;color:#1a1a2e;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #c9a84a}
+.pfcierre{break-inside:avoid;page-break-inside:avoid}
+.pfpago{margin-top:14px;padding:12px 14px;background:#f8f6f0;border-radius:8px;font-size:.84rem}
+.pfimg{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 0}
+.pfimg img{max-width:100%;max-height:225mm;object-fit:contain;border-radius:6px;display:block}
+@media print{
+  .pf{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pft{break-after:avoid;page-break-after:avoid}
+  .pfi tr,.pfsb,.pftots,.pfcond,.pfpago,.pftexto>div>div{break-inside:avoid;page-break-inside:avoid}
+  .pfi thead{display:table-header-group}
+  .pftexto,.pfimgs{break-before:page;page-break-before:always}
+  .pfimg+.pfimg{break-before:page;page-break-before:always}
+}
 .pf{background:#fff;max-width:780px;margin:0 auto;font-size:.83rem;line-height:1.5}
 .pfh{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px;padding-bottom:16px;border-bottom:3px solid var(--ink)}
 .pflogo img{max-height:185px;max-width:360px;object-fit:contain}
@@ -187,11 +234,38 @@ body.cliente-mode .cliente-badge { display: flex !important; }
   .gh .gac { flex-shrink: 0; }
 }
 
+/* v116: presupuesto enviado (bloqueado), grupos opcionales, PDF directo y móvil */
+body.bloq #GW .gb, body.bloq #GW .gac, body.bloq #GW .gni, body.bloq #F-TRANS, body.bloq #F-DIFICULTAD,
+body.bloq #IMGS button, body.bloq #IMGS input { pointer-events:none; }
+body.bloq #GW .gb { opacity:.72; }
+body.bloq #GW .gac, body.bloq #GW .opc-chk { display:none !important; }
+body.bloq button[onclick="openMod()"], body.bloq label:has(> input[onchange^="addImages"]) { display:none !important; }
+#ESTADO-AVISO { display:none; margin-bottom:12px; padding:10px 14px; border-radius:8px; font-size:.84rem; background:#eaf2fb; border:1px solid #b9d3ee; color:#1a4d7a; }
+body.bloq #ESTADO-AVISO { display:block; }
+.gc.gc-opc { border-style:dashed !important; }
+.opc-chk { display:inline-flex; align-items:center; gap:4px; font-size:.72rem; font-weight:600; color:#8a6d1e; white-space:nowrap; cursor:pointer; text-transform:none; letter-spacing:0; margin:0; }
+.opc-chk input { width:15px; height:15px; margin:0; }
+.gc-opc .gsb::after { content:' \00b7 opcional'; color:#8a6d1e; font-weight:400; }
+@media (max-width: 600px) {
+  .mtabs { flex-wrap:nowrap !important; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; }
+  .mtabs::-webkit-scrollbar { height:0; }
+  .mtabs .btn { flex:0 0 auto; font-size:13px !important; padding:6px 10px !important; min-height:34px; }
+  #CFG-INDICE .btn { font-size:13px !important; padding:6px 10px !important; min-height:34px; }
+  nav { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  nav::-webkit-scrollbar { height:0; }
+  nav .logo-name { display:none; }
+  #nclient { font-size:0 !important; padding:0 14px !important; flex:none; }
+  #nclient::before { content:'\1F441'; font-size:18px; }
+  .hrow { flex-wrap:wrap; }
+  .hrow > div:first-child { flex:1 1 100% !important; }
+  #pp > .np { flex-wrap:wrap; }
+  #HISTMOD .btn.bsm { padding:6px 8px !important; min-height:34px; font-size:13px !important; }
+}
 </style>
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name">Cocinas Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v115</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name">Muebles Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v119</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -305,6 +379,7 @@ body.cliente-mode .cliente-badge { display: flex !important; }
           <a onclick="guardarProyecto();closeMenus()">&#x1F4BE; Guardar proyecto</a><a onclick="saveBudgetFile();closeMenus()">&#x1F4BE; Guardar como archivo</a>
           <label style="display:block"><span>&#x1F4C2; Abrir desde archivo</span><input type="file" accept=".json" style="display:none" onchange="loadBudgetFile(event);closeMenus()"></label>
           <a onclick="openHistory();closeMenus()">&#x1F4C1; Proyectos guardados</a>
+          <a onclick="abrirCopiasNube();closeMenus()">&#x1F5C4; Copias autom&#225;ticas (nube)</a>
           <a onclick="subirTodoALaNube();closeMenus()" style="border-top:1px solid #eee">&#x2601;&#xFE0F; Subir mis datos a la nube</a>
           <a onclick="bajarTodoDeLaNube();closeMenus()">&#x2601;&#xFE0F; Bajar datos de la nube</a>
           <a onclick="supaLogout()" style="border-top:1px solid #eee;color:#c0392b">&#x1F511; Cerrar sesi&#xF3;n</a>
@@ -324,6 +399,7 @@ body.cliente-mode .cliente-badge { display: flex !important; }
       <div><lbl>Fecha</lbl><input type="text" id="FF"></div><div style="width:130px"><lbl>IVA</lbl><select id="F-IVA" onchange="upBan()"><option value="21">21%</option><option value="10">10% (reforma)</option></select></div><div style="display:flex;align-items:center;gap:5px;margin-left:4px"><input type="checkbox" id="F-ELECTRO-IVA" style="width:16px;height:16px" onchange="upBan()"><label for="F-ELECTRO-IVA" style="font-size:.78rem;cursor:pointer">Electrodom&#233;sticos aparte (precio con IVA)</label></div><div style="width:110px"><lbl>Validez (d&#237;as)</lbl><input type="number" id="F-VALIDEZ" value="30" min="1" step="5"></div>
       <div style="width:150px"><lbl>Entrega estimada</lbl><input type="text" id="F-PLAZO" placeholder="4-6 semanas"></div>
       <div style="width:110px"><lbl>Se&#241;al (%)</lbl><input type="number" id="F-SENAL" value="40" min="0" max="100" step="5" onchange="upBan()"></div>
+      <div style="width:150px"><lbl>Estado</lbl><select id="F-ESTADO" onchange="cambiarEstado(this.value)"><option value="borrador">Borrador</option><option value="enviado">Enviado</option><option value="aceptado">Aceptado</option><option value="rechazado">Rechazado</option></select></div>
     </div>
     <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
       <input type="checkbox" id="PDF-DETALLE" style="width:16px;height:16px;cursor:pointer">
@@ -456,14 +532,16 @@ body.cliente-mode .cliente-badge { display: flex !important; }
 
 <div class="pg" id="pp">
   <div class="np" style="display:flex;gap:9px;margin-bottom:20px">
-    <button class="btn bp" onclick="window.print()">&#x1F5A8; Imprimir / PDF</button>
+    <button class="btn bp" onclick="descargarPdf()">&#x2B07; Descargar PDF</button>
+    <button class="btn bgold" onclick="compartirPdf()">&#x1F4E4; Enviar PDF</button>
+    <button class="btn bgh" onclick="window.print()">&#x1F5A8; Imprimir</button>
     <button class="btn bgh" onclick="go('b')">&#x2190; Volver</button>
   </div>
   <div class="pf" id="PF"></div>
 </div>
 
 <script>
-// Cocinas Carrascosa · Presupuestador · v115
+// Muebles Carrascosa · Presupuestador · v119
 // Estructura: datos y estado → funciones por área → arranque (al final del archivo).
 // Cada función está definida UNA sola vez. Para cambiar algo, edítalo en su sitio.
 
@@ -545,6 +623,43 @@ var TESELACIONES_PORTADA = '<div style="position:absolute;top:0;left:0;right:0;b
   + '<polygon points="595,842 500,842 595,747" fill="#2d6a4f" opacity="0.06"/>'
   + '</svg>'
   + '</div>';
+// Banda decorativa (arriba y abajo de la portada): teselas suaves en dorado y verde
+function _pp_banda(cls) {
+  return '<div class="pp-banda '+cls+'"><svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="display:block">'
+    + '<defs><pattern id="pp_t_'+cls+'" width="48" height="83" patternUnits="userSpaceOnUse">'
+    + '<polygon points="24,0 48,14 48,42 24,55 0,42 0,14" fill="none" stroke="#b5943a" stroke-width="0.7" opacity="0.30"/>'
+    + '<polygon points="24,42 48,55 48,83 24,97 0,83 0,55" fill="none" stroke="#2d6a4f" stroke-width="0.7" opacity="0.22"/>'
+    + '</pattern><linearGradient id="pp_g_'+cls+'" x1="0" y1="'+(cls==='sup'?'0':'1')+'" x2="0" y2="'+(cls==='sup'?'1':'0')+'">'
+    + '<stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="1"/></linearGradient></defs>'
+    + '<rect width="100%" height="100%" fill="url(#pp_t_'+cls+')"/><rect width="100%" height="100%" fill="url(#pp_g_'+cls+')"/>'
+    + '</svg></div>';
+}
+function _htmlPortada(c, cli, dir, num, fecha, validezTxt) {
+  var datos = '<div><span>N\u00ba presupuesto</span>'+(ST.curNum ? numFormatted() : num)+'</div>'
+    + (fecha ? '<div><span>Fecha</span>'+eh(fecha)+'</div>' : '')
+    + (validezTxt ? '<div><span>V\u00e1lido hasta</span>'+validezTxt+'</div>' : '');
+  var contacto = [c.tel ? 'Tel. '+eh(c.tel) : '', c.email ? eh(c.email) : '', c.web ? eh(c.web) : ''].filter(Boolean).join(' &nbsp;\u00b7&nbsp; ');
+  return '<div class="pfportada">'
+    + _pp_banda('sup') + _pp_banda('inf')
+    + '<div class="pp-marco"></div><div class="pp-esq a"></div><div class="pp-esq b"></div><div class="pp-esq c"></div><div class="pp-esq d"></div>'
+    + '<div class="pp-cab">' + (ST.logo ? '<img src="'+ST.logo+'">' : '<div class="pp-emp">'+eh(c.emp || 'Tu Empresa')+'</div>') + '</div>'
+    + '<div class="pp-centro">'
+    +   '<div class="pp-raya"></div>'
+    +   '<div class="pp-tit">PRESUPUESTO</div>'
+    +   '<div class="pp-sub">Mobiliario de cocina</div>'
+    +   '<div class="pp-raya"></div>'
+    +   '<div class="pp-para">Preparado para</div>'
+    +   '<div class="pp-cli">'+eh(cli || '\u2014')+'</div>'
+    +   (dir ? '<div class="pp-dir">'+eh(dir)+'</div>' : '')
+    +   '<div class="pp-datos">'+datos+'</div>'
+    + '</div>'
+    + '<div class="pp-pie">'
+    +   (c.emp ? '<strong>'+eh(c.emp)+'</strong><br>' : '')
+    +   (contacto ? contacto + '<br>' : '')
+    +   [c.dir ? eh(c.dir) : '', c.cif ? 'CIF '+eh(c.cif) : ''].filter(Boolean).join(' &nbsp;\u00b7&nbsp; ')
+    + '</div>'
+    + '</div>';
+}
 var CALS=['ECONÓMICO','BÁSICO','ENTRADA','DM-LACA MEDIO','DM-LACA ALTO','DM-LACA PREMIUM','ALTO GAMA','EXCLUSIVO'];
 var GCOLS=['#2d6a4f','#1a6691','#7b3fa0','#b5943a','#c0392b','#16a085','#6c4a1f','#2c3e50'];
 var CAT0={
@@ -653,6 +768,7 @@ function go(id) {
   _goBase(id);
   _goPasoConfig(id);
   _goPasoCatalogo(id);
+  if (id === 'p') setTimeout(_ajustarVistaPrevia, 0);
 }
 function _goBase(id) {
   document.querySelectorAll('.pg').forEach(function(v){v.classList.remove('on');});
@@ -662,8 +778,21 @@ function _goBase(id) {
   if(id==='c') renderCat();
   if(id==='s') renderSettings();
 }
+function _ajustarVistaPrevia() {
+  var pf = document.getElementById('PF'); if (!pf) return;
+  pf.style.zoom = ''; pf.style.width = ''; pf.style.maxWidth = '';
+  if (window.innerWidth < 760 && pf.parentNode) {
+    var cs = getComputedStyle(pf.parentNode);
+    var ancho = (pf.parentNode.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)) || window.innerWidth - 32;
+    pf.style.width = '718px'; pf.style.maxWidth = 'none';
+    pf.style.zoom = Math.min(1, ancho / 718);
+  }
+}
+window.addEventListener('resize', function(){ if (document.getElementById('pp').classList.contains('on')) _ajustarVistaPrevia(); });
+window.addEventListener('beforeprint', function(){ var pf = document.getElementById('PF'); if (pf) { pf.style.zoom = ''; pf.style.width = ''; pf.style.maxWidth = ''; } });
+window.addEventListener('afterprint', _ajustarVistaPrevia);
 function _goPasoConfig(p) {
-  if (p === 's') setTimeout(initCollapsibles, 30);
+  if (p === 's') setTimeout(function(){ initCollapsibles(); _indiceConfig(); }, 30);
 }
 function _goPasoCatalogo(p) {
   if (p === 'c') setTimeout(function(){ initCatExplorer(); searchCatalogo(''); }, 30);
@@ -1013,6 +1142,52 @@ function _budgetId(d) {
   return fg ? 'hb_' + fg : 'hb_x' + Math.abs((JSON.stringify(d||{})).length);
 }
 
+// ── Presupuestos borrados ─────────────────────────────────────────────
+// Se apunta cada presupuesto borrado (aquí y en la nube, fila 'historial_borrados').
+// Así ninguna carga del historial que estuviera en marcha, ninguna subida que llegue
+// tarde ni otro dispositivo con una copia antigua puede volver a traerlo.
+var CLAVE_BORRADOS = 'historial_borrados';
+var _histGen = 0;   // sube cada vez que se guarda el historial en este dispositivo
+// Cada borrado es {id, t}: el presupuesto queda oculto si se borró DESPUÉS de su último guardado.
+// (Si luego se vuelve a guardar a propósito, su fecha es posterior y reaparece.)
+function _leerBorrados() {
+  try { var l = JSON.parse(localStorage.getItem(CLAVE_BORRADOS) || '[]'); return Array.isArray(l) ? l.filter(function(e){ return e && e.id; }) : []; } catch(e) { return []; }
+}
+function _guardarBorrados(l) { l = l.slice(-500); try { localStorage.setItem(CLAVE_BORRADOS, JSON.stringify(l)); } catch(e){} return l; }
+function _estaBorrado(d, l) {
+  if (!d) return true;
+  var id = _budgetId(d), f = String(d.fecha_guardado || '');
+  return (l || _leerBorrados()).some(function(e){ return e.id === id && String(e.t) >= f; });
+}
+function _sinBorrados(h) { var l = _leerBorrados(); return (h || []).filter(function(d){ return d && !_estaBorrado(d, l); }); }
+function _unirBorrados(nube) {
+  var porId = {};
+  _leerBorrados().concat(Array.isArray(nube) ? nube : []).forEach(function(e){
+    if (e && e.id && (!porId[e.id] || String(e.t) > String(porId[e.id].t))) porId[e.id] = { id: e.id, t: String(e.t) };
+  });
+  var l = Object.keys(porId).map(function(k){ return porId[k]; });
+  l.sort(function(a, b){ return a.t.localeCompare(b.t); });
+  return _guardarBorrados(l);
+}
+var _colaBorrados = Promise.resolve();
+function _sincronizarBorrados() {
+  // en cola: nunca dos lecturas/escrituras de la lista a la vez
+  _colaBorrados = _colaBorrados.then(async function(){
+    if (!haySesion()) return;
+    var nube = await supaLeerClave(CLAVE_BORRADOS);
+    if (nube === undefined) return;          // sin conexión: se reintenta en la próxima carga
+    var l = _unirBorrados(nube);
+    if (JSON.stringify(nube || []) !== JSON.stringify(l)) await supaGuardarClave(CLAVE_BORRADOS, JSON.stringify(l));
+  }).catch(function(){});
+  return _colaBorrados;
+}
+function _marcarBorrado(id) {
+  var l = _leerBorrados().filter(function(e){ return e.id !== id; });
+  l.push({ id: id, t: new Date().toISOString() });
+  _guardarBorrados(l);
+  _sincronizarBorrados();
+}
+
 // borrar una fila concreta de la nube
 async function supaBorrarClave(clave) {
   try {
@@ -1036,6 +1211,8 @@ async function supaLeerPresupuestosFila() {
 async function supaCargarHistorial() {
   try {
     _mostrarEstadoSync('cargando', '☁ Sincronizando...');
+    var gen0 = _histGen;
+    await _sincronizarBorrados();
     var resp = await fetch(SUPA_URL + '/rest/v1/presupuestos?clave=eq.historial_v1&select=datos', {
       headers: _supaHeaders()
     });
@@ -1061,12 +1238,32 @@ async function supaCargarHistorial() {
       merged = Object.keys(porId).map(function(k){ return porId[k]; });
       merged.sort(function(a,b){ return String(b.fecha_guardado||'').localeCompare(String(a.fecha_guardado||'')); });
     }
+    // Si mientras se descargaba se guardó algo aquí, no perderlo
+    if (_histGen !== gen0 && Array.isArray(_histCache)) {
+      var porId2 = {};
+      merged.forEach(function(d){ if (d) porId2[_budgetId(d)] = d; });
+      _histCache.forEach(function(d){
+        if (!d) return;
+        var id = _budgetId(d), ex = porId2[id];
+        if (!ex || String(d.fecha_guardado||'') >= String(ex.fecha_guardado||'')) porId2[id] = d;
+      });
+      merged = Object.keys(porId2).map(function(k){ return porId2[k]; });
+      merged.sort(function(a,b){ return String(b.fecha_guardado||'').localeCompare(String(a.fecha_guardado||'')); });
+    }
+    // Fuera los borrados (lista leída ahora, por si se borró algo durante la descarga)
+    var borr = _leerBorrados();
+    var baseConBorrados = base.some(function(d){ return d && _estaBorrado(d, borr); });
+    merged = merged.filter(function(d){ return d && !_estaBorrado(d, borr); });
+    if (Array.isArray(filasInd)) filasInd.forEach(function(d){
+      if (d && _estaBorrado(d, borr)) { try { supaBorrarClave(_budgetId(d)); } catch(e){} }   // limpiar filas que quedaron
+    });
     _histCache = merged;
+    if (baseConBorrados) supaGuardarHistorial(merged);
     try { localStorage.setItem('historial_v1', JSON.stringify(merged)); } catch(e){}
     // V92: migrar a filas los presupuestos que aún no la tengan (idempotente, ids deterministas)
     if (typeof supaGuardarClave === 'function' && Array.isArray(filasInd)) {
       var yaFila = {}; filasInd.forEach(function(d){ if(d) yaFila[_budgetId(d)] = true; });
-      merged.forEach(function(d){ if (d && !yaFila[_budgetId(d)]) { try { supaGuardarClave(_budgetId(d), JSON.stringify(d)); } catch(e){} } });
+      merged.forEach(function(d){ if (d && !yaFila[_budgetId(d)] && !_estaBorrado(d)) { try { supaGuardarClave(_budgetId(d), JSON.stringify(d)); } catch(e){} } });
     }
     _mostrarEstadoSync('ok', '☁ Sincronizado ✓');
     return merged;
@@ -1080,6 +1277,8 @@ async function supaCargarHistorial() {
 
 // GUARDAR el historial en Supabase
 async function supaGuardarHistorial(h) {
+  _histGen++;
+  h = _sinBorrados(h);
   // Siempre guardar en local primero (respaldo inmediato)
   try { localStorage.setItem('historial_v1', JSON.stringify(h)); } catch(e){}
   _histCache = h;
@@ -1233,9 +1432,9 @@ function gsub(g) {
 
 // Total de todos los grupos, ya con los descuentos por grupo (sin transporte ni instalación)
 function grandT() {
-  var t = ST.groups.reduce(function(s,g){ return s+gsub(g); }, 0);
+  var t = ST.groups.reduce(function(s,g){ return g.opcional ? s : s+gsub(g); }, 0);
   ST.groups.forEach(function(g){
-    if (!g.desc || g.desc <= 0) return;
+    if (g.opcional || !g.desc || g.desc <= 0) return;
     var sub = 0;
     g.lines.forEach(function(l){ sub += lineTotal(l, g); });
     t -= descuentoGrupo(g, sub);
@@ -1245,6 +1444,7 @@ function grandT() {
 
 // Total de una línea del presupuesto (PVP × unidades), según el tipo de grupo.
 function lineTotal(l, g) {
+  if (_congelado() && l && l.fzT != null) return l.fzT;   // presupuesto enviado: precio congelado
   // Precio manual de la línea: manda sobre el calculado
   if (l && l.pmanual != null && l.pmanual !== '' && !isNaN(parseFloat(l.pmanual))) {
     var bm = parseFloat(l.pmanual) * (l.und || 1);
@@ -1369,6 +1569,7 @@ function _rawCostFrente(l, g) {
 
 // Precio unitario de venta de una línea, con el ajuste del grupo según su alcance
 function unitPVP(l, g) {
+  if (_congelado() && l && l.fzU !== undefined) return l.fzU;
   if (g && g.tipo === 'electro') {
     var e = _findElectro(l);
     return e ? Math.round((pvpElectro(e.coste) + (e.inst||0)) * 100) / 100 : null;
@@ -1462,6 +1663,7 @@ function extraEffectivePrice(ex, nombre) {
 
 // Instalación: metros lineales por categoría + costados/regletas por unidad (+ plus dificultad)
 function getInstalacion() {
+  if (_congelado() && ST.fzInst != null) return ST.fzInst;
   var ml = computeML();
   var base = 0;
   ML_CATS.forEach(function(c){ base += ml[c.key] * (ST.params[c.key]||0); });
@@ -1475,7 +1677,7 @@ function getInstalacion() {
 function computeML() {
   var ml = {ml_bajos:0, ml_altos:0, ml_col:0, ml_sobre:0};
   ST.groups.forEach(function(g){
-    if (g.tipo !== 'muebles') return;
+    if (g.tipo !== 'muebles' || g.opcional) return;
     g.lines.forEach(function(l){
       var cm = parseFloat(l.med)||0;
       if (cm <= 0) return;
@@ -1605,7 +1807,7 @@ function pvpE(c) { return _aplicaMargen(c, ST.params.margen_extras); }
 function countUnits(tipo) {
   var n = 0;
   ST.groups.forEach(function(g){
-    if (g.tipo !== tipo) return;
+    if (g.tipo !== tipo || g.opcional) return;
     g.lines.forEach(function(l){ n += l.und; });
   });
   return n;
@@ -1645,6 +1847,7 @@ function rawFromPvpE(p) {
 
 // Extras de línea con ajuste según alcance
 function extraPVP(ex, g) {
+  if (_congelado() && ex && ex.fzP != null) return ex.fzP;
   var f = adjF(g) - 1;
   if (!f) return ex.p;
   var scope = g.adjScope || 'todo';
@@ -1665,6 +1868,7 @@ function hasFreespace(nombre) {
 
 // Calcular incremento de casco+frente×2 para FREEFOLD
 function freefoldCascoFrenteExtra(l, g) {
+  if (_congelado() && l && l.fzFF != null) return l.fzFF;
   var ci = CALS.indexOf(g.cal);
   if (ci < 0) return 0;
   var bd = calcBreakdown(l.m+' '+l.mo+' '+l.med, ci);
@@ -2053,7 +2257,12 @@ function newBudget() {
     ST.images = [];
     renderImages();
   }
-  if (!totalL()) ST.curNum = null;  // presupuesto nuevo → número nuevo
+  if (!totalL()) {   // presupuesto nuevo → número nuevo, borrador y sin precios congelados
+    ST.curNum = null;
+    ST.estado = 'borrador'; ST.fechaEnvio = null; ST.fechaAceptado = null; ST.opcionDe = null;
+    ST.bloqueado = false; ST.fzInst = null;
+    _aplicarEstadoUI();
+  }
 
   if (!totalL()) {
     var fi = document.getElementById('F-IVA'); if (fi) fi.value = '21';
@@ -2090,6 +2299,7 @@ function renderGroups() {
   _rgPasoBuscadorExtras();
   _rgPasoModeloFrente();
   _rgPasoAnadirVarios();
+  _rgPasoOpcional();
 }
 function _renderGroupsBase() {
   var wrap=document.getElementById('GW'); wrap.innerHTML='';
@@ -2747,7 +2957,7 @@ function addImages(e) {
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         ST.images.push({id: nid(), data: canvas.toDataURL('image/jpeg', 0.85), name: f.name});
         pending--;
-        if (pending === 0) { renderImages(); toast(files.length+' imagen'+(files.length>1?'es':'')+' a\u00f1adida'+(files.length>1?'s':'')+' \u2713'); }
+        if (pending === 0) { renderImages(); subirImagenesPendientes(); toast(files.length+' imagen'+(files.length>1?'es':'')+' a\u00f1adida'+(files.length>1?'s':'')+' \u2713'); }
       };
       img.src = ev.target.result;
     };
@@ -2769,7 +2979,8 @@ function renderImages() {
   }
   el.innerHTML = ST.images.map(function(im) {
     return '<div style="position:relative;width:140px">'
-      +'<img src="'+im.data+'" style="width:140px;height:100px;object-fit:cover;border-radius:7px;border:1.5px solid var(--line)">'
+      +(im.data ? '<img src="'+im.data+'" style="width:140px;height:100px;object-fit:cover;border-radius:7px;border:1.5px solid var(--line)">'
+        : '<div style="width:140px;height:100px;border-radius:7px;border:1.5px dashed var(--line);display:flex;align-items:center;justify-content:center;font-size:.72rem;color:var(--muted)">'+(im.error?'Sin conexi\u00f3n':'Cargando\u2026')+'</div>')
       +'<button class="btn bdr bsm" style="position:absolute;top:4px;right:4px;padding:2px 7px" onclick="removeImage('+im.id+')">&#x2715;</button>'
       +'<div style="font-size:.7rem;color:var(--muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+eh(im.name)+'</div>'
       +'<input type="text" placeholder="Pie de foto (opcional)" value="'+eh(im.pie||'')+'" oninput="setImagePie('+im.id+',this.value)" style="width:140px;font-size:.72rem;padding:4px 6px;margin-top:4px;border:1px solid var(--line);border-radius:5px">'
@@ -3178,6 +3389,8 @@ function _maxNumHistorial() {
 // ══════════════════════════════════════════════════════════════════════
 // PDF para el cliente
 function showPDF() {
+  if (_imagenesPendientes()) { toast('Cargando fotos\u2026'); cargarImagenesNube().then(showPDF); return; }
+  _pfTipo = 'cliente';
   var pnumAntes = ST.pnum;
   var nuevo = totalL() ? _asignarNumero() : false;
   if (_checkPartidas()) {
@@ -3204,14 +3417,15 @@ function _pdfGenerar() {
   // (la instalación por ml es de montar la cocina, no de extras/electro/libre).
   var grandMuebles = 0;
   ST.groups.forEach(function(g){
-    if (g.tipo==='extras' || g.tipo==='electro' || g.tipo==='libre' || g.tipo==='frentes') return;
+    if (g.tipo==='extras' || g.tipo==='electro' || g.tipo==='libre' || g.tipo==='frentes' || g.opcional) return;
     g.lines.forEach(function(l){ grandMuebles += lineTotal(l,g); });
   });
   var factor = (grandMuebles > 0 && extra > 0) ? (grandMuebles + extra) / grandMuebles : 1;
-  function fx(v){ return Math.round(v*factor*100)/100; }
+  function _fxTotal(v){ return Math.round(v*factor*100)/100; }
+  var fx = _fxTotal;
   // fx solo para muebles; el resto sin tocar
   function fxG(v, g){ 
-    if (g && (g.tipo==='extras'||g.tipo==='electro'||g.tipo==='libre'||g.tipo==='frentes')) return Math.round(v*100)/100;
+    if (g && (g.tipo==='extras'||g.tipo==='electro'||g.tipo==='libre'||g.tipo==='frentes'||g.opcional)) return Math.round(v*100)/100;
     return fx(v);
   }
 
@@ -3233,6 +3447,8 @@ function _pdfGenerar() {
     var _esElec = _elecAp && (g.tipo==='electro');
     var _det2 = detalle || _esElec;
     var _mul = _esElec ? (1 + _ivaG/100) : 1;
+    var _opc = !!g.opcional;
+    var fx = _opc ? function(v){ return Math.round(v*100)/100; } : _fxTotal;   // los opcionales no llevan reparto de instalación
     var rows=g.lines.map(function(l,i){
       var p=unitPVP(l,g);
       var lt=fxG(lineTotal(l,g), g);
@@ -3263,10 +3479,11 @@ function _pdfGenerar() {
         +'</tr>'+extRows;
     }).join('');
     var _neto = sub - descuentoGrupo(g, subRaw);  // V114: el descuento no se aplica a la instalación
-    if (_esElec) electroCI += _neto * _mul; else totalShown += _neto;
+    if (_opc) {} else if (_esElec) electroCI += _neto * _mul; else totalShown += _neto;
     return '<div class="pft" style="border-bottom-color:'+col+'">'
       +'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+col+';margin-right:6px;vertical-align:middle"></span>'
-      +eh(g.name)+' <span style="font-size:.77rem;color:#888;margin-left:4px">'+ti.label+' \u00b7 '+g.cal+'</span></div>'
+      +eh(g.name)+' <span style="font-size:.77rem;color:#888;margin-left:4px">'+ti.label+' \u00b7 '+g.cal+'</span>'
+      +(_opc?' <span style="font-size:.72rem;color:#8a6d1e;background:#fbf3dc;border:1px solid #e3cf95;border-radius:9px;padding:1px 8px;margin-left:6px">OPCIONAL \u00b7 no incluido en el total</span>':'')+'</div>'
       +'<table class="pfi"><thead><tr><th style="width:28px">#</th><th>Elemento</th><th>Modelo</th>'
       +'<th style="width:78px;text-align:center">Med.</th><th style="width:40px;text-align:center">Ud.</th>'
       +(_det2
@@ -3293,7 +3510,7 @@ function _pdfGenerar() {
   (function(){
     var exacto = grandT() + extra;
     if (_elecAp) ST.groups.forEach(function(g){
-      if (g.tipo !== 'electro' || !g.lines.length) return;
+      if (g.tipo !== 'electro' || !g.lines.length || g.opcional) return;
       var st = 0; g.lines.forEach(function(l){ st += lineTotal(l,g); });
       exacto -= st - descuentoGrupo(g, st);
     });
@@ -3304,27 +3521,7 @@ function _pdfGenerar() {
   var _apT = (typeof _elecAp!=='undefined' && _elecAp && electroCI>0);
   document.getElementById('PF').innerHTML=
     // ═══ PORTADA (primera página) ═══
-    '<div class="pfportada" style="position:relative;page-break-after:always;break-after:page;min-height:240mm;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:20px 30px;text-align:center;box-sizing:border-box;overflow:hidden">'+TESELACIONES_PORTADA
-    +'<div style="width:100%">'
-    +(ST.logo?'<img src="'+ST.logo+'" style="max-height:300px;max-width:560px;object-fit:contain;margin-top:18px;margin-bottom:10px">':'<div style="font-family:\'DM Serif Display\',serif;font-size:2rem;color:#1a1a2e">'+eh(c.emp||'Tu Empresa')+'</div>')
-    +'</div>'
-    +'<div style="width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px">'
-    +'<div style="width:60px;height:3px;background:#c9a84a"></div>'
-    +'<h1 style="font-family:\'DM Serif Display\',serif;font-size:2.8rem;color:#1a1a2e;margin:0;letter-spacing:1px">PRESUPUESTO</h1>'
-    +'<div style="font-size:1.05rem;color:#555;line-height:2">'
-    +'<div style="font-size:.78rem;color:#999;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px">Preparado para</div>'
-    +'<div style="font-size:1.4rem;color:#1a1a2e;font-weight:600">'+eh(cli||'\u2014')+'</div>'
-    +(dir?'<div style="font-size:.92rem;color:#777">'+eh(dir)+'</div>':'')
-    +'</div>'
-    +'<div style="width:60px;height:3px;background:#c9a84a"></div>'
-    +'<div style="font-size:.92rem;color:#777">N\u00ba '+num+' \u00b7 '+fecha+'</div>'
-    +'</div>'
-    +'<div style="width:100%;font-size:.82rem;color:#999;line-height:1.7">'
-    +(c.emp?'<strong style="color:#1a1a2e">'+eh(c.emp)+'</strong> \u00b7 ':'')
-    +(c.tel?'Tel: '+eh(c.tel)+' \u00b7 ':'')+(c.email?eh(c.email):'')
-    +(c.web?'<br>'+eh(c.web):'')
-    +'</div>'
-    +'</div>'
+    _htmlPortada(c, cli, dir, num, fecha, validezTxt)
     // ═══ FIN PORTADA ═══
     +'<div class="pfh"><div><div class="pflogo">'+logoH+'</div><div class="pfe">'
     +(c.emp?'<strong>'+eh(c.emp)+'</strong><br>':'')+(c.cif?'CIF: '+eh(c.cif)+'<br>':'')
@@ -3337,7 +3534,7 @@ function _pdfGenerar() {
     +'<div><div class="cll">Tel\u00e9fono</div><div class="clv">'+eh(tel)+'</div></div>'
     +'<div><div class="cll">Fecha</div><div class="clv">'+fecha+'</div></div></div>'
     +gh
-    +'<div class="pftots"><table>'
+    +'<div class="pfcierre"><div class="pftots"><table>'
     +(_apT
       ? '<tr><td>Mobiliario (sin IVA)</td><td style="text-align:right">'+totalShown.toFixed(2)+' \u20ac</td></tr>'
         +'<tr><td>IVA '+ivaPct+'%</td><td style="text-align:right">'+iva.toFixed(2)+' \u20ac</td></tr>'
@@ -3347,16 +3544,19 @@ function _pdfGenerar() {
         +'<tr><td>IVA '+ivaPct+'%</td><td style="text-align:right">'+iva.toFixed(2)+' \u20ac</td></tr>'
         +'<tr class="tf"><td>TOTAL con IVA</td><td style="text-align:right">'+(totalShown+iva).toFixed(2)+' \u20ac</td></tr>')
     +'</table></div>'
+    +'<div class="pfpago-slot"></div>'
     +(condTxt?'<div class="pfcond"><h4>Condiciones</h4>'+eh(condTxt).replace(/\n/g,'<br>')+'</div>':'')
-    +(textoExp?'<div class="pftexto" style="page-break-before:always;break-before:page;padding-top:20px"><div style="font-family:\'DM Serif Display\',serif;font-size:1.3rem;color:#1a1a2e;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #c9a84a">Informaci\u00f3n del proyecto</div><div style="font-size:.9rem;line-height:1.8;color:#333;text-align:justify">'+formatearTextoTecnico(textoExp)+'</div></div>':'');
+    +'</div>'
+    +(textoExp?'<div class="pftexto" style="page-break-before:always;break-before:page;padding-top:6mm"><div class="pfsec">Informaci\u00f3n del proyecto</div><div style="font-size:.9rem;line-height:1.8;color:#333;text-align:justify">'+formatearTextoTecnico(textoExp)+'</div></div>':'');
 
-  if (ST.images.length) {
+  var _imgsPdf = ST.images.filter(function(im){ return im.data; });
+  if (_imgsPdf.length) {
     var pf = document.getElementById('PF');
-    var imgsHtml = '<div style="page-break-before:always;padding-top:10px">'
-      +'<div style="font-family:\'DM Serif Display\',serif;font-size:1.1rem;color:var(--ink);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--ink)">Dise\u00f1o del proyecto</div>';
-    ST.images.forEach(function(im, idx) {
-      imgsHtml += '<div style="page-break-inside:avoid;break-inside:avoid;'+(idx>0?'page-break-before:always;':'')+'display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 0">'
-        +'<img src="'+im.data+'" style="max-width:100%;max-height:215mm;object-fit:contain;border-radius:6px;display:block">'+(im.pie?'<div style="font-size:.85rem;color:#555;font-style:italic;text-align:center;margin-top:8px;max-width:90%">'+eh(im.pie)+'</div>':'')
+    var imgsHtml = '<div class="pfimgs" style="page-break-before:always;break-before:page;padding-top:6mm">';
+    _imgsPdf.forEach(function(im, idx) {
+      imgsHtml += '<div class="pfimg"'+(idx>0?' style="page-break-before:always;break-before:page;padding-top:6mm"':'')+'>'
+        +(idx===0?'<div class="pfsec" style="width:100%">Dise\u00f1o del proyecto</div>':'')
+        +'<img src="'+im.data+'">'+(im.pie?'<div style="font-size:.85rem;color:#555;font-style:italic;text-align:center;margin-top:8px;max-width:90%">'+eh(im.pie)+'</div>':'')
         +'</div>';
     });
     imgsHtml += '</div>';
@@ -3384,7 +3584,7 @@ function _pdfPagoYPresentacion() {
   var senal = Math.round(totalConIva * senalPct/100 * 100)/100;
   var resto = Math.round((totalConIva - senal)*100)/100;
 
-  var extraInfo = '<div style="margin-top:14px;padding:12px 14px;background:#f8f6f0;border-radius:8px;font-size:.84rem;page-break-inside:avoid;break-inside:avoid">';
+  var extraInfo = '<div class="pfpago">';
   if (senalPct > 0) {
     extraInfo += '<div style="font-weight:600;margin-bottom:4px;color:#1a1a2e">Forma de pago</div>'
       +'<div>Se\u00f1al ('+senalPct+'%) al confirmar: <strong>'+senal.toFixed(2)+' \u20ac</strong></div>'
@@ -3394,17 +3594,7 @@ function _pdfPagoYPresentacion() {
     extraInfo += '<div style="margin-top:'+(senalPct>0?'8px':'0')+'">Entrega estimada: <strong>'+eh(plazo)+'</strong></div>';
   }
   extraInfo += '</div>';
-
-  // Insertar antes de las condiciones o al final
-  if (senalPct > 0 || plazo) {
-    if (h.indexOf('class="pfcond"') >= 0) {
-      h = h.replace('<div class="pfcond">', extraInfo + '<div class="pfcond">');
-    } else {
-      // Insertar tras pftots
-      h = h.replace(/(<\/div>\s*)(<div[^>]*page-break-before)/, '$1'+extraInfo+'$2');
-      if (h.indexOf(extraInfo) < 0) h += extraInfo;
-    }
-  }
+  h = h.replace('<div class="pfpago-slot"></div>', (senalPct > 0 || plazo) ? extraInfo : '');
   pf.innerHTML = h;
 
   // ── V70: Insertar presentación de empresa (campo propio) al principio ──
@@ -3443,10 +3633,23 @@ function insertarPresentacion() {
   var present = (document.getElementById('F-PRESENT')||{}).value || '';
   if (!present.trim()) return; // sin presentación, no se inserta nada
   var h = pf.innerHTML;
-  var presentacionHtml = '<div class="pfpresent" style="page-break-after:always;break-after:page;padding:10px 0;break-inside:avoid">'
-    + '<div style="font-size:.92rem;line-height:1.85;color:#333;text-align:justify">'
-    + eh(present).replace(/\n/g,'<br>')
-    + '</div></div>';
+  var emp = (ST.cfg && ST.cfg.emp) || '';
+  var lineas = present.replace(/\r/g,'').split('\n');
+  var titulo = 'Presentaci\u00f3n';
+  // si el texto empieza con el nombre de la empresa, ese es el título
+  var l0 = (lineas[0]||'').trim();
+  if (l0 && l0.length < 60 && (l0 === l0.toUpperCase() || (emp && emp.toLowerCase().indexOf(l0.toLowerCase()) === 0))) {
+    titulo = l0.toLowerCase().replace(/(^|\s)(\S+)/g, function(m, a, w){ return a + (a && /^(de|del|la|las|el|los|y|e)$/.test(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)); });
+    lineas.shift();
+    while (lineas.length && !lineas[0].trim()) lineas.shift();
+  }
+  var parrafos = lineas.join('\n').split(/\n\s*\n/).map(function(p){ return p.trim(); }).filter(Boolean)
+    .map(function(p){ return '<p style="margin:0 0 12px">'+eh(p).replace(/\n/g,'<br>')+'</p>'; }).join('');
+  var presentacionHtml = '<div class="pfpresent">'
+    + '<div class="ps-tit">'+eh(titulo)+'</div><div class="ps-raya"></div>'
+    + '<div class="ps-txt">'+parrafos+'</div>'
+    + (emp ? '<div class="ps-firma">'+eh(emp)+'</div>' : '')
+    + '</div>';
   // Insertar tras la portada, antes de la cabecera del presupuesto (pfh)
   if (h.indexOf('class="pfh"') >= 0) {
     h = h.replace('<div class="pfh"', presentacionHtml + '<div class="pfh"');
@@ -3458,6 +3661,7 @@ function insertarPresentacion() {
 
 // ── 7. Ficha de taller (PDF sin precios) ──
 function fichaTaller() {
+  _pfTipo = 'taller';
   if (!totalL()) { toast('A\u00f1ade elementos primero'); return; }
   var cli = (document.getElementById('FC')||{}).value||'\u2014';
   var fecha = (document.getElementById('FF')||{}).value||'';
@@ -3481,7 +3685,7 @@ function fichaTaller() {
         +'<td style="padding:5px 8px;border:1px solid #ccc;font-size:.78rem">'+eh(herr)+'</td>'
         +'</tr>';
     }).join('');
-    return '<div style="'+((g.tipo||'muebles')!=='muebles'?'page-break-inside:avoid;break-inside:avoid':'')+'">'+'<h3 style="margin:14px 0 6px;font-size:1rem;break-after:avoid;page-break-after:avoid">'+ti.label+' \u2014 '+eh(g.name)+' ('+g.cal+')</h3>'
+    return '<div style="'+((g.tipo||'muebles')!=='muebles'?'page-break-inside:avoid;break-inside:avoid':'')+'">'+'<h3 style="margin:14px 0 6px;font-size:1rem;break-after:avoid;page-break-after:avoid">'+ti.label+' \u2014 '+eh(g.name)+' ('+g.cal+')'+(g.opcional?' \u00b7 OPCIONAL':'')+'</h3>'
       +'<table style="width:100%;border-collapse:collapse;font-size:.84rem">'
       +'<thead><tr style="background:#eee">'
       +'<th style="padding:5px 8px;border:1px solid #ccc;width:30px">#</th>'
@@ -3536,8 +3740,8 @@ function _textoResumenCliente() {
   var sinIVA = pvp + inst + trans;
   var iva = sinIVA * (getIVA()/100);
   var conIVA = sinIVA + iva;
-  var validez = ST.params.validez_dias || 30;
-  var num = String(ST.curNum || ST.pnum).padStart(4,'0');
+  var validez = parseFloat((document.getElementById('F-VALIDEZ')||{}).value) || 30;
+  var num = ST.curNum ? numFormatted() : String(ST.pnum).padStart(4,'0');
 
   var lineas = [];
   lineas.push('Hola' + (cli ? ' ' + cli : '') + ',');
@@ -3580,17 +3784,19 @@ function compartirWhatsApp() {
     : 'https://wa.me/?text=' + encodeURIComponent(texto);
   window.open(url, '_blank');
   toast(tel ? 'WhatsApp al cliente \u2014 adjunta el PDF' : 'WhatsApp abierto \u2014 elige contacto y adjunta el PDF');
+  setTimeout(_proponerEnviado, 600);
 }
 
 function compartirEmail() {
   if (!totalL()) { toast('A\u00f1ade muebles primero'); return; }
   var cli = (document.getElementById('FC')||{}).value || '';
-  var num = String(ST.curNum || ST.pnum).padStart(4,'0');
+  var num = ST.curNum ? numFormatted() : String(ST.pnum).padStart(4,'0');
   var asunto = 'Presupuesto cocina N\u00ba ' + num + (cli ? ' \u2014 ' + cli : '');
   var cuerpo = _textoResumenCliente();
   var url = 'mailto:?subject=' + encodeURIComponent(asunto) + '&body=' + encodeURIComponent(cuerpo);
   window.location.href = url;
   toast('Email abierto \u2014 recuerda adjuntar el PDF');
+  setTimeout(_proponerEnviado, 600);
 }
 
 // Funciones para guardar/cargar la PRESENTACIÓN (campo propio)
@@ -3655,7 +3861,7 @@ function formatearTextoTecnico(texto) {
 function totalEnCalidad(cal) {
   var t = 0;
   ST.groups.forEach(function(g){
-    if (!g.lines.length) return;
+    if (!g.lines.length || g.opcional) return;
     // V114: aplicar también el descuento del grupo (antes la fila "actual" no cuadraba con el total)
     var gc = g;
     if (g.tipo === 'muebles') { gc = {}; for (var k in g) gc[k] = g[k]; gc.cal = cal; }
@@ -3712,6 +3918,7 @@ function openComparador() {
 function budgetCost() {
   var coste = 0, minutos = 0;
   ST.groups.forEach(function(g){
+    if (g.opcional) return;
     g.lines.forEach(function(l){
       if (g.tipo === 'muebles') {
         var nombre = l.m+' '+l.mo+' '+l.med;
@@ -3800,7 +4007,7 @@ function openRentabilidad() {
 function openHerrajesList() {
   var conteo = {};
   ST.groups.forEach(function(g){
-    if (g.tipo !== 'muebles') return;
+    if (g.tipo !== 'muebles' || g.opcional) return;
     g.lines.forEach(function(l){
       var m = MODMAP[l.m+' '+l.mo+' '+l.med];
       if (!m) return;
@@ -3853,6 +4060,7 @@ function desgloseComponentes() {
   }
   var d = {casco:0, frentes:0, montaje:0, bisagras:0, cajones:0, patas:0, varillas:0, otros:0, costados:0, regletas:0, extras:0, electro:0};
   ST.groups.forEach(function(g){
+    if (g.opcional) return;
     g.lines.forEach(function(l){
       if (g.tipo === 'muebles') {
         var nombre = l.m+' '+l.mo+' '+l.med;
@@ -3908,7 +4116,7 @@ function contarMateriales() {
   var totalFrentes = 0;
   var totalCascos = 0;
   ST.groups.forEach(function(g){
-    if (g.tipo !== 'muebles' && g.tipo !== 'frentes') return;
+    if ((g.tipo !== 'muebles' && g.tipo !== 'frentes') || g.opcional) return;
     g.lines.forEach(function(l){
       var nombre = l.m+' '+l.mo+' '+l.med;
       var m = MODMAP[nombre];
@@ -4351,6 +4559,7 @@ function searchCatalogo(q) {
 }
 
 function addFromCatalogo(m, mo, med) {
+  if (ST.bloqueado) { toast('Presupuesto enviado: p\u00e1salo a Borrador para cambiarlo'); return; }
   var dest = document.getElementById('CAT-DEST');
   if (!dest || !dest.value) { toast('Crea un grupo de muebles primero'); return; }
   var gid = parseInt(dest.value);
@@ -6335,6 +6544,16 @@ function serializeBudget() {
   d.plazo = (document.getElementById('F-PLAZO')||{}).value||'';
   d.senal = parseFloat((document.getElementById('F-SENAL')||{}).value)||0;
   d.notas = (document.getElementById('F-NOTAS')||{}).value||'';
+  d.estado = ST.estado || 'borrador';
+  d.fechaEnvio = ST.fechaEnvio || null;
+  d.fechaAceptado = ST.fechaAceptado || null;
+  d.bloqueado = !!ST.bloqueado;
+  if (ST.bloqueado) d.fzInst = ST.fzInst;
+  if (ST.opcionDe) d.opcionDe = ST.opcionDe;
+  // Las fotos subidas a la nube viajan solo como referencia (el presupuesto pesa poco)
+  d.images = (ST.images || []).map(function(im){
+    return im.ref ? {id:im.id, name:im.name, pie:im.pie, ref:im.ref} : im;
+  });
   return d;
 }
 function _serializeBudgetBase() {
@@ -6342,7 +6561,7 @@ function _serializeBudgetBase() {
   return {
     v: 21,
     fecha_guardado: _fg,
-    id: 'hb_' + _fg.replace(/[^0-9]/g, ''),
+    id: 'hb_' + _fg.replace(/[^0-9]/g, '') + String(Math.floor(Math.random()*1000)).padStart(3,'0'),
     cliente: document.getElementById('FC').value,
     direccion: document.getElementById('FD').value,
     telefono: document.getElementById('FT').value,
@@ -6359,6 +6578,7 @@ function _serializeBudgetBase() {
 function saveBudgetFile() {
   if (!totalL() && !document.getElementById('FC').value) { toast('Presupuesto vac\u00edo'); return; }
   var d = serializeBudget();
+  d.images = ST.images || [];   // el archivo lleva las fotos completas
   var cliente = (d.cliente || 'sin_cliente').replace(/[^a-zA-Z0-9\u00e1\u00e9\u00ed\u00f3\u00fa\u00f1 ]/g,'').trim().replace(/ +/g,'_');
   var fecha = (d.fecha || '').replace(/\//g,'-');
   var a = document.createElement('a');
@@ -6376,6 +6596,12 @@ function duplicarDesdeHistorial(i) {
   applyBudget(d);
   // Cambiar el número para que sea uno nuevo, y avisar
   ST.curNum = null;  // número nuevo al guardar o sacar el PDF
+  ST.opcionDe = d.opcionDe || _budgetId(d);   // queda agrupado con el original
+  ST.proyectoActual = null;                    // "Guardar" no debe pisar el original
+  _quitarCongelado();
+  ST.estado = 'borrador'; ST.fechaEnvio = null; ST.fechaAceptado = null;
+  _aplicarEstadoUI(); renderGroups(); upBan();
+  try { _updProyectoBadge(); } catch(e){}
   // Marcar el nombre del cliente para distinguir la copia (opcional)
   save();
   document.getElementById('HISTMOD').style.display = 'none';
@@ -6423,6 +6649,8 @@ function _guardarComoNuevoBase() {
 
 // Cargar un presupuesto guardado en pantalla
 function applyBudget(d) {
+  d = JSON.parse(JSON.stringify(d));   // copia: editar no toca el guardado hasta pulsar Guardar
+  _abPasoEstado(d);
   _applyBudgetBase(d);
   _abPasoNumero(d);
   _abPasoIvaCondiciones(d);
@@ -6430,6 +6658,18 @@ function applyBudget(d) {
   _abPasoPlazoNotas(d);
   _abPasoReparar(d);
   _abPasoProyecto(d);
+  _aplicarEstadoUI();
+  upBan();
+  cargarImagenesNube();
+  subirImagenesPendientes();
+}
+function _abPasoEstado(d) {
+  ST.estado = d.estado || 'borrador';
+  ST.fechaEnvio = d.fechaEnvio || null;
+  ST.fechaAceptado = d.fechaAceptado || null;
+  ST.bloqueado = !!d.bloqueado;
+  ST.fzInst = (d.fzInst != null) ? d.fzInst : null;
+  ST.opcionDe = d.opcionDe || null;
 }
 function _applyBudgetBase(d) {
   document.getElementById('FC').value = d.cliente || '';
@@ -6466,7 +6706,6 @@ function _abPasoIvaCondiciones(d) {
 }
 function _abPasoElectro(d) {
   if (d.electro && d.electro.length) { if(!ST.electro) ST.electro=[]; var _nomE={}; ST.electro.forEach(function(e){_nomE[e.n]=1;}); var _addE=false; d.electro.forEach(function(e){ if(e&&e.n&&!_nomE[e.n]){ST.electro.push(e);_nomE[e.n]=1;_addE=true;} }); if(_addE) save(); }
-  if (d.margen_electro !== undefined) ST.params.margen_electro = d.margen_electro;
 }
 function _abPasoPlazoNotas(d) {
   var fp=document.getElementById('F-PLAZO'); if(fp) fp.value=d.plazo||'';
@@ -6504,7 +6743,7 @@ function loadBudgetFile(e) {
 function getHistory() {
   // Si tenemos cache de la nube, usarla; si no, el local (respaldo)
   if (_histCache !== null) return _histCache;
-  return JSON.parse(localStorage.getItem('historial_v1')||'[]');
+  return _sinBorrados(JSON.parse(localStorage.getItem('historial_v1')||'[]'));
 }
 
 function setHistory(h) {
@@ -6522,38 +6761,83 @@ function openHistory() {
   }
 }
 
+var _histFiltro = '';
 function renderHistList() {
   var el = document.getElementById('HIST-LIST');
   var h = getHistory();
+  _pintarFiltroHist(h);
   if (!h.length) {
-    el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:24px;font-size:.86rem">Sin presupuestos guardados.<br>Pulsa "+ Guardar el actual" para empezar.</p>';
+    el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:24px;font-size:.86rem">Sin presupuestos guardados.<br>Pulsa "Guardar" para empezar.</p>';
     return;
   }
   var _q = ((document.getElementById('HIST-SEARCH')||{}).value || '').toLowerCase().trim();
+  // Familias: un presupuesto y sus opciones (B, C…) van juntos
+  var idx = h.map(function(d, i){ return i; });
+  var raiz = function(d){ return d.opcionDe || _budgetId(d); };
+  var orden = [], vistas = {};
+  idx.forEach(function(i){
+    var r = raiz(h[i]);
+    if (vistas[r]) return; vistas[r] = 1;
+    var fam = idx.filter(function(j){ return raiz(h[j]) === r; });
+    fam.sort(function(a, b){ return (h[a].opcionDe ? 1 : 0) - (h[b].opcionDe ? 1 : 0) || String(h[a].fecha_guardado||'').localeCompare(String(h[b].fecha_guardado||'')); });
+    fam.forEach(function(j, k){ orden.push({i:j, hijo:k>0}); });
+  });
   var _vis = 0;
-  var _html = h.map(function(d, i) {
+  var _html = orden.map(function(o) {
+    var d = h[o.i], i = o.i;
+    var est = d.estado || 'borrador';
+    if (_histFiltro && est !== _histFiltro) return '';
     var fecha = d.fecha_guardado ? new Date(d.fecha_guardado).toLocaleDateString('es-ES', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
     if (_q) {
-      var _txt = ((d.nombre||'')+' '+(d.cliente||'')+' '+fecha+' '+(d.total!=null?d.total:'')).toLowerCase();
+      var _txt = ((d.nombre||'')+' '+(d.cliente||'')+' '+fecha+' '+(d.total!=null?d.total:'')+' '+(ESTADOS[est]||{}).t).toLowerCase();
       if (_txt.indexOf(_q) < 0) return '';
     }
     _vis++;
     var nLineas = (d.groups||[]).reduce(function(s,g){return s+(g.lines||[]).length;},0);
-    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;margin-bottom:7px">'
+    var E = ESTADOS[est] || ESTADOS.borrador;
+    var aviso = '';
+    if (est === 'enviado' && d.fechaEnvio) {
+      var dias = _diasDesde(d.fechaEnvio);
+      if (dias >= 15) aviso = ' <span style="font-size:.7rem;color:#a0522d">⏰ sin respuesta hace '+dias+' días</span>';
+    }
+    return '<div class="hrow" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;margin-bottom:7px'+(o.hijo?';margin-left:22px;border-style:dashed':'')+'">'
       +'<div style="flex:1;min-width:0">'
-      +'<div style="font-weight:600;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+eh(d.nombre||d.cliente||'Sin nombre')+((ST.proyectoActual && _budgetId(d)===ST.proyectoActual.id)?' <span style="font-size:.66rem;font-weight:600;color:#2d6a4f;background:#d8f3dc;border-radius:8px;padding:1px 6px;vertical-align:middle">\u25cf en edici\u00f3n</span>':'')+'</div>'
-      +'<div style="font-size:.79rem;color:var(--muted)">'+fecha+' \u00b7 '+nLineas+' elementos \u00b7 '+(d.total!=null?d.total.toFixed(2)+' \u20ac':'')+(d.images&&d.images.length?' \u00b7 '+d.images.length+' img':'')+'</div>'
+      +'<div style="display:flex;align-items:center;gap:5px;font-weight:600;font-size:.88rem;min-width:0"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">'+(o.hijo?'↳ ':'')+eh(d.nombre||d.cliente||'Sin nombre')+'</span>'
+      +' <span style="flex:none;font-size:.66rem;font-weight:600;color:#fff;background:'+E.c+';border-radius:8px;padding:1px 7px;vertical-align:middle">'+E.t+'</span>'
+      +((ST.proyectoActual && _budgetId(d)===ST.proyectoActual.id)?' <span style="flex:none;font-size:.66rem;font-weight:600;color:#2d6a4f;background:#d8f3dc;border-radius:8px;padding:1px 6px;vertical-align:middle">● en edición</span>':'')+'</div>'
+      +'<div style="font-size:.79rem;color:var(--muted)">'+fecha+' · '+nLineas+' elementos · '+(d.total!=null?Number(d.total).toFixed(2)+' €':'')+(d.images&&d.images.length?' · '+d.images.length+' img':'')+aviso+'</div>'
       +'</div>'
       +'<button class="btn bp bsm" onclick="loadFromHistory('+i+')">Cargar</button>'
-      +'<button class="btn bgh bsm" onclick="duplicarDesdeHistorial('+i+')" title="Crear una copia para hacer otra opci\u00f3n">\u29c9 Duplicar</button>'
+      +'<button class="btn bgh bsm" onclick="duplicarDesdeHistorial('+i+')" title="Crear otra opción para el mismo cliente">⧉ Otra opción</button>'
       +'<button class="btn bdr bsm" onclick="deleteFromHistory('+i+')">&#x2715;</button>'
       +'</div>';
   }).join('');
-  if (_q && _vis === 0) {
-    el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:24px;font-size:.86rem">Sin resultados para esa b&#xfa;squeda.</p>';
+  if (_vis === 0) {
+    el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:24px;font-size:.86rem">Sin resultados.</p>';
   } else {
     el.innerHTML = _html;
   }
+}
+function _pintarFiltroHist(h) {
+  var bar = document.getElementById('HIST-FILTRO');
+  if (!bar) {
+    var lista = document.getElementById('HIST-LIST'); if (!lista) return;
+    bar = document.createElement('div'); bar.id = 'HIST-FILTRO';
+    bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px';
+    lista.parentNode.insertBefore(bar, lista);
+  }
+  var cuenta = {}; h.forEach(function(d){ var e = d.estado || 'borrador'; cuenta[e] = (cuenta[e]||0) + 1; });
+  var chip = function(v, t, n){ return '<button class="btn bsm '+(_histFiltro===v?'bp':'bgh')+'" onclick="_histFiltro=\''+v+'\';renderHistList()">'+t+(n!=null?' ('+n+')':'')+'</button>'; };
+  bar.innerHTML = chip('', 'Todos', h.length) + Object.keys(ESTADOS).map(function(k){ return chip(k, ESTADOS[k].t, cuenta[k]||0); }).join('');
+}
+function _diasDesde(fechaStr) {
+  var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(fechaStr||''));
+  if (!m) return 0;
+  return Math.floor((Date.now() - new Date(+m[3], +m[2]-1, +m[1]).getTime()) / 86400000);
+}
+function _nombreOpcion(raizId) {
+  var n = getHistory().filter(function(x){ return x.opcionDe === raizId; }).length;
+  return 'Opción ' + String.fromCharCode(66 + n);   // B, C, D…
 }
 
 function loadFromHistory(i) {
@@ -6570,6 +6854,7 @@ function deleteFromHistory(i) {
   if (!confirm('Eliminar este presupuesto del historial?')) return;
   var h = getHistory();
   var _borrado = h[i];
+  if (_borrado) _marcarBorrado(_budgetId(_borrado));
   h.splice(i, 1);
   setHistory(h);
   // V92: borrar también su fila individual en la nube
@@ -6685,7 +6970,7 @@ function guardarProyecto() {
     _guardarProyectoComun(d);
     toast('\u201c'+ (act.nombre||'Proyecto') +'\u201d actualizado \u2713');
   } else {
-    var def = (d.cliente || 'Sin cliente') + ' \u2014 ' + (d.fecha || '');
+    var def = (d.cliente || 'Sin cliente') + ' \u2014 ' + (ST.opcionDe ? _nombreOpcion(ST.opcionDe) : (d.fecha || ''));
     var name = prompt('Nombre del proyecto:', def);
     if (name === null) return;
     d.nombre = name || def;
@@ -6721,6 +7006,489 @@ function _asignarNumero() {
   ST.pnum = n + 1;
   save();
   return true;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ESTADO DEL PRESUPUESTO Y PRECIOS CONGELADOS
+// Al marcarlo como Enviado/Aceptado se guardan los precios de ese momento:
+// aunque luego cambien las tarifas, el presupuesto no se mueve. Para
+// modificarlo hay que pasarlo a Borrador (avisa de cuánto cambia el total).
+// ══════════════════════════════════════════════════════════════════════
+var ESTADOS = {
+  borrador:  {t:'Borrador',  c:'#8888aa'},
+  enviado:   {t:'Enviado',   c:'#1a6691'},
+  aceptado:  {t:'Aceptado',  c:'#2d6a4f'},
+  rechazado: {t:'Rechazado', c:'#c0392b'}
+};
+var _calcVivo = false;   // true = calcular con las tarifas de hoy aunque esté congelado
+function _congelado() { return !!ST.bloqueado && !_calcVivo; }
+function _enVivo(fn) { var antes = _calcVivo; _calcVivo = true; try { return fn(); } finally { _calcVivo = antes; } }
+function totalPresupuesto() { return Math.round((grandT() + getTransporte() + getInstalacion()) * 100) / 100; }
+function _hoyTxt() { var d = new Date(); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); }
+
+function congelarPrecios() {
+  _enVivo(function(){
+    ST.groups.forEach(function(g){
+      g.lines.forEach(function(l){
+        l.fzT = lineTotal(l, g);
+        l.fzU = unitPVP(l, g);
+        l.fzFF = (l.extras||[]).some(function(ex){ return ex.freefold; }) ? freefoldCascoFrenteExtra(l, g) : null;
+        (l.extras||[]).forEach(function(ex){ ex.fzP = extraPVP(ex, g); });
+      });
+    });
+    ST.fzInst = getInstalacion();
+  });
+  ST.bloqueado = true;
+}
+function _quitarCongelado() {
+  ST.groups.forEach(function(g){
+    g.lines.forEach(function(l){
+      delete l.fzT; delete l.fzU; delete l.fzFF;
+      (l.extras||[]).forEach(function(ex){ delete ex.fzP; });
+    });
+  });
+  ST.fzInst = null;
+  ST.bloqueado = false;
+}
+// Devuelve false si el usuario no quiere recalcular
+function descongelarPrecios() {
+  var antes = totalPresupuesto();
+  var ahora = _enVivo(totalPresupuesto);
+  if (Math.abs(antes - ahora) > 0.009 &&
+      !confirm('Con las tarifas de hoy el total (sin IVA) pasa de '+fmt(antes)+' a '+fmt(ahora)+'.\n¿Pasarlo a Borrador y recalcular?')) return false;
+  _quitarCongelado();
+  return true;
+}
+function cambiarEstado(nuevo) {
+  var prev = ST.estado || 'borrador';
+  if (nuevo === prev) return;
+  if (!totalL()) { toast('Añade elementos primero'); _aplicarEstadoUI(); return; }
+  if (nuevo === 'borrador') {
+    if (ST.bloqueado && !descongelarPrecios()) { _aplicarEstadoUI(); return; }
+  } else if (!ST.bloqueado && nuevo !== 'rechazado') {
+    congelarPrecios();
+  }
+  ST.estado = nuevo;
+  if (nuevo === 'enviado' && !ST.fechaEnvio) ST.fechaEnvio = _hoyTxt();
+  if (nuevo === 'aceptado') { ST.fechaAceptado = _hoyTxt(); if (!ST.fechaEnvio) ST.fechaEnvio = _hoyTxt(); }
+  _aplicarEstadoUI(); renderGroups(); upBan();
+  guardarProyecto();   // queda guardado con su estado (si es nuevo, pide el nombre)
+  toast('Estado: ' + ESTADOS[nuevo].t + (ST.bloqueado ? ' · precios congelados' : ''));
+}
+function _aplicarEstadoUI() {
+  var sel = document.getElementById('F-ESTADO');
+  if (sel) sel.value = ST.estado || 'borrador';
+  document.body.classList.toggle('bloq', !!ST.bloqueado);
+  _aplicarInert();
+  var av = document.getElementById('ESTADO-AVISO');
+  if (!av) {
+    var gw = document.getElementById('GW'); if (!gw) return;
+    av = document.createElement('div'); av.id = 'ESTADO-AVISO';
+    gw.parentNode.insertBefore(av, gw);
+  }
+  var E = ESTADOS[ST.estado || 'borrador'] || ESTADOS.borrador;
+  av.innerHTML = '🔒 <strong>'+E.t+'</strong>'+(ST.fechaEnvio?' el '+eh(ST.fechaEnvio):'')
+    +' · los precios están congelados (no cambian aunque subas tarifas). '
+    +'Para modificar el presupuesto, cambia el estado a <strong>Borrador</strong>.';
+}
+// Tras enviar por WhatsApp/email/PDF, ofrecer marcarlo como enviado
+function _proponerEnviado() {
+  if ((ST.estado || 'borrador') !== 'borrador' || !totalL() || _pfTipo === 'taller') return;
+  if (confirm('¿Marcar este presupuesto como ENVIADO?\nSus precios quedan congelados aunque cambies las tarifas.')) cambiarEstado('enviado');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// GRUPOS OPCIONALES (se presupuestan aparte y no suman al total)
+// ══════════════════════════════════════════════════════════════════════
+function toggleOpcional(gid) {
+  var g = ST.groups.find(function(x){ return x.id === gid; }); if (!g) return;
+  g.opcional = !g.opcional;
+  renderGroups(); upBan();
+  var quedan = ST.groups.some(function(x){ return !x.opcional && x.lines.length; });
+  if (g.opcional && !quedan) toast('\u26a0\ufe0f Todos los grupos son opcionales: el total del presupuesto queda en 0');
+  else toast(g.opcional ? '\u201c'+g.name+'\u201d es opcional: no suma al total' : '\u201c'+g.name+'\u201d vuelve a sumar al total');
+}
+function _aplicarInert() {
+  var b = !!ST.bloqueado;
+  document.querySelectorAll('#GW .gb, #GW .gac, #GW .gni, #GW .opc-chk, #IMGS').forEach(function(el){ el.inert = b; });
+  ['F-TRANS','F-DIFICULTAD'].forEach(function(id){ var e = document.getElementById(id); if (e) e.disabled = b; });
+}
+function _rgPasoOpcional() {
+  ST.groups.forEach(function(g){
+    var card = document.getElementById('gc'+g.id); if (!card) return;
+    card.classList.toggle('gc-opc', !!g.opcional);
+    var gac = card.querySelector('.gac');
+    if (!gac || card.querySelector('.opc-chk')) return;
+    var lab = document.createElement('label');
+    lab.className = 'opc-chk';
+    lab.title = 'Opcional: sale en el PDF con su precio, pero no suma al total';
+    lab.innerHTML = '<input type="checkbox"'+(g.opcional?' checked':'')+' onchange="toggleOpcional('+g.id+')"> Opcional';
+    gac.parentNode.insertBefore(lab, gac);
+  });
+  _aplicarInert();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FOTOS EN LA NUBE (Supabase Storage, carpeta privada "imagenes")
+// El presupuesto guarda solo la referencia; la foto se descarga al abrirlo.
+// Sin conexión se siguen guardando dentro del presupuesto, como antes.
+// ══════════════════════════════════════════════════════════════════════
+var BUCKET_IMG = 'imagenes';
+var _pfTipo = 'cliente';
+function _rutaImagen() { return 'p/' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9) + '.jpg'; }
+async function subirImagen(im) {
+  if (!haySesion() || im.ref || !im.data || im._subiendo) return false;
+  im._subiendo = true;
+  try {
+    var blob = await (await fetch(im.data)).blob();
+    var ruta = _rutaImagen();
+    var h = _supaHeaders(); h['Content-Type'] = blob.type || 'image/jpeg'; h['x-upsert'] = 'true';
+    var r = await fetch(SUPA_URL + '/storage/v1/object/' + BUCKET_IMG + '/' + ruta, { method: 'POST', headers: h, body: blob });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    im.ref = ruta;
+    return true;
+  } catch(e) { return false; }
+  finally { delete im._subiendo; }
+}
+async function descargarImagen(im) {
+  if (im.data || !im.ref) return;
+  try {
+    var r = await fetch(SUPA_URL + '/storage/v1/object/authenticated/' + BUCKET_IMG + '/' + im.ref, { headers: _supaHeaders() });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var b = await r.blob();
+    im.data = await new Promise(function(ok){ var fr = new FileReader(); fr.onload = function(){ ok(fr.result); }; fr.readAsDataURL(b); });
+    delete im.error;
+  } catch(e) { im.error = true; }
+}
+function _imagenesPendientes() { return (ST.images||[]).some(function(im){ return !im.data && im.ref && !im.error; }); }
+function cargarImagenesNube() {
+  var ps = (ST.images||[]).filter(function(im){ return !im.data && im.ref; }).map(descargarImagen);
+  if (!ps.length) return Promise.resolve();
+  return Promise.all(ps).then(function(){ renderImages(); });
+}
+function subirImagenesPendientes() {
+  return Promise.all((ST.images||[]).filter(function(im){ return !im.ref && im.data; }).map(subirImagen));
+}
+// Presupuestos guardados antes de v116: sus fotos van dentro del presupuesto.
+// Se suben poco a poco (máx. 30 por arranque) y el presupuesto queda solo con la referencia.
+async function migrarFotosHistorial() {
+  if (!haySesion() || !_syncListo) return;
+  var h = getHistory(), cambiados = [], n = 0;
+  for (var i = 0; i < h.length && n < 30; i++) {
+    var d = h[i], tocado = false;
+    var ims = (d.images || []).filter(function(im){ return im && im.data && !im.ref; });
+    for (var k = 0; k < ims.length && n < 30; k++) {
+      n++;
+      if (await subirImagen(ims[k])) { delete ims[k].data; tocado = true; }
+    }
+    if (tocado) cambiados.push(d);
+  }
+  if (!cambiados.length) return;
+  // guardar sobre el historial más reciente (por si mientras tanto se ha guardado algo)
+  var actual = getHistory();
+  cambiados.forEach(function(d){
+    var id = _budgetId(d);
+    var j = actual.findIndex(function(x){ return _budgetId(x) === id; });
+    if (j >= 0 && JSON.stringify(actual[j].groups) === JSON.stringify(d.groups)) actual[j].images = d.images;
+  });
+  setHistory(actual);
+  cambiados.forEach(function(d){ try { supaGuardarClave(_budgetId(d), JSON.stringify(d)); } catch(e){} });
+}
+// Una vez al día: borra de la nube las fotos que ya no usa ningún presupuesto
+// (solo si tienen más de 7 días, por si otro dispositivo tiene un presupuesto a medias).
+async function limpiarFotosNube() {
+  if (!haySesion() || !_syncListo) return;
+  var hoy = new Date().toISOString().slice(0, 10);
+  if (localStorage.getItem('ultima_limpieza_fotos') === hoy) return;
+  try {
+    var hd = _supaHeaders();
+    var r1 = await fetch(SUPA_URL + '/storage/v1/object/list/' + BUCKET_IMG, { method: 'POST',
+      headers: Object.assign({}, hd, {'Content-Type': 'application/json'}),
+      body: JSON.stringify({ prefix: 'p', limit: 1000, offset: 0, sortBy: { column: 'created_at', order: 'asc' } }) });
+    if (!r1.ok) return;
+    var objetos = await r1.json();
+    if (!objetos.length) { localStorage.setItem('ultima_limpieza_fotos', hoy); return; }
+    // todas las referencias en uso: historial completo y presupuestos sueltos de la nube + el abierto
+    var r2 = await fetch(SUPA_URL + '/rest/v1/presupuestos?select=datos&clave=eq.historial_v1', { headers: hd });
+    var r3 = await fetch(SUPA_URL + '/rest/v1/presupuestos?select=img:datos->images&clave=like.hb_*', { headers: hd });
+    if (!r2.ok || !r3.ok) return;   // ante la duda, no se borra nada
+    var texto = (await r2.text()) + (await r3.text()) + JSON.stringify(getHistory()) + JSON.stringify(ST.images || []);
+    var usadas = {};
+    texto.replace(/"ref"\s*:\s*"(p\/[^"]+)"/g, function(m, ref){ usadas[ref] = 1; return m; });
+    var limite = Date.now() - 7 * 86400000;
+    var borrar = objetos.filter(function(o){
+      var ruta = 'p/' + o.name, t = Date.parse(o.created_at || '');
+      return o.name && !usadas[ruta] && !isNaN(t) && t < limite;
+    }).map(function(o){ return 'p/' + o.name; });
+    if (borrar.length) {
+      var r4 = await fetch(SUPA_URL + '/storage/v1/object/' + BUCKET_IMG, { method: 'DELETE',
+        headers: Object.assign({}, hd, {'Content-Type': 'application/json'}), body: JSON.stringify({ prefixes: borrar }) });
+      if (!r4.ok) return;
+    }
+    localStorage.setItem('ultima_limpieza_fotos', hoy);
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// COPIAS AUTOMÁTICAS EN LA NUBE (una al día, se guardan las 14 últimas)
+// ══════════════════════════════════════════════════════════════════════
+function _hoyISO() { return new Date().toISOString().slice(0, 10); }
+async function copiaAutomaticaNube() {
+  if (!haySesion() || !_syncListo) return;
+  if (localStorage.getItem('ultima_copia_nube') === _hoyISO()) return;
+  var datos = {};
+  CLAVES_SYNC.forEach(function(k){ if (k === 'logo') return; var v = localStorage.getItem(k); if (v !== null) datos[k] = v; });
+  var copia = { _tipo: 'copia_seguridad_presupuestos', _fecha: new Date().toISOString(),
+                _version: (document.getElementById('APPVER')||{}).textContent || '', datos: datos };
+  var ok = await supaGuardarClave('backup_' + _hoyISO(), JSON.stringify(copia));
+  if (!ok) return;
+  localStorage.setItem('ultima_copia_nube', _hoyISO());
+  try {
+    var r = await fetch(SUPA_URL + '/rest/v1/presupuestos?clave=like.backup_*&select=clave&order=clave.desc', { headers: _supaHeaders() });
+    var filas = await r.json();
+    filas.slice(14).forEach(function(f){ supaBorrarClave(f.clave); });
+  } catch(e) {}
+}
+function _modalSimple(id, titulo) {
+  var m = document.getElementById(id);
+  if (!m) {
+    m = document.createElement('div'); m.id = id;
+    m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:14px';
+    m.innerHTML = '<div style="background:#fff;border-radius:10px;padding:22px;width:520px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2)">'
+      + '<div style="font-family:\'DM Serif Display\',serif;font-size:1.12rem;margin-bottom:10px">' + titulo + '</div>'
+      + '<div class="mbody"></div><div style="display:flex;justify-content:flex-end;margin-top:14px">'
+      + '<button class="btn bgh" onclick="this.closest(\'[id]\').style.display=\'none\'">Cerrar</button></div></div>';
+    document.body.appendChild(m);
+  }
+  m.style.display = 'flex';
+  return m.querySelector('.mbody');
+}
+async function abrirCopiasNube() {
+  var body = _modalSimple('COPIAS-MOD', '🗄 Copias automáticas en la nube');
+  if (!haySesion()) { body.innerHTML = '<p class="mut">Inicia sesión para ver las copias.</p>'; return; }
+  body.innerHTML = '<p class="mut">Cargando…</p>';
+  try {
+    var r = await fetch(SUPA_URL + '/rest/v1/presupuestos?clave=like.backup_*&select=clave&order=clave.desc', { headers: _supaHeaders() });
+    var filas = await r.json();
+    if (!filas.length) { body.innerHTML = '<p class="mut">Todavía no hay copias. Se hace una al día automáticamente.</p>'; return; }
+    body.innerHTML = '<p class="mut" style="margin-bottom:10px;font-size:.8rem">Se guarda una copia diaria de precios, catálogos y configuración (los presupuestos guardados no se tocan). Restaurar devuelve esos datos al estado de ese día en todos tus dispositivos.</p>'
+      + filas.map(function(f){
+          var dia = f.clave.replace('backup_', '').split('-').reverse().join('/');
+          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px">'
+            + '<span>📅 ' + dia + '</span><button class="btn bgh bsm" onclick="restaurarCopiaNube(\'' + f.clave + '\')">Restaurar</button></div>';
+        }).join('');
+  } catch(e) { body.innerHTML = '<p class="mut">Sin conexión.</p>'; }
+}
+async function restaurarCopiaNube(clave) {
+  if (!confirm('⚠️ Se sustituirán los precios, catálogos y configuración actuales por los del ' + clave.replace('backup_', '').split('-').reverse().join('/') + '.\n¿Seguro?')) return;
+  var copia = await supaLeerClave(clave);
+  if (!copia || !copia.datos) { toast('No se pudo leer la copia'); return; }
+  Object.keys(copia.datos).forEach(function(k){
+    var v = copia.datos[k];
+    if (k === 'pnum') v = String(Math.max(parseInt(v)||1, parseInt(localStorage.getItem('pnum'))||1));   // nunca repetir números
+    localStorage.setItem(k, v);
+  });
+  toast('Copia restaurada — subiendo a la nube…');
+  try { await _subirPendientes(); } catch(e) {}
+  location.reload();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// PDF DIRECTO: descargar el archivo o enviarlo (WhatsApp, email…) desde el móvil
+// ══════════════════════════════════════════════════════════════════════
+var H2P_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+function _cargarHtml2pdf() {
+  if (window.html2pdf) return Promise.resolve();
+  return new Promise(function(ok, ko){
+    var s = document.createElement('script'); s.src = H2P_URL;
+    s.onload = ok; s.onerror = function(){ ko(new Error('sin conexión')); };
+    document.head.appendChild(s);
+  });
+}
+function _nombrePdf() {
+  var cli = ((document.getElementById('FC')||{}).value || 'cliente').trim().replace(/[^\wÀ-ſ -]/g, '').replace(/\s+/g, '_') || 'cliente';
+  if (_pfTipo === 'taller') return 'Ficha_taller_' + cli + '.pdf';
+  return 'Presupuesto_' + (ST.curNum ? numFormatted() + '_' : '') + cli + '.pdf';
+}
+// Reparte el contenido en páginas A4 antes de generar el PDF: nada se corta por la mitad
+// (filas, bloques de texto, totales, imágenes) y se respetan los saltos de página forzados.
+var _PDF_ALTO_PAG = 1039;   // alto útil de un A4 (márgenes 10/12 mm) a 718 px de ancho: el mismo corte que hace html2pdf (escala 2)
+var _PDF_ATOMICOS = 'tr,img,h3,h4,p,li,.pfsb,.pftots,.pfcond,.pfpago,.pfcierre,.pfportada,.pftexto > div,.pfh,.pfc,.pfimg';
+var _PDF_CON_SIGUIENTE = '.pft,.pfsec,h3,h4,.cll';   // títulos: nunca solos al final de una página
+function _pdfEspaciador(antesDe, alto) {
+  var sp;
+  if (antesDe.tagName === 'TR') {
+    sp = document.createElement('tr');
+    sp.innerHTML = '<td colspan="99" style="height:' + alto + 'px;padding:0;border:0;background:#fff"></td>';
+    antesDe.parentNode.insertBefore(sp, antesDe);
+    // la tabla sigue en la página siguiente: repetir su cabecera
+    var tabla = antesDe.closest('table'), th = tabla && tabla.tHead && tabla.tHead.rows[0];
+    if (th && antesDe.parentNode.tagName === 'TBODY') {
+      var cab = document.createElement('tr');
+      cab.className = 'pf-cab-rep';
+      cab.innerHTML = [].map.call(th.cells, function(c){ return '<th style="'+(c.getAttribute('style')||'')+'">'+c.innerHTML+'</th>'; }).join('');
+      antesDe.parentNode.insertBefore(cab, antesDe);
+    }
+    return;
+  }
+  sp = document.createElement('div');
+  sp.style.cssText = 'height:' + alto + 'px;margin:0;padding:0;border:0';
+  antesDe.parentNode.insertBefore(sp, antesDe);
+}
+function _paginarPdf(raiz) {
+  var H = _PDF_ALTO_PAG, y0 = raiz.getBoundingClientRect().top;
+  function pos(h) { var r = h.getBoundingClientRect(); return { top: r.top - y0, h: r.height }; }
+  function moverAPaginaSiguiente(h) { var p = pos(h); _pdfEspaciador(h, Math.ceil(H - (p.top % H)) + 2); }
+  function cruza(top, alto) { return Math.floor((top + 0.5) / H) !== Math.floor((top + alto - 1) / H); }
+  function visitar(el) {
+    [].slice.call(el.children).forEach(function(h) {
+      var cs = getComputedStyle(h);
+      if (cs.position === 'absolute' || cs.position === 'fixed' || cs.display === 'none') return;
+      var p = pos(h), resto = p.top % H;
+      if ((cs.breakBefore === 'page' || cs.pageBreakBefore === 'always') && p.top > 1 && resto > 1) {
+        _pdfEspaciador(h, Math.ceil(H - resto)); p = pos(h);
+      }
+      // título: si lo que le sigue no cabe en esta página, se pasa con ello
+      if (h.matches(_PDF_CON_SIGUIENTE) && h.nextElementSibling) {
+        var sig = h.nextElementSibling, ps = pos(sig);
+        var primero = sig.tagName === 'TABLE' ? (sig.tHead ? sig.tHead.offsetHeight : 0) + ((sig.tBodies[0] && sig.tBodies[0].rows[0]) ? sig.tBodies[0].rows[0].offsetHeight * 2 : 0) : Math.min(ps.h, 90);
+        if (cruza(p.top, (ps.top - p.top) + primero) && p.h + primero < H * 0.5) { moverAPaginaSiguiente(h); p = pos(h); }
+      }
+      if (cruza(p.top, p.h)) {
+        var atomico = h.matches(_PDF_ATOMICOS) || cs.breakInside === 'avoid' || cs.pageBreakInside === 'avoid' || !h.querySelector(':scope > :not(br)');
+        if (atomico && p.h <= H * 0.92) {
+          // el total de un grupo no se queda solo: se lleva consigo la última línea de su tabla
+          var prev = h.previousElementSibling;
+          if (prev && prev.tagName === 'TABLE' && prev.tBodies[0] && (h.matches('.pfsb') || h.querySelector('.pfsb'))) {
+            var filas = [].slice.call(prev.tBodies[0].rows).filter(function(r){ return r.cells[0] && r.cells[0].textContent.trim() && r.className !== 'pf-cab-rep'; });
+            var ult = filas[filas.length - 1];
+            if (filas.length >= 3 && ult && Math.floor(pos(ult).top / H) === Math.floor(p.top / H)) { moverAPaginaSiguiente(ult); p = pos(h); if (!cruza(p.top, p.h)) return; }
+          }
+          moverAPaginaSiguiente(h);
+        }
+        else visitar(h);
+      }
+      if (cs.breakAfter === 'page' || cs.pageBreakAfter === 'always') {
+        var fin = h.getBoundingClientRect().bottom - y0, rf = fin % H, sigEl = h.nextElementSibling;
+        if (rf > 1 && sigEl) _pdfEspaciador(sigEl, Math.ceil(H - rf));
+      }
+    });
+  }
+  visitar(raiz);
+}
+// Pie discreto en cada página (menos la portada): empresa · nº de presupuesto · página
+function _pdfPies(pdf) {
+  var n = pdf.internal.getNumberOfPages(), emp = (ST.cfg && ST.cfg.emp) || '';
+  var conPortada = _pfTipo !== 'taller';
+  var izq = _pfTipo === 'taller' ? 'Ficha de taller' + (emp ? ' \u00b7 ' + emp : '')
+          : [emp, ST.curNum ? 'Presupuesto N\u00ba ' + numFormatted() : ''].filter(Boolean).join(' \u00b7 ');
+  for (var i = conPortada ? 2 : 1; i <= n; i++) {
+    pdf.setPage(i);
+    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5); pdf.setTextColor(150, 150, 150);
+    pdf.setDrawColor(225, 215, 190); pdf.setLineWidth(0.2); pdf.line(10, 288, 200, 288);
+    pdf.text(izq, 10, 292);
+    pdf.text('P\u00e1gina ' + (conPortada ? i - 1 : i) + ' de ' + (conPortada ? n - 1 : n), 200, 292, { align: 'right' });
+  }
+}
+async function _pdfBlob() {
+  await _cargarHtml2pdf();
+  // Se genera desde una copia limpia colocada en el origen de la página:
+  // así no influyen el ancho de la pantalla, el scroll ni los márgenes de la vista previa.
+  var hold = document.createElement('div');
+  hold.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;overflow:hidden';
+  var wrap = document.createElement('div');
+  wrap.className = 'pf';
+  wrap.style.cssText = 'width:718px;max-width:none;margin:0;padding:0;background:#fff';
+  wrap.innerHTML = document.getElementById('PF').innerHTML;
+  hold.appendChild(wrap);
+  document.body.appendChild(hold);
+  var sx = window.scrollX, sy = window.scrollY;
+  window.scrollTo(0, 0);
+  try {
+    var w = html2pdf().set({
+      margin: [10, 10, 12, 10],
+      filename: _nombrePdf(),
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, width: 718, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: [] }
+    }).from(wrap);
+    await w.toContainer();
+    // Se reparte en páginas la MISMA copia que se va a fotografiar (medidas exactas)
+    var cont = await w.get('container');
+    _paginarPdf(cont.querySelector('.pf') || cont.firstElementChild || cont);
+    var pdf = await w.toCanvas().toPdf().get('pdf');
+    _pdfPies(pdf);
+    return pdf.output('blob');
+  } finally { hold.remove(); window.scrollTo(sx, sy); }
+}
+async function descargarPdf() {
+  toast('Generando PDF…');
+  try {
+    var b = await _pdfBlob();
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = _nombrePdf(); a.click();
+    toast('PDF descargado ✓');
+    setTimeout(_proponerEnviado, 800);
+  } catch(e) { toast('No se pudo generar el PDF (' + e.message + '). Usa Imprimir.'); }
+}
+async function compartirPdf() {
+  toast('Preparando PDF…');
+  try {
+    var b = await _pdfBlob();
+    var f = new File([b], _nombrePdf(), { type: 'application/pdf' });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) {
+      await navigator.share({ files: [f], title: _nombrePdf().replace(/_/g, ' ').replace('.pdf', '') });
+      setTimeout(_proponerEnviado, 400);
+    } else {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(b); a.download = _nombrePdf(); a.click();
+      toast('Este dispositivo no permite enviar directamente: PDF descargado');
+      setTimeout(_proponerEnviado, 800);
+    }
+  } catch(e) {
+    if (e && e.name === 'AbortError') return;   // el usuario cerró el menú de compartir
+    toast('No se pudo preparar el PDF (' + e.message + ')');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CONDICIONES COHERENTES con IVA, validez y señal
+// ══════════════════════════════════════════════════════════════════════
+function sincronizarCondiciones() {
+  var el = document.getElementById('F-COND'); if (!el || !el.value) return;
+  var t = el.value;
+  var val = parseFloat((document.getElementById('F-VALIDEZ')||{}).value) || 30;
+  var s = parseFloat((document.getElementById('F-SENAL')||{}).value);
+  t = t.replace(/(v[aá]lido\s+)\d+(\s+d[ií]as)/i, '$1' + val + '$2');
+  t = t.replace(/(IVA:\s*)\d+(\s*%)/i, '$1' + getIVA() + '$2');
+  if (!isNaN(s)) t = t.replace(/\d+\s*%\s*al confirmar,\s*\d+\s*%\s*a la entrega/i, s + '% al confirmar, ' + (100 - s) + '% a la entrega');
+  if (t !== el.value) { el.value = t; toast('Condiciones actualizadas'); }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CONFIGURACIÓN: índice de secciones (abre una y cierra las demás)
+// ══════════════════════════════════════════════════════════════════════
+function _indiceConfig() {
+  var card = document.querySelector('#ps .card'); if (!card) return;
+  var secs = [].slice.call(card.querySelectorAll('.ss'));
+  var bar = document.getElementById('CFG-INDICE');
+  if (!bar) {
+    bar = document.createElement('div'); bar.id = 'CFG-INDICE';
+    bar.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)';
+    card.insertBefore(bar, card.firstChild);
+  }
+  bar.innerHTML = secs.map(function(s, i){
+    var h = s.querySelector('h3');
+    var t = h ? h.textContent.trim() : 'Sección';
+    return '<button class="btn bsm ' + (s.classList.contains('open') ? 'bp' : 'bgh') + '" onclick="_abrirSeccionConfig(' + i + ')">' + eh(t) + '</button>';
+  }).join('');
+}
+function _abrirSeccionConfig(i) {
+  var secs = document.querySelectorAll('#ps .card .ss');
+  secs.forEach(function(s, j){ s.classList.toggle('open', j === i); });
+  _indiceConfig();
+  if (secs[i]) secs[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -7039,6 +7807,15 @@ setTimeout(comprobarRecordatorioBackup, 2500);
 setTimeout(cargarPresentacion, 850);
 setTimeout(function(){ try{ _updProyectoBadge(); }catch(e){} }, 400);
 
+  // Condiciones del presupuesto siempre coherentes con IVA, validez y señal
+  ['F-IVA','F-VALIDEZ','F-SENAL'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('change', sincronizarCondiciones);
+  });
+  _aplicarEstadoUI();
+  setTimeout(copiaAutomaticaNube, 9000);
+  setTimeout(function(){ migrarFotosHistorial().then(limpiarFotosNube, limpiarFotosNube); }, 15000);
+
   // Acceso y sincronización con la nube
 (function(){
   setTimeout(async function(){
@@ -7080,6 +7857,7 @@ setTimeout(function(){ try{ _updProyectoBadge(); }catch(e){} }, 400);
 }
 
 arrancar();
+
 
 </script>
 <footer class="np" style="text-align:center;padding:18px 12px 22px;font-size:.79rem;color:#8888aa">
