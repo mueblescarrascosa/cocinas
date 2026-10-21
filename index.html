@@ -265,7 +265,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name">Muebles Carrascosa </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v119</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v119</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -577,9 +577,17 @@ var _syncCache = {};
 // los datos locales (quizá viejos) ANTES de descargar, y podían pisar cambios hechos en
 // otro dispositivo (precios, catálogo, configuración...).
 var _syncListo = false;
+// true cuando en esta pestaña ya no mandan los datos cargados (se está cambiando de cuenta,
+// aquí o en otra pestaña): no se escribe nada más hasta recargar
+var _cuentaAjena = false;
+// Cuenta de la nube a la que pertenecen los datos guardados en este dispositivo,
+// y la que había al abrir esta pestaña
+var UID_KEY = 'supa_uid';
+var _uidPestana = localStorage.getItem(UID_KEY);
 // Interceptar localStorage.setItem para sincronizar automáticamente las claves importantes
 var _origSetItem = localStorage.setItem.bind(localStorage);
 localStorage.setItem = function(clave, valor) {
+  if (_cuentaAjena || (_uidPestana && localStorage.getItem(UID_KEY) !== _uidPestana)) return;
   _origSetItem(clave, valor);  // guardar en local siempre
   // Si es una clave que se sincroniza, subirla a la nube
   if (CLAVES_SYNC.indexOf(clave) >= 0) {
@@ -681,11 +689,18 @@ var SEQ=1;
 var ST={
   cat: JSON.parse(localStorage.getItem('cat')||'null')||CAT0,
   prices: JSON.parse(localStorage.getItem('prices')||'{}'),
-  cfg: JSON.parse(localStorage.getItem('cfg')||'null')||{emp:'Muebles Carrascosa SL',cif:'B23237522',dir:'Calle Fuenclara, 72, Villanueva del Arz\u00f3bispo',tel:'653451270',email:'carrascosamuebles@gmail.com',web:'www.mueblescarrascosa.com',cond:'Presupuesto v\u00e1lido 30 d\u00edas.\nPrecios sin IVA. IVA: 21%.\nPago: 50% al confirmar, 50% a la entrega.'},
+  cfg: JSON.parse(localStorage.getItem('cfg')||'null')||{emp:'',cif:'',dir:'',tel:'',email:'',web:'',cond:''},
   logo: localStorage.getItem('logo')||null,
   groups: [],
   pnum: parseInt(localStorage.getItem('pnum')||'1')
 };
+// Nombre de la empresa configurada (cabecera y pantalla de acceso), o el de la app si no hay
+function _nombreEmpresa() { return ((ST.cfg && ST.cfg.emp) || '').trim() || 'Presupuestos'; }
+function _pintarNombreEmpresa() {
+  var el = document.getElementById('NOMBRE-EMP');
+  if (el) el.textContent = _nombreEmpresa() + ' ';
+}
+_pintarNombreEmpresa();
 var _tt;
 // ── GROUP TYPES ──────────────────────────────────────────────────────────────
 var TIPOS = {
@@ -867,8 +882,9 @@ function _supaHeaders() {
     'apikey': SUPA_KEY,
     'Content-Type': 'application/json'
   };
-  // Si hay sesión, usar el token del usuario; si no, la clave pública
-  h['Authorization'] = 'Bearer ' + (SUPA_TOKEN || SUPA_KEY);
+  // Si hay sesión de la cuenta dueña de los datos locales, usar su token; si no, la clave pública
+  // (que no tiene acceso: así una pestaña con datos de otra cuenta no puede subir nada)
+  h['Authorization'] = 'Bearer ' + (SUPA_TOKEN && _cuentaCoincide() ? SUPA_TOKEN : SUPA_KEY);
   return h;
 }
 
@@ -931,10 +947,33 @@ function supaLogout() {
   location.reload();
 }
 
-// ¿Hay sesión activa?
+// ¿Hay sesión activa? (y es de la cuenta dueña de los datos de este dispositivo)
 function haySesion() {
-  return !!SUPA_TOKEN;
+  return !!SUPA_TOKEN && _cuentaCoincide();
 }
+
+// Si entra otra cuenta, los datos de la anterior no deben subirse a la nueva (UID_KEY, arriba).
+function _uidDeToken(t) {
+  try { return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub || null; } catch(e) { return null; }
+}
+// Datos de trabajo de una cuenta (la sesión nueva se conserva)
+function _clavesDeCuenta() {
+  return CLAVES_SYNC.concat(['historial_v1', CLAVE_BORRADOS, 'ultimo_backup', 'ultima_copia_nube', 'ultima_limpieza_fotos']);
+}
+function _hayDatosLocales() {
+  return _clavesDeCuenta().some(function(k){ return localStorage.getItem(k) !== null; });
+}
+function _cuentaCoincide() {
+  var uid = SUPA_TOKEN ? _uidDeToken(SUPA_TOKEN) : null;
+  return !uid || localStorage.getItem(UID_KEY) === uid;
+}
+// Si en otra pestaña se entra con otra cuenta, esta deja de escribir y se recarga
+// (si no, volvería a guardar en el dispositivo los datos de la cuenta anterior)
+window.addEventListener('storage', function(e) {
+  if (e.key !== UID_KEY || !e.oldValue || e.newValue === e.oldValue || _cuentaAjena) return;
+  _cuentaAjena = true;
+  location.reload();
+});
 
 // Mostrar la pantalla de login
 function mostrarLogin(mensaje) {
@@ -945,7 +984,7 @@ function mostrarLogin(mensaje) {
     div.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:#1a1a2e;display:flex;align-items:center;justify-content:center;padding:20px';
     div.innerHTML = '<div style="background:#fff;border-radius:16px;padding:32px 28px;max-width:380px;width:100%;box-shadow:0 10px 50px rgba(0,0,0,.3)">'
       + '<div style="text-align:center;margin-bottom:24px">'
-      + '<div style="font-family:\'DM Serif Display\',serif;font-size:1.5rem;color:#1a1a2e">Muebles Carrascosa</div>'
+      + '<div style="font-family:\'DM Serif Display\',serif;font-size:1.5rem;color:#1a1a2e">' + eh(_nombreEmpresa()) + '</div>'
       + '<div style="color:#888;font-size:.85rem;margin-top:4px">Acceso al presupuestador</div>'
       + '</div>'
       + '<div id="LOGIN-MSG" style="display:none;background:#f8d7da;color:#842029;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-bottom:14px"></div>'
@@ -986,6 +1025,27 @@ async function hacerLogin() {
   msg.style.display = 'none';
   var r = await supaLogin(email, pass);
   if (r.ok) {
+    var uid = _uidDeToken(SUPA_TOKEN), uidPrevio = localStorage.getItem(UID_KEY);
+    if (uid && uidPrevio && uid !== uidPrevio && _hayDatosLocales()) {
+      if (!confirm('Este dispositivo tiene datos de OTRA cuenta.\n\n' +
+                   'Aceptar: se descarga una copia de esos datos y se vacían de este dispositivo antes de entrar.\n' +
+                   'Cancelar: no se entra y los datos se quedan como están.')) {
+        supaLogout();
+        return;
+      }
+      // Mientras tanto la cuenta apuntada sigue siendo la anterior, así que haySesion() es
+      // false y no se sincroniza nada; si algo corta aquí, al volver a abrir se pregunta otra vez.
+      descargarCopiaSeguridad();
+      _cuentaAjena = true;   // esta pestaña ya no guarda nada de la cuenta anterior
+      // con margen para que empiece la descarga: vaciar, apuntar la cuenta nueva y arrancar limpio
+      setTimeout(function(){
+        _clavesDeCuenta().forEach(function(k){ try { localStorage.removeItem(k); } catch(e){} });
+        _origSetItem(UID_KEY, uid);
+        location.reload();
+      }, 1500);
+      return;
+    }
+    if (uid) { localStorage.setItem(UID_KEY, uid); _uidPestana = uid; }
     ocultarLogin();
     // Cargar los datos ahora que hay sesión
     await supaCargarTodo();
@@ -1024,7 +1084,7 @@ async function supaGuardarClave(clave, valor) {
   try {
     var datos;
     try { datos = JSON.parse(valor); } catch(e) { datos = valor; } // si no es JSON, guardar como texto
-    var resp = await fetch(SUPA_URL + '/rest/v1/presupuestos?on_conflict=clave', {
+    var resp = await fetch(SUPA_URL + '/rest/v1/presupuestos?on_conflict=user_id,clave', {
       method: 'POST',
       headers: Object.assign(_supaHeaders(), {'Prefer': 'resolution=merge-duplicates,return=minimal'}),
       body: JSON.stringify({ clave: clave, datos: datos })
@@ -1284,7 +1344,7 @@ async function supaGuardarHistorial(h) {
   _histCache = h;
   try {
     // V114: upsert en una sola petición
-    var resp = await fetch(SUPA_URL + '/rest/v1/presupuestos?on_conflict=clave', {
+    var resp = await fetch(SUPA_URL + '/rest/v1/presupuestos?on_conflict=user_id,clave', {
       method: 'POST',
       headers: Object.assign(_supaHeaders(), {'Prefer': 'resolution=merge-duplicates,return=minimal'}),
       body: JSON.stringify({ clave: 'historial_v1', datos: h })
@@ -5262,7 +5322,7 @@ function _saveCfgEmpresa() {
     web:document.getElementById('SW').value,
     cond:document.getElementById('SN').value
   };
-  save();toast('Guardado \u2713');
+  save();_pintarNombreEmpresa();toast('Guardado \u2713');
 }
 function _saveCfgParametros() {
   var gv = function(id,d){ var el=document.getElementById(id); return el?(parseFloat(el.value)||d):d; };
@@ -7655,41 +7715,23 @@ if (ST.params.mo_frente_puerta === undefined) ST.params.mo_frente_puerta = 10;
 if (ST.params.mo_frente_cajon === undefined) ST.params.mo_frente_cajon = 15;
 if (ST.params.ref_bisagra_cambio === undefined) ST.params.ref_bisagra_cambio = 2.5;
 (function(){
-  var PRESENTACION_DEFAULT = "MUEBLES CARRASCOSA\n\nGracias por confiar en nosotros para su proyecto de cocina.\n\nMuebles Carrascosa es una empresa familiar fundada por nuestro abuelo en 1969 en Villanueva del Arzobispo. Desde entonces seguimos dedic\u00e1ndonos al dise\u00f1o, fabricaci\u00f3n y montaje de mobiliario de cocina a medida, hoy con la segunda y tercera generaci\u00f3n trabajando juntas, manteniendo el mismo compromiso de siempre: un trabajo bien hecho y cercano.\n\nTrabajamos con materiales de calidad y herrajes de primeras marcas, cuidando cada detalle para ofrecer un resultado duradero, funcional y adaptado a sus necesidades. Nos encargamos de todo el proceso: el asesoramiento inicial, la toma de medidas, la fabricaci\u00f3n y la instalaci\u00f3n final.\n\nA continuaci\u00f3n encontrar\u00e1 el detalle de su presupuesto, as\u00ed como la informaci\u00f3n t\u00e9cnica del proyecto.";
-  var TECNICO_DEFAULT = "INFORMACI\u00d3N T\u00c9CNICA DEL PROYECTO\n\nEste documento detalla las condiciones t\u00e9cnicas del proyecto: qu\u00e9 incluye el presupuesto, las preinstalaciones que debe preparar el cliente y las caracter\u00edsticas del mobiliario. Las medidas y alturas indicadas son orientativas y se miden desde el suelo.\n\n\n1. ALCANCE DEL PRESUPUESTO\n\nEl presupuesto cubre el suministro y montaje del mobiliario de cocina.\n\nNo se incluyen trabajos de alba\u00f1iler\u00eda, fontaner\u00eda, electricidad, gas, alicatado, solado, pintura ni desescombro, ni la modificaci\u00f3n de instalaciones existentes. En caso de ser necesarios, correr\u00e1n por cuenta del cliente o se presupuestar\u00e1n aparte.\n\n\n2. PREINSTALACIONES (a cargo del cliente)\n\nLas instalaciones deben estar terminadas y en las posiciones adecuadas antes de la fecha de montaje.\n\n2.1. Fontaner\u00eda\n- Tomas de agua fr\u00eda y caliente accesibles bajo el fregadero.\n- Desag\u00fces a una altura aproximada de 40-50 cm.\n- Toma de agua y desag\u00fce previstos para el lavavajillas.\n- Para sistema de \u00f3smosis o filtro de agua: prever toma de agua y desag\u00fce adicionales bajo el fregadero, y espacio para el equipo. Consultar antes del montaje.\n\n2.2. Electricidad \u2014 Tomas generales\n- Las tomas de corriente deben situarse a un m\u00ednimo de 50 cm del fregadero y de la placa de cocci\u00f3n (normativa REBT, ITC-BT-25).\n- Se recomienda un m\u00ednimo de 6 tomas en la cocina, con al menos 3-4 sobre la encimera para peque\u00f1os electrodom\u00e9sticos, distribuidas cada 60-80 cm.\n- Conviene prever alguna toma libre adicional para futuras necesidades.\n- Tomas sobre encimera a una altura aproximada de 110 cm (por encima del copete, para enchufar con comodidad).\n\n2.3. Electricidad \u2014 Electrodom\u00e9sticos (cada uno con toma independiente)\n- Frigor\u00edfico: toma a 40-50 cm, lo m\u00e1s cerca posible del aparato.\n- Horno: toma de 16A con toma de tierra, a 20-30 cm.\n- Placa de cocci\u00f3n: en inducci\u00f3n, toma/l\u00ednea de 25A seg\u00fan potencia. Para placas de gas, instalaci\u00f3n por instalador autorizado.\n- Lavavajillas: toma de 16A con toma de tierra, a 40-50 cm.\n- Lavadora (si va en cocina): toma de 16A, a 40-50 cm.\n\n2.4. Electricidad \u2014 Columnas y muebles en altura\n- Columna con horno y microondas: dos tomas (una por aparato) a una altura aproximada de 155 cm.\n- Columna con un solo electrodom\u00e9stico: una toma a una altura aproximada de 120 cm.\n- Semicolumna: una toma a una altura aproximada de 110 cm.\n- Microondas en mueble alto: toma a una altura aproximada de 155 cm.\n\n2.5. Electricidad \u2014 Campana extractora\n- Toma descentrada unos 7 cm respecto al eje, para que no interfiera con el tubo de extracci\u00f3n y quede dentro del embellecedor.\n- Altura aproximada de 185 cm.\n\n2.6. Electricidad \u2014 Iluminaci\u00f3n LED (opcional)\n- Si se desea iluminaci\u00f3n LED bajo los muebles altos o en el interior, debe preverse la instalaci\u00f3n el\u00e9ctrica correspondiente. Consultar con el electricista antes del montaje.\n\n\n3. CARACTER\u00cdSTICAS DEL MOBILIARIO\n\n3.1. Configuraci\u00f3n de muebles bajos\n- Configuraci\u00f3n est\u00e1ndar: patas de 15 cm + mueble de 70 cm.\n- Configuraci\u00f3n especial: patas de 10 cm + mueble de 80 cm, +10% sobre el precio base (ofrece m\u00e1s espacio de almacenamiento y requiere menos z\u00f3calo).\n- La altura final de la encimera quedar\u00e1 entre 87 y 92 cm seg\u00fan la configuraci\u00f3n elegida.\n- En la configuraci\u00f3n de mueble de 80 cm + pata de 10 cm, la encimera no deber\u00e1 superar los 20 mm de grosor, para mantener una altura de trabajo correcta.\n- Para muebles con herraje tipo gola, la configuraci\u00f3n ser\u00e1 obligatoriamente de patas de 10 cm + mueble de 80 cm.\n\n3.2. Fondos \u00fatiles\n- Muebles altos: 33 cm.\n- Muebles bajos: 56 cm.\n- Muebles sobre frigor\u00edfico: aproximadamente 48 cm.\n- Columnas con horno: fondo especial de 48 cm para permitir la ventilaci\u00f3n del aparato. Se garantizar\u00e1 la ventilaci\u00f3n necesaria de cada electrodom\u00e9stico seg\u00fan sus requisitos.\n\n3.3. Herrajes y acabados\n- Cajones y gavetas con gu\u00edas de extracci\u00f3n total y cierre amortiguado (con freno), capacidad de carga hasta 35 kg.\n- Bisagras con cierre amortiguado (con freno) en todas las puertas.\n- Herrajes de calidad con regulaci\u00f3n en altura y profundidad.\n- Patas regulables que permiten nivelar el mueble en suelos irregulares.\n\n\n4. SUMINISTRO E INSTALACI\u00d3N DE ELECTRODOM\u00c9STICOS\n\n- Los electrodom\u00e9sticos suministrados por Muebles Carrascosa incluyen la instalaci\u00f3n sin coste adicional.\n- Si el cliente aporta sus propios electrodom\u00e9sticos, deber\u00e1 comunicarnos sus medidas antes de iniciar el proyecto, para fabricar los muebles correctamente. En este caso, la instalaci\u00f3n tendr\u00e1 un coste que depender\u00e1 de cada electrodom\u00e9stico.\n\n\n5. CONDICIONES DE MONTAJE\n\n- Los muebles altos se instalar\u00e1n a una altura de entre 140 y 150 cm desde el suelo (medida de la parte inferior del mueble), a elecci\u00f3n del cliente.\n- El montaje se realizar\u00e1 una vez las preinstalaciones est\u00e9n finalizadas y las paredes y el suelo en condiciones.\n- Las medidas definitivas se tomar\u00e1n a obra terminada, antes de fabricar.\n- Cualquier modificaci\u00f3n posterior a la aprobaci\u00f3n del presupuesto podr\u00e1 suponer un ajuste en el precio y los plazos.\n\n\n6. GARANT\u00cdA\n\nMobiliario y herrajes con garant\u00eda seg\u00fan fabricante. La garant\u00eda no cubre el uso indebido, golpes, humedad por filtraciones ajenas al mueble ni el desgaste normal.";
-
-  // --- PRESENTACIÓN (campo F-PRESENT, clave presentacion_base_v1) ---
-  var presActual = localStorage.getItem('presentacion_base_v1');
-  if (!presActual) {
-    localStorage.setItem('presentacion_base_v1', PRESENTACION_DEFAULT);
-  }
-
-  // --- TÉCNICO (campo F-TEXTO, clave texto_base_v1) ---
+  // Sin presentación ni texto técnico por defecto: cada cuenta escribe y guarda los suyos.
+  // --- TÉCNICO (campo F-TEXTO, clave texto_base_v1): ajustes sobre un texto ya guardado ---
   var tecActual = localStorage.getItem('texto_base_v1');
+  if (!tecActual) return;
   // Migración: si el texto guardado contiene la presentación pegada (versiones
   // anteriores con separador), nos quedamos solo con la parte técnica.
-  if (tecActual && tecActual.indexOf('\u2550\u2550\u2550') >= 0) {
-    var sep = tecActual.indexOf('\u2550\u2550\u2550');
-    tecActual = tecActual.slice(sep).replace(/^\u2550+/,'').trim();
+  if (tecActual.indexOf('═══') >= 0) {
+    var sep = tecActual.indexOf('═══');
+    tecActual = tecActual.slice(sep).replace(/^═+/,'').trim();
     localStorage.setItem('texto_base_v1', tecActual);
   }
-  // Detectar versión antigua nuestra (empieza por MUEBLES CARRASCOSA o por la
-  // cabecera técnica) y actualizar a la técnica nueva. Personalizado no se toca.
-  var esNuestroAntiguo = tecActual && (
-    tecActual.indexOf('MUEBLES CARRASCOSA') === 0 ||
-    (tecActual.indexOf('INFORMACIÓN TÉCNICA DEL PROYECTO') === 0 &&
-     tecActual.indexOf('SUMINISTRO E INSTALACIÓN DE ELECTRODOMÉSTICOS') < 0)
-  );
-  if (!tecActual || esNuestroAntiguo) {
-    localStorage.setItem('texto_base_v1', TECNICO_DEFAULT);
-  } else {
-    var _t2 = tecActual;
-    // "recomendada" \u2192 "especial"
-    if (_t2.indexOf('Configuraci\u00f3n recomendada') >= 0) _t2 = _t2.split('Configuraci\u00f3n recomendada').join('Configuraci\u00f3n especial');
-    // A\u00f1adir "+10% sobre el precio base" a la configuraci\u00f3n especial (si falta)
-    if (_t2.indexOf('mueble de 80 cm (ofrece') >= 0) _t2 = _t2.split('mueble de 80 cm (ofrece').join('mueble de 80 cm, +10% sobre el precio base (ofrece');
-    if (_t2 !== tecActual) localStorage.setItem('texto_base_v1', _t2);
-  }
+  var _t2 = tecActual;
+  // "recomendada" → "especial"
+  if (_t2.indexOf('Configuración recomendada') >= 0) _t2 = _t2.split('Configuración recomendada').join('Configuración especial');
+  // Añadir "+10% sobre el precio base" a la configuración especial (si falta)
+  if (_t2.indexOf('mueble de 80 cm (ofrece') >= 0) _t2 = _t2.split('mueble de 80 cm (ofrece').join('mueble de 80 cm, +10% sobre el precio base (ofrece');
+  if (_t2 !== tecActual) localStorage.setItem('texto_base_v1', _t2);
 })();
 (function(){
   try {
@@ -7776,7 +7818,7 @@ document.addEventListener('click', function(e){
   if (!e.target.closest('.menu-wrap')) closeMenus();
 });
 window.addEventListener('beforeunload', function(e){
-  if (_dirty && totalL() > 0) {
+  if (_dirty && totalL() > 0 && !_cuentaAjena) {
     e.preventDefault();
     e.returnValue = '';
   }
@@ -7819,7 +7861,10 @@ setTimeout(function(){ try{ _updProyectoBadge(); }catch(e){} }, 400);
   // Acceso y sincronización con la nube
 (function(){
   setTimeout(async function(){
-    // Si no hay sesión iniciada, mostrar la pantalla de login
+    // Sesión guardada sin cuenta apuntada (dispositivos anteriores a este aviso): es la dueña
+    if (SUPA_TOKEN && !localStorage.getItem(UID_KEY)) { var u = _uidDeToken(SUPA_TOKEN); if (u) { localStorage.setItem(UID_KEY, u); _uidPestana = u; } }
+    // Sin sesión, o con la sesión de otra cuenta (cambio cortado a medias): pedir login,
+    // que es donde se avisa y se vacían los datos de la cuenta anterior
     if (!haySesion()) {
       mostrarLogin();
       return;
