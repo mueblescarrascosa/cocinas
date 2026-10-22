@@ -9,7 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="Presupuestos">
 <meta name="application-name" content="Presupuestos">
 <meta name="theme-color" content="#1a1a2e">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a1a2e'/><text y='68' x='50' text-anchor='middle' font-size='58' font-family='Arial'>🪵</text></svg>">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Muebles Carrascosa</title>
 <style>
@@ -7909,5 +7910,17 @@ arrancar();
 Dise&#241;ado y dirigido por <strong>Alfonso Carrascosa Mart&#237;nez</strong> &#183; programado con Claude (Anthropic) &#183; Muebles Carrascosa SL &#169; 2026
 </footer>
 <div class="cliente-badge" onclick="toggleClienteMode()" title="Clic para volver al modo normal">&#x1F441; Modo cliente activo · clic para salir</div>
+<!-- App instalable: service worker (abre sin cobertura) y botón "Instalar app" (sale solo cuando Chrome ofrece instalarla) -->
+<style>#btn-instalar{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:9999;border:0;border-radius:999px;padding:11px 16px;font:600 14px/1 system-ui,-apple-system,sans-serif;background:#1a1a2e;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.28);cursor:pointer}#btn-instalar[hidden]{display:none}</style>
+<button id="btn-instalar" type="button" hidden>📲 Instalar app</button>
+<script>
+(function(){
+  if ("serviceWorker" in navigator && location.protocol === "https:") window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+  var aviso=null, b=document.getElementById("btn-instalar");
+  window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); aviso=e; b.hidden=false; });
+  b.addEventListener("click", function(){ if(!aviso) return; aviso.prompt(); aviso.userChoice.then(function(){ aviso=null; b.hidden=true; }); });
+  window.addEventListener("appinstalled", function(){ aviso=null; b.hidden=true; });
+})();
+</script>
 </body>
 </html>
