@@ -262,14 +262,43 @@ body.bloq #ESTADO-AVISO { display:block; }
   #pp > .np { flex-wrap:wrap; }
   #HISTMOD .btn.bsm { padding:6px 8px !important; min-height:34px; font-size:13px !important; }
 }
+/* v120: todo a mano y botones en una sola línea */
+.ba #dirty-ind { flex:1 0 100%; order:-1; }
+.ba .menu-wrap { flex:1 1 auto; min-width:0; }
+.ba .menu-wrap > .btn { width:100%; white-space:nowrap; }
+@media (max-width: 600px) {
+  .ba { flex-wrap:wrap; gap:5px !important; }
+  .ba .menu-wrap { flex:1 1 auto !important; }
+  .ba .btn { padding:9px 4px !important; font-size:13px !important; justify-content:center; }
+  .ba .mico { display:none; }
+  #pp > .np { flex-wrap:nowrap !important; gap:6px; }
+  #pp > .np .btn { flex:1 1 auto; white-space:nowrap; padding:8px 6px !important; font-size:13px !important; }
+}
+#ntodo { font-weight:700; }
+@media (max-width: 480px) {
+  /* Que quepan todos los botones de arriba sin deslizar: sin logo, «Todo» como icono */
+  nav .logo { display:none !important; }
+  nav button { padding:0 8px !important; }
+  #ntodo { font-size:0 !important; padding:0 12px !important; }
+  #ntodo::before { content:'\2630'; font-size:19px; }
+}
+#TODO-MOD { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:400; align-items:flex-start; justify-content:center; padding:4vh 10px; }
+#TODO-MOD .tdc { background:#fff; border-radius:12px; width:520px; max-width:100%; max-height:92vh; display:flex; flex-direction:column; box-shadow:0 8px 40px rgba(0,0,0,.25); }
+#TODO-MOD .tdh { display:flex; gap:8px; align-items:center; padding:14px 14px 10px; border-bottom:1px solid var(--line); }
+#TODO-MOD .tdh input { flex:1; padding:10px 12px; font-size:16px; border:1px solid #ddd; border-radius:8px; }
+#TODO-MOD .tdl { overflow-y:auto; padding:6px 14px 14px; }
+#TODO-MOD .tdg { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#888; margin:12px 0 4px; }
+#TODO-MOD .tdi { display:block; width:100%; text-align:left; background:none; border:0; border-top:1px solid #f0f0f0; padding:11px 4px; font:inherit; font-size:.95rem; cursor:pointer; color:inherit; }
+#TODO-MOD .tdi:hover { background:#f6f6f6; }
 </style>
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v119</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v120</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
+  <button onclick="abrirTodo()" id="ntodo" title="Todas las funciones, con buscador">&#x2630; Todo</button>
   <button onclick="toggleClienteMode()" id="nclient" style="margin-left:auto;background:#2d6a4f;color:#fff" title="Oculta costes, m&#225;rgenes y rentabilidad para presupuestar delante del cliente">&#x1F441; Modo cliente</button>
 </nav>
 
@@ -357,7 +386,7 @@ body.bloq #ESTADO-AVISO { display:block; }
     <div class="ba">
       <span id="dirty-ind" style="display:none;align-items:center;gap:5px;font-size:.79rem;color:#ffd700;margin-right:4px" title="Tienes cambios sin guardar">&#x25CF; Sin guardar</span>
       <div class="menu-wrap">
-        <button class="btn bgold" onclick="toggleMenu('m-docs')">&#x1F4C4; Documentos &#x25BE;</button>
+        <button class="btn bgold" onclick="toggleMenu('m-docs')"><span class="mico">&#x1F4C4; </span>Documentos &#x25BE;</button>
         <div class="menu-drop" id="m-docs">
           <a onclick="showPDF();closeMenus()">&#x1F4C4; PDF para cliente</a>
           <a onclick="fichaTaller();closeMenus()">&#x1F4CB; Ficha de taller (sin precios)</a>
@@ -367,7 +396,7 @@ body.bloq #ESTADO-AVISO { display:block; }
         </div>
       </div>
       <div class="menu-wrap hide-cliente">
-        <button class="btn bgh" style="color:#fff;border-color:rgba(255,255,255,.2)" onclick="toggleMenu('m-anal')">&#x1F4CA; An&#225;lisis &#x25BE;</button>
+        <button class="btn bgh" style="color:#fff;border-color:rgba(255,255,255,.2)" onclick="toggleMenu('m-anal')"><span class="mico">&#x1F4CA; </span>An&#225;lisis &#x25BE;</button>
         <div class="menu-drop" id="m-anal">
           <a onclick="openComparador();closeMenus()">&#x2696; Comparar calidades</a>
           <a onclick="openRentabilidad();closeMenus()">&#x1F4CA; Rentabilidad (privado)</a>
@@ -375,7 +404,7 @@ body.bloq #ESTADO-AVISO { display:block; }
         </div>
       </div>
       <div class="menu-wrap">
-        <button class="btn bgh" style="color:#fff;border-color:rgba(255,255,255,.2)" onclick="toggleMenu('m-file')">&#x1F4BE; Archivo &#x25BE;</button>
+        <button class="btn bgh" style="color:#fff;border-color:rgba(255,255,255,.2)" onclick="toggleMenu('m-file')"><span class="mico">&#x1F4BE; </span>Archivo &#x25BE;</button>
         <div class="menu-drop" id="m-file">
           <a onclick="guardarProyecto();closeMenus()">&#x1F4BE; Guardar proyecto</a><a onclick="saveBudgetFile();closeMenus()">&#x1F4BE; Guardar como archivo</a>
           <label style="display:block"><span>&#x1F4C2; Abrir desde archivo</span><input type="file" accept=".json" style="display:none" onchange="loadBudgetFile(event);closeMenus()"></label>
@@ -414,7 +443,7 @@ body.bloq #ESTADO-AVISO { display:block; }
     <div style="margin-top:12px">
       <lbl>&#x1F3E2; Presentaci&#xF3;n de empresa (al principio del PDF, tras la portada)</lbl>
       <textarea id="F-PRESENT" rows="4" style="width:100%;font-size:.82rem;padding:8px;resize:vertical;font-family:inherit" placeholder="Texto de presentaci&#xF3;n que aparecer&#xE1; al principio del presupuesto."></textarea>
-      <button class="btn bgh bsm" style="margin-top:6px;max-width:100%;white-space:normal" onclick="guardarPresentacion()" title="Guarda esta presentaci&#xF3;n para los pr&#xF3;ximos presupuestos">&#x1F4BE; Guardar como presentaci&#xF3;n por defecto</button>
+      <button class="btn bgh bsm" style="margin-top:6px;max-width:100%;white-space:normal" onclick="guardarPresentacion()" title="Guarda esta presentaci&#xF3;n para los pr&#xF3;ximos presupuestos">&#x1F4BE; Usar siempre esta presentaci&#xF3;n</button>
     </div>
     <div style="margin-top:12px">
       <lbl>&#x1F4C4; Texto explicativo (al final del PDF: herrajes, alturas, qué incluye...)</lbl>
@@ -533,8 +562,8 @@ body.bloq #ESTADO-AVISO { display:block; }
 
 <div class="pg" id="pp">
   <div class="np" style="display:flex;gap:9px;margin-bottom:20px">
-    <button class="btn bp" onclick="descargarPdf()">&#x2B07; Descargar PDF</button>
-    <button class="btn bgold" onclick="compartirPdf()">&#x1F4E4; Enviar PDF</button>
+    <button class="btn bp" onclick="descargarPdf()" title="Descargar PDF">&#x2B07; Descargar</button>
+    <button class="btn bgold" onclick="compartirPdf()" title="Enviar PDF">&#x1F4E4; Enviar</button>
     <button class="btn bgh" onclick="window.print()">&#x1F5A8; Imprimir</button>
     <button class="btn bgh" onclick="go('b')">&#x2190; Volver</button>
   </div>
@@ -542,7 +571,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </div>
 
 <script>
-// Muebles Carrascosa · Presupuestador · v119
+// Muebles Carrascosa · Presupuestador · v120
 // Estructura: datos y estado → funciones por área → arranque (al final del archivo).
 // Cada función está definida UNA sola vez. Para cambiar algo, edítalo en su sitio.
 
@@ -7550,6 +7579,67 @@ function _abrirSeccionConfig(i) {
   secs.forEach(function(s, j){ s.classList.toggle('open', j === i); });
   _indiceConfig();
   if (secs[i]) secs[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// TODO: cada función de la app en una lista con buscador (v120)
+// Se monta leyendo los menús de verdad (Documentos, Análisis, Archivo) y las secciones de
+// Configuración, así que si se añade algo a un menú aparece aquí solo.
+// ══════════════════════════════════════════════════════════════════════
+function _todoItems() {
+  var it = [], visible = function(el){ return el && getComputedStyle(el).display !== 'none'; };
+  it.push({ g:'Ir a', t:'📝 Presupuesto', f:function(){ go('b'); } });
+  if (visible(document.getElementById('nc'))) it.push({ g:'Ir a', t:'📚 Catálogo', f:function(){ go('c'); } });
+  if (visible(document.getElementById('ns'))) it.push({ g:'Ir a', t:'⚙️ Configuración', f:function(){ go('s'); } });
+  it.push({ g:'Ir a', t:'👁 ' + (_clienteMode ? 'Quitar el modo cliente' : 'Modo cliente (oculta costes)'), f:toggleClienteMode });
+  document.querySelectorAll('.ba .menu-wrap').forEach(function(w){
+    if (!visible(w)) return;
+    var g = (w.querySelector(':scope > .btn') || {}).textContent || '';
+    g = g.replace(/[▾]/g, '').replace(/^[^A-Za-zÁÉÍÓÚáéíóú]+/, '').trim();
+    w.querySelectorAll('.menu-drop > a, .menu-drop > label').forEach(function(el){
+      if (!visible(el)) return;
+      var inp = el.tagName === 'LABEL' ? el.querySelector('input') : null;
+      it.push({ g:g, t:el.textContent.trim(), f:function(){ if (inp) inp.click(); else el.click(); } });
+    });
+  });
+  if (visible(document.getElementById('ns'))) {
+    document.querySelectorAll('#ps .card .ss').forEach(function(s, i){
+      var h = s.querySelector('h3'); if (!h) return;
+      it.push({ g:'Configuración', t:h.textContent.trim(), f:function(){ go('s'); setTimeout(function(){ _abrirSeccionConfig(i); }, 60); } });
+    });
+  }
+  return it;
+}
+function abrirTodo() {
+  if (typeof closeMenus === 'function') closeMenus();
+  var m = document.getElementById('TODO-MOD');
+  if (!m) {
+    m = document.createElement('div'); m.id = 'TODO-MOD';
+    m.innerHTML = '<div class="tdc"><div class="tdh"><input type="search" id="TODO-Q" placeholder="¿Qué buscas? (PDF, herrajes, copia, IVA…)" autocomplete="off">'
+      + '<button class="btn bgh" onclick="cerrarTodo()">Cerrar</button></div><div class="tdl" id="TODO-L"></div></div>';
+    m.addEventListener('click', function(e){ if (e.target === m) cerrarTodo(); });
+    document.body.appendChild(m);
+    document.getElementById('TODO-Q').addEventListener('input', _pintaTodo);
+  }
+  if (document.getElementById('ps') && !document.querySelector('#ps .card .ss')) { try { renderSettings(); } catch (e) {} }
+  m._items = _todoItems();
+  document.getElementById('TODO-Q').value = '';
+  _pintaTodo();
+  m.style.display = 'flex';
+}
+function cerrarTodo() { var m = document.getElementById('TODO-MOD'); if (m) m.style.display = 'none'; }
+function _pintaTodo() {
+  var m = document.getElementById('TODO-MOD'), q = document.getElementById('TODO-Q').value;
+  var norm = function(s){ return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
+  var its = m._items.filter(function(x){ return !q || norm(x.g + ' ' + x.t).indexOf(norm(q)) >= 0; });
+  var html = '', g = null;
+  its.forEach(function(x){
+    if (x.g !== g) { g = x.g; html += '<div class="tdg">' + eh(g) + '</div>'; }
+    html += '<button class="tdi" data-i="' + m._items.indexOf(x) + '">' + eh(x.t) + '</button>';
+  });
+  var L = document.getElementById('TODO-L');
+  L.innerHTML = html || '<p style="color:#888;padding:12px 4px">No hay nada con ese nombre.</p>';
+  L.querySelectorAll('.tdi').forEach(function(b){ b.onclick = function(){ var x = m._items[+b.dataset.i]; cerrarTodo(); x.f(); }; });
 }
 
 // ══════════════════════════════════════════════════════════════════════
