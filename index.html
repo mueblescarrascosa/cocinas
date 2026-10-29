@@ -5158,7 +5158,7 @@ function abrirGestorFrentes() {
 }
 
 // Importar la lista de modelos desde el Excel «modelos_por_grupo» (tarifa por grupos):
-// Grupo | Calidad | Marca | Modelo / Acabado | Precio frente € | Colores | Sobre su grupo %
+// Grupo | Calidad | Marca | Modelo / Acabado | Precio frente € | Colores | Sobre su grupo % | Precio puerta €
 async function importarModelosExcel(input) {
   var file = input.files[0];
   if (!file) return;
@@ -5197,9 +5197,9 @@ async function importarModelosExcel(input) {
       var texto = String(v(rows[r],'D')||'');
       if (/LAMINADO/i.test(marca)) texto = texto.replace(/\s*·\s*G1$/, '');   // los laminados no tienen grupo de fabricante
       texto = texto.replace(/\s*·\s*/g,' ').replace(/\bG(\d)\b/g,'GRUPO $1').trim();
-      var f = v(rows[r],'E'), d = v(rows[r],'G');
+      var f = v(rows[r],'E'), d = v(rows[r],'G'), pu = v(rows[r],'H');
       var m = {marca:marca, modelo:texto, g:g,
-               f:(typeof f==='number'?Math.round(f*100)/100:null), p:null, r:null,
+               f:(typeof f==='number'?Math.round(f*100)/100:null), p:(typeof pu==='number'?Math.round(pu*100)/100:null), r:null,
                d:(typeof d==='number'?d:null), am:am, colores:String(v(rows[r],'F')||'')};
       _parseFrenteV3(m);
       nuevos.push(m);
