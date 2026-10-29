@@ -265,6 +265,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 /* v120: todo a mano y botones en una sola línea */
 /* v121: el aviso «Sin guardar» ocupa su propia fila; sin flex-wrap los botones se quedaban sin ancho y se montaban */
 /* v122: semáforo de modelos, ajuste automático, arranque sin recarga y menús sin subir/bajar nube */
+/* v123: casco por acabado y altura de bajos (70/80) por grupo, plantilla v13, módulos de cocina puente */
 .ba { flex-wrap:wrap; justify-content:flex-end; align-items:center; }
 .ba #dirty-ind { flex:1 0 100%; order:-1; justify-content:flex-end; }
 .ba .menu-wrap { flex:0 0 auto; min-width:max-content; }
@@ -298,7 +299,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v122</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v123</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -571,7 +572,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </div>
 
 <script type="text/x-presupuestador" id="APP-SRC">
-// Muebles Carrascosa · Presupuestador · v122
+// Muebles Carrascosa · Presupuestador · v123
 // Estructura: datos y estado → funciones por área → arranque (al final del archivo).
 // Cada función está definida UNA sola vez. Para cambiar algo, edítalo en su sitio.
 
@@ -752,7 +753,7 @@ var _catCalCR = {costados:0, regletas:0};
 var curPriceTab = 'muebles';
 var MODMAP_DEFAULT = {"BAJO 1 PUERTA 30":{"nombre":"BAJO 1 PUERTA 30","casco":24,"montaje":10,"cant1":1,"f1":[13.18,18.91,36.4,43.55,50.08,60.74,67.91,81.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 1 PUERTA 40":{"nombre":"BAJO 1 PUERTA 40","casco":27,"montaje":10,"cant1":1,"f1":[15.39,22.84,40.6,48.56,54.86,65.53,73.64,88.36],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 1 PUERTA 50":{"nombre":"BAJO 1 PUERTA 50","casco":29,"montaje":10,"cant1":1,"f1":[17.59,26.78,48.52,57.92,64.19,77.88,79.36,95.23],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 1 PUERTA 60":{"nombre":"BAJO 1 PUERTA 60","casco":31,"montaje":10,"cant1":1,"f1":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 2 PUERTAS 70":{"nombre":"BAJO 2 PUERTAS 70","casco":35,"montaje":15,"cant1":2,"f1":[30.48,41.36,76.1,90.98,104.62,124.92,141.54,169.86],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 2 PUERTAS 80":{"nombre":"BAJO 2 PUERTAS 80","casco":38,"montaje":15,"cant1":2,"f1":[30.78,45.68,81.2,97.12,109.72,131.06,147.28,176.72],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 2 PUERTAS 90":{"nombre":"BAJO 2 PUERTAS 90","casco":40,"montaje":15,"cant1":2,"f1":[32.54,49.24,88.88,105.9,122.68,153.36,153,183.6],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 2 PUERTAS 100":{"nombre":"BAJO 2 PUERTAS 100","casco":44,"montaje":15,"cant1":2,"f1":[35.18,53.56,97.04,115.84,128.38,155.76,158.72,190.46],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 2 PUERTAS 120":{"nombre":"BAJO 2 PUERTAS 120","casco":50,"montaje":15,"cant1":2,"f1":[39.98,60.7,112.14,134.26,151.24,183.52,170.16,204.2],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 1 GAVETERO 2 CACEROLEROS 40":{"nombre":"BAJO 1 GAVETERO 2 CACEROLEROS 40","casco":32,"montaje":18,"cant1":1,"f1":[8.06,9.6,17.63,20.97,24.12,27.32,42,50.4],"cant2":2,"f2":[19.48,27.06,63.12,75.08,62.86,75.36,84,100.8],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 1 GAVETERO 2 CACEROLEROS 50":{"nombre":"BAJO 1 GAVETERO 2 CACEROLEROS 50","casco":34,"montaje":18,"cant1":1,"f1":[8.95,10.84,19.08,22.83,26.25,30.6,44.95,53.94],"cant2":2,"f2":[21.76,30.92,70.08,83.54,78.66,94.28,89.9,107.88],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 1 GAVETERO 2 CACEROLEROS 60":{"nombre":"BAJO 1 GAVETERO 2 CACEROLEROS 60","casco":36,"montaje":18,"cant1":1,"f1":[9.36,11.71,19.48,23.1,26.57,33.14,47.9,57.48],"cant2":2,"f2":[23.14,34.04,68.52,82.12,94.44,113.22,95.8,114.96],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 1 GAVETERO 2 CACEROLEROS 70":{"nombre":"BAJO 1 GAVETERO 2 CACEROLEROS 70","casco":40,"montaje":18,"cant1":1,"f1":[9.8,12.56,22.74,26.97,31.02,38.69,50.85,61.03],"cant2":2,"f2":[25.36,35.68,72.28,86.32,99.26,120.58,101.7,122.06],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 1 GAVETERO 2 CACEROLEROS 80":{"nombre":"BAJO 1 GAVETERO 2 CACEROLEROS 80","casco":43,"montaje":18,"cant1":1,"f1":[10.69,13.8,26,30.83,35.45,44.23,53.81,64.57],"cant2":2,"f2":[27.76,39.46,82.64,98.7,113.5,137.86,107.62,129.14],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 1 GAVETERO 2 CACEROLEROS 90":{"nombre":"BAJO 1 GAVETERO 2 CACEROLEROS 90","casco":45,"montaje":18,"cant1":1,"f1":[11.59,15.05,28.95,34.35,39.5,49.27,56.76,68.11],"cant2":2,"f2":[30.2,43.24,92.98,110.72,127.32,154.6,113.52,136.22],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 1 GAVETERO 2 CACEROLEROS 100":{"nombre":"BAJO 1 GAVETERO 2 CACEROLEROS 100","casco":49,"montaje":18,"cant1":1,"f1":[12.48,16.29,32.18,38.56,44.34,54.76,59.71,71.65],"cant2":2,"f2":[32.66,47.04,103.34,123.06,141.52,171.82,119.42,143.3],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 1 GAVETERO 2 CACEROLEROS 120":{"nombre":"BAJO 1 GAVETERO 2 CACEROLEROS 120","casco":55,"montaje":18,"cant1":1,"f1":[13.81,18.4,38.63,45.84,52.72,65.72,65.61,78.74],"cant2":2,"f2":[36.58,53.88,124.04,147.72,169.88,187.94,131.22,157.48],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO ESPECIERO 15":{"nombre":"BAJO ESPECIERO 15","casco":21,"montaje":8,"cant1":1,"f1":[11.86,16.73,36.4,24.33,50.08,60.74,67.91,81.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Patas std","p":"ref_g","c":4},{"n":"ESPECIERO","p":50,"c":1}]},"BAJO ESPECIERO 20":{"nombre":"BAJO ESPECIERO 20","casco":23,"montaje":8,"cant1":1,"f1":[11.86,16.73,36.4,24.33,50.08,60.74,67.91,81.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Patas std","p":"ref_g","c":4},{"n":"ESPECIERO","p":60,"c":1}]},"BAJO PANERO 30":{"nombre":"BAJO PANERO 30","casco":29,"montaje":12,"cant1":1,"f1":[13.18,18.91,36.4,43.55,50.08,60.74,67.91,81.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Patas std","p":"ref_g","c":4},{"n":"PANERO","p":75,"c":1}]},"BAJO PANERO 40":{"nombre":"BAJO PANERO 40","casco":32,"montaje":12,"cant1":1,"f1":[15.39,22.84,40.6,48.56,54.86,65.53,73.64,88.36],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Patas std","p":"ref_g","c":4},{"n":"PANERO","p":85,"c":1}]},"BAJO 1 GAVETERO 1 PUERTA 30":{"nombre":"BAJO 1 GAVETERO 1 PUERTA 30","casco":29,"montaje":15,"cant1":1,"f1":[7.16,8.34,29.75,35.51,22.39,27.12,39.05,46.86],"cant2":1,"f2":[12,16.59,34.62,41.43,48.5,58.23,56.53,67.83],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 1 GAVETERO 1 PUERTA 40":{"nombre":"BAJO 1 GAVETERO 1 PUERTA 40","casco":32,"montaje":15,"cant1":1,"f1":[8.06,9.6,17.63,20.97,24.12,27.32,42,50.4],"cant2":1,"f2":[13.86,19.87,38.36,45.93,52.07,65.08,61.33,73.59],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 1 GAVETERO 1 PUERTA 50":{"nombre":"BAJO 1 GAVETERO 1 PUERTA 50","casco":34,"montaje":15,"cant1":1,"f1":[8.95,10.84,19.08,22.83,26.25,30.6,44.95,53.94],"cant2":1,"f2":[15.76,23.14,45.48,54.5,60.79,74.78,66.13,79.35],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 1 GAVETERO 1 PUERTA 60":{"nombre":"BAJO 1 GAVETERO 1 PUERTA 60","casco":36,"montaje":15,"cant1":1,"f1":[9.36,11.71,19.48,23.1,26.57,33.14,47.9,57.48],"cant2":1,"f2":[17.21,26.04,54.07,63.47,72.99,88.56,70.93,85.11],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 4 GAVETEROS 30":{"nombre":"BAJO 4 GAVETEROS 30","casco":29,"montaje":18,"cant1":4,"f1":[29.88,36,68.76,79.44,91.36,110.68,156.2,187.44],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 4 GAVETEROS 40":{"nombre":"BAJO 4 GAVETEROS 40","casco":32,"montaje":18,"cant1":4,"f1":[33.84,41.72,72,85.56,98.4,111.48,168,201.6],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 4 GAVETEROS 50":{"nombre":"BAJO 4 GAVETEROS 50","casco":34,"montaje":18,"cant1":4,"f1":[37.84,47.4,77.8,93.2,107.2,124.92,179.8,215.76],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 4 GAVETEROS 60":{"nombre":"BAJO 4 GAVETEROS 60","casco":36,"montaje":18,"cant1":4,"f1":[39.84,51.64,79.52,94.28,108.44,135.24,191.6,229.92],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 2 CACEROLEROS 40":{"nombre":"BAJO 2 CACEROLEROS 40","casco":32,"montaje":15,"cant1":2,"f1":[20.62,29.6,49.5,59,67.86,81.94,91.24,109.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 2 CACEROLEROS 50":{"nombre":"BAJO 2 CACEROLEROS 50","casco":34,"montaje":15,"cant1":2,"f1":[23.18,34.08,61.92,73.82,84.9,102.52,103.52,124.22],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 2 CACEROLEROS 60":{"nombre":"BAJO 2 CACEROLEROS 60","casco":36,"montaje":15,"cant1":2,"f1":[24.82,37.76,72.74,86.18,99.1,123.12,126.74,152.08],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 2 CACEROLEROS 70":{"nombre":"BAJO 2 CACEROLEROS 70","casco":40,"montaje":15,"cant1":2,"f1":[27.4,39.84,76.1,90.98,104.62,124.92,144.52,173.42],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 2 CACEROLEROS 80":{"nombre":"BAJO 2 CACEROLEROS 80","casco":43,"montaje":15,"cant1":2,"f1":[30.1,44.22,86.7,103.88,125.08,156.34,162.3,194.76],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 2 CACEROLEROS 90":{"nombre":"BAJO 2 CACEROLEROS 90","casco":45,"montaje":15,"cant1":2,"f1":[32.82,48.56,101.54,132.32,141.34,175.92,180.06,216.06],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 2 CACEROLEROS 100":{"nombre":"BAJO 2 CACEROLEROS 100","casco":49,"montaje":15,"cant1":2,"f1":[35.54,52.94,124.16,150.28,172.82,215.1,186.88,224.26],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 2 CACEROLEROS 120":{"nombre":"BAJO 2 CACEROLEROS 120","casco":55,"montaje":15,"cant1":2,"f1":[40,60.9,174.16,208.8,240.12,288.96,200.54,240.64],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"BAJO 2 GAVETEROS 1 CACEROLERO 40":{"nombre":"BAJO 2 GAVETEROS 1 CACEROLERO 40","casco":32,"montaje":18,"cant1":2,"f1":[16.92,20.86,36,42.78,49.2,55.74,84,100.8],"cant2":1,"f2":[10.31,14.8,24.75,29.5,33.93,40.97,45.62,54.75],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":1},{"n":"Varillas cac.","p":"ref_f","c":1}]},"BAJO 2 GAVETEROS 1 CACEROLERO 50":{"nombre":"BAJO 2 GAVETEROS 1 CACEROLERO 50","casco":34,"montaje":18,"cant1":2,"f1":[18.92,23.7,38.9,46.6,53.6,62.46,89.9,107.88],"cant2":1,"f2":[11.59,17.04,30.96,36.91,42.45,51.26,51.76,62.11],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":1},{"n":"Varillas cac.","p":"ref_f","c":1}]},"BAJO 2 GAVETEROS 1 CACEROLERO 60":{"nombre":"BAJO 2 GAVETEROS 1 CACEROLERO 60","casco":36,"montaje":18,"cant1":2,"f1":[19.92,25.82,39.76,47.14,54.22,67.62,95.8,114.96],"cant2":1,"f2":[12.41,18.88,36.37,43.09,49.55,61.56,63.37,76.04],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":1},{"n":"Varillas cac.","p":"ref_f","c":1}]},"BAJO 2 GAVETEROS 1 CACEROLERO 70":{"nombre":"BAJO 2 GAVETEROS 1 CACEROLERO 70","casco":40,"montaje":18,"cant1":2,"f1":[20.96,27.94,46.42,55.04,63.3,78.94,101.7,122.06],"cant2":1,"f2":[13.7,19.92,38.05,45.49,52.31,62.46,72.26,86.71],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":1},{"n":"Varillas cac.","p":"ref_f","c":1}]},"BAJO 2 GAVETEROS 1 CACEROLERO 80":{"nombre":"BAJO 2 GAVETEROS 1 CACEROLERO 80","casco":43,"montaje":18,"cant1":2,"f1":[22.94,30.8,53.08,62.92,72.36,90.24,107.62,129.14],"cant2":1,"f2":[15.05,22.11,43.35,51.94,62.54,78.17,81.15,97.38],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":1},{"n":"Varillas cac.","p":"ref_f","c":1}]},"BAJO 2 GAVETEROS 1 CACEROLERO 90":{"nombre":"BAJO 2 GAVETEROS 1 CACEROLERO 90","casco":45,"montaje":18,"cant1":2,"f1":[24.94,33.64,59.72,70.8,81.42,101.54,113.52,136.22],"cant2":1,"f2":[16.41,24.28,50.77,66.16,70.67,87.96,90.03,108.03],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":1},{"n":"Varillas cac.","p":"ref_f","c":1}]},"BAJO 2 GAVETEROS 1 CACEROLERO 100":{"nombre":"BAJO 2 GAVETEROS 1 CACEROLERO 100","casco":49,"montaje":18,"cant1":2,"f1":[26.9,36.48,66.38,78.68,90.48,112.86,119.42,143.3],"cant2":1,"f2":[17.77,26.47,62.08,75.14,86.41,107.55,93.44,112.13],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":1},{"n":"Varillas cac.","p":"ref_f","c":1}]},"BAJO 2 GAVETEROS 1 CACEROLERO 120":{"nombre":"BAJO 2 GAVETEROS 1 CACEROLERO 120","casco":55,"montaje":18,"cant1":2,"f1":[29.94,41.48,79.68,94.46,108.62,135.48,131.22,157.48],"cant2":1,"f2":[20,30.45,87.08,104.4,120.06,144.48,100.27,120.32],"herrajes":[{"n":"Cajón 130mm","p":"ref_c","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Cajón 180mm","p":"ref_d","c":1},{"n":"Varillas cac.","p":"ref_f","c":1}]},"BAJO 5 GAVETEROS 30":{"nombre":"BAJO 5 GAVETEROS 30","casco":29,"montaje":20,"cant1":5,"f1":[35.8,41.7,148.75,177.55,111.95,135.6,195.25,234.3],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 5 GAVETEROS 40":{"nombre":"BAJO 5 GAVETEROS 40","casco":32,"montaje":20,"cant1":5,"f1":[40.3,48,88.15,104.85,120.6,136.6,210,252],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 5 GAVETEROS 50":{"nombre":"BAJO 5 GAVETEROS 50","casco":34,"montaje":20,"cant1":5,"f1":[44.75,54.2,95.4,114.15,131.25,153,224.75,269.7],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO 5 GAVETEROS 60":{"nombre":"BAJO 5 GAVETEROS 60","casco":36,"montaje":20,"cant1":5,"f1":[46.8,58.55,97.4,115.5,132.85,165.7,239.5,287.4],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO SOPORTE HORNO Y 1 GAVETERO 60":{"nombre":"BAJO SOPORTE HORNO Y 1 GAVETERO 60","casco":27,"montaje":12,"cant1":1,"f1":[9.36,11.71,19.48,23.1,26.57,33.14,47.9,57.48],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 100mm","p":"ref_b","c":1},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO SOPORTE HORNO SIN CAJÓN 60":{"nombre":"BAJO SOPORTE HORNO SIN CAJÓN 60","casco":27,"montaje":10,"cant1":0,"f1":[null,null,null,null,null,null,null,null],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Patas std","p":"ref_g","c":4},{"n":"Rejilla ventilación","p":10,"c":1}]},"BAJO RINCÓN CIEGO 90":{"nombre":"BAJO RINCÓN CIEGO 90","casco":45,"montaje":22,"cant1":1,"f1":[13.18,18.91,36.4,43.55,50.08,60.74,67.91,81.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO RINCÓN CIEGO 100":{"nombre":"BAJO RINCÓN CIEGO 100","casco":49,"montaje":22,"cant1":1,"f1":[15.39,22.84,40.6,48.56,54.86,65.53,73.64,88.36],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO RINCÓN CIEGO 120":{"nombre":"BAJO RINCÓN CIEGO 120","casco":55,"montaje":22,"cant1":1,"f1":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO RINCÓN EN L 90":{"nombre":"BAJO RINCÓN EN L 90","casco":76,"montaje":28,"cant1":2,"f1":[23.72,33.46,72.8,48.66,100.16,121.48,135.82,163],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO RINCÓN EN L 100":{"nombre":"BAJO RINCÓN EN L 100","casco":85,"montaje":28,"cant1":2,"f1":[23.72,33.46,72.8,48.66,100.16,121.48,135.82,163],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO LAVAVAJILLAS INTEGRABLE 45":{"nombre":"BAJO LAVAVAJILLAS INTEGRABLE 45","casco":100,"montaje":25,"cant1":1,"f1":[16.27,24.62,44.44,52.95,61.34,76.68,76.5,91.8],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Patas std","p":"ref_g","c":4}]},"BAJO LAVAVAJILLAS INTEGRABLE 60":{"nombre":"BAJO LAVAVAJILLAS INTEGRABLE 60","casco":100,"montaje":25,"cant1":1,"f1":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Patas std","p":"ref_g","c":4}]},"BAJO LAVADORA INTEGRABLE 60":{"nombre":"BAJO LAVADORA INTEGRABLE 60","casco":50,"montaje":20,"cant1":1,"f1":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Patas std","p":"ref_g","c":4}]},"BAJO VITRINA 30":{"nombre":"BAJO VITRINA 30","casco":29,"montaje":10,"cant1":1,"f1":[35,35,35,35,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":2.5,"c":2},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO VITRINA 40":{"nombre":"BAJO VITRINA 40","casco":32,"montaje":10,"cant1":1,"f1":[39,39,39,39,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":2.5,"c":2},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO VITRINA 50":{"nombre":"BAJO VITRINA 50","casco":34,"montaje":10,"cant1":1,"f1":[43.5,43.5,43.5,43.5,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":2.5,"c":2},{"n":"Patas std","p":"ref_g","c":4}]},"BAJO VITRINA 60":{"nombre":"BAJO VITRINA 60","casco":36,"montaje":10,"cant1":1,"f1":[47.5,47.5,47.5,47.5,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":2.5,"c":2},{"n":"Patas std","p":"ref_g","c":4}]},"ALTO 35-40 ABATIBLE 40":{"nombre":"ALTO 35-40 ABATIBLE 40","casco":12,"montaje":10,"cant1":1,"f1":[11.36,16.88,33.97,42.34,37.49,46.86,47.28,56.74],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace C","p":"ref_h","c":1}]},"ALTO 35-40 ABATIBLE 50":{"nombre":"ALTO 35-40 ABATIBLE 50","casco":15,"montaje":10,"cant1":1,"f1":[12.86,19.64,37.76,45.03,44.97,54.2,53.75,64.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace C","p":"ref_h","c":1}]},"ALTO 35-40 ABATIBLE 60":{"nombre":"ALTO 35-40 ABATIBLE 60","casco":18,"montaje":10,"cant1":1,"f1":[13.92,22.02,38.48,45.17,52.07,65.08,65.69,78.83],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace C","p":"ref_h","c":1}]},"ALTO 35-40 ABATIBLE 70":{"nombre":"ALTO 35-40 ABATIBLE 70","casco":19,"montaje":10,"cant1":1,"f1":[14.99,22.58,44.44,52.95,54.86,65.53,74.91,89.89],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":"ref_i","c":1}]},"ALTO 35-40 ABATIBLE 80":{"nombre":"ALTO 35-40 ABATIBLE 80","casco":20,"montaje":10,"cant1":1,"f1":[16.21,25.64,44.87,53.69,66.75,83.43,84.13,100.96],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":"ref_i","c":1}]},"ALTO 35-40 ABATIBLE 90":{"nombre":"ALTO 35-40 ABATIBLE 90","casco":21,"montaje":10,"cant1":1,"f1":[17.44,28.01,54.31,65.68,75.53,93.88,93.33,112],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":"ref_i","c":1}]},"ALTO 35-40 ABATIBLE 100":{"nombre":"ALTO 35-40 ABATIBLE 100","casco":24,"montaje":10,"cant1":1,"f1":[18.71,32.19,66.41,80.31,92.36,114.79,97.08,116.49],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":"ref_i","c":1}]},"ALTO 45 1 PUERTA 30":{"nombre":"ALTO 45 1 PUERTA 30","casco":10,"montaje":10,"cant1":1,"f1":[10.6,14.37,27.52,32.58,37.47,45.46,47.59,57.11],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 45 1 PUERTA 40":{"nombre":"ALTO 45 1 PUERTA 40","casco":13,"montaje":10,"cant1":1,"f1":[12.24,17.13,29.34,35.17,40.45,48.76,51.66,61.99],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 45 1 PUERTA 50":{"nombre":"ALTO 45 1 PUERTA 50","casco":16,"montaje":10,"cant1":1,"f1":[13.87,19.87,33.74,44.01,50.61,61.01,55.74,66.88],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 45 1 PUERTA 60":{"nombre":"ALTO 45 1 PUERTA 60","casco":20,"montaje":10,"cant1":1,"f1":[15.06,22.23,40.51,49.53,58.61,73.26,68.01,81.61],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 45 2 PUERTAS 70":{"nombre":"ALTO 45 2 PUERTAS 70","casco":21,"montaje":12,"cant1":2,"f1":[24.48,31.12,55.7,66.42,76.38,92.24,99.26,119.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 45 2 PUERTAS 80":{"nombre":"ALTO 45 2 PUERTAS 80","casco":22,"montaje":12,"cant1":2,"f1":[24.48,34.26,58.68,70.34,80.9,97.52,103.32,123.98],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 45 2 PUERTAS 90":{"nombre":"ALTO 45 2 PUERTAS 90","casco":23,"montaje":12,"cant1":2,"f1":[26.08,36.6,66.04,79.18,91.06,109.76,107.4,128.88],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 45 2 PUERTAS 100":{"nombre":"ALTO 45 2 PUERTAS 100","casco":26,"montaje":12,"cant1":2,"f1":[27.74,39.74,67.48,88.02,101.22,122.02,111.48,133.76],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 45 2 PUERTAS 120":{"nombre":"ALTO 45 2 PUERTAS 120","casco":35,"montaje":12,"cant1":2,"f1":[30.12,44.46,81.02,99.06,117.22,146.52,136.02,163.22],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 45 ABATIBLE 40":{"nombre":"ALTO 45 ABATIBLE 40","casco":13,"montaje":10,"cant1":1,"f1":[12.24,17.13,29.34,35.17,40.45,48.76,51.66,61.99],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace C","p":"ref_h","c":1}]},"ALTO 45 ABATIBLE 50":{"nombre":"ALTO 45 ABATIBLE 50","casco":16,"montaje":10,"cant1":1,"f1":[13.87,19.87,33.74,44.01,50.61,61.01,55.74,66.88],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":"ref_i","c":1}]},"ALTO 45 ABATIBLE 60":{"nombre":"ALTO 45 ABATIBLE 60","casco":20,"montaje":10,"cant1":1,"f1":[15.06,22.23,40.51,49.53,58.61,73.26,68.01,81.61],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":"ref_i","c":1}]},"ALTO 45 VITRINA 50":{"nombre":"ALTO 45 VITRINA 50","casco":16,"montaje":10,"cant1":1,"f1":[36,36,36,36,58.61,73.26,68.01,81.61],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace C","p":25,"c":1}]},"ALTO 45 VITRINA 60":{"nombre":"ALTO 45 VITRINA 60","casco":20,"montaje":10,"cant1":1,"f1":[38.5,38.5,38.5,38.5,58.61,73.26,68.01,81.61],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":25,"c":1}]},"ALTO 45 VITRINA 70":{"nombre":"ALTO 45 VITRINA 70","casco":21,"montaje":10,"cant1":1,"f1":[41.5,41.5,41.5,41.5,58.61,73.26,68.01,81.61],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":25,"c":1}]},"ALTO 45 VITRINA 90":{"nombre":"ALTO 45 VITRINA 90","casco":23,"montaje":10,"cant1":1,"f1":[47,47,47,47,58.61,73.26,68.01,81.61],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace E","p":25,"c":1}]},"ALTO 60 ABATIBLE 40":{"nombre":"ALTO 60 ABATIBLE 40","casco":17,"montaje":12,"cant1":1,"f1":[15.39,22.84,38.48,45.17,52.07,65.08,64.84,77.81],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":"ref_i","c":1}]},"ALTO 60 ABATIBLE 50":{"nombre":"ALTO 60 ABATIBLE 50","casco":20,"montaje":12,"cant1":1,"f1":[17.59,26.78,45.48,54.5,60.79,74.78,69.9,83.88],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace E","p":"ref_j","c":1}]},"ALTO 60 ABATIBLE 60":{"nombre":"ALTO 60 ABATIBLE 60","casco":24,"montaje":12,"cant1":1,"f1":[19.99,30.35,54.07,63.47,72.99,88.56,74.97,89.96],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace F","p":"ref_k","c":1}]},"ALTO 60 VITRINA 50":{"nombre":"ALTO 60 VITRINA 50","casco":20,"montaje":12,"cant1":1,"f1":[40.5,40.5,40.5,40.5,72.99,88.56,74.97,89.96],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":25,"c":1}]},"ALTO 60 VITRINA 60":{"nombre":"ALTO 60 VITRINA 60","casco":24,"montaje":12,"cant1":1,"f1":[44,44,44,44,72.99,88.56,74.97,89.96],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace E","p":25,"c":1}]},"ALTO 60 VITRINA 70":{"nombre":"ALTO 60 VITRINA 70","casco":25,"montaje":12,"cant1":2,"f1":[35,35,35,35,72.99,88.56,74.97,89.96],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace F","p":25,"c":1}]},"ALTO 60 VITRINA 90":{"nombre":"ALTO 60 VITRINA 90","casco":28,"montaje":12,"cant1":2,"f1":[38.5,38.5,38.5,38.5,72.99,88.56,74.97,89.96],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace F","p":25,"c":1}]},"ALTO 70-80 1 PUERTA 30":{"nombre":"ALTO 70-80 1 PUERTA 30","casco":19,"montaje":13,"cant1":1,"f1":[13.18,18.91,36.4,43.55,50.08,60.74,67.91,81.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 1 PUERTA 40":{"nombre":"ALTO 70-80 1 PUERTA 40","casco":21,"montaje":13,"cant1":1,"f1":[15.39,22.84,40.6,48.56,54.86,65.53,73.64,88.36],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 1 PUERTA 50":{"nombre":"ALTO 70-80 1 PUERTA 50","casco":23,"montaje":13,"cant1":1,"f1":[17.59,26.78,48.52,57.92,64.19,77.88,79.36,95.23],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 1 PUERTA 60":{"nombre":"ALTO 70-80 1 PUERTA 60","casco":27,"montaje":13,"cant1":1,"f1":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 2 PUERTAS 70":{"nombre":"ALTO 70-80 2 PUERTAS 70","casco":29,"montaje":15,"cant1":2,"f1":[30.48,41.36,76.1,90.98,104.62,124.92,141.54,169.86],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 70-80 2 PUERTAS 80":{"nombre":"ALTO 70-80 2 PUERTAS 80","casco":32,"montaje":15,"cant1":2,"f1":[30.78,45.68,81.2,97.12,109.72,131.06,147.28,176.72],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 70-80 2 PUERTAS 90":{"nombre":"ALTO 70-80 2 PUERTAS 90","casco":34,"montaje":15,"cant1":2,"f1":[32.54,49.24,88.88,105.9,122.68,153.36,153,183.6],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 70-80 2 PUERTAS 100":{"nombre":"ALTO 70-80 2 PUERTAS 100","casco":37,"montaje":15,"cant1":2,"f1":[35.18,53.56,97.04,115.84,128.38,155.76,158.72,190.46],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 70-80 2 PUERTAS 120":{"nombre":"ALTO 70-80 2 PUERTAS 120","casco":45,"montaje":15,"cant1":2,"f1":[39.98,60.7,112.14,134.26,151.24,183.52,170.16,204.2],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 70-80 2 ESTANTES DECORATIVO 60":{"nombre":"ALTO 70-80 2 ESTANTES DECORATIVO 60","casco":30,"montaje":12,"cant1":0,"f1":[null,null,null,null,null,null,null,null],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[]},"ALTO 70-80 2 ESTANTES DECORATIVO 90":{"nombre":"ALTO 70-80 2 ESTANTES DECORATIVO 90","casco":35,"montaje":12,"cant1":0,"f1":[null,null,null,null,null,null,null,null],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[]},"ALTO 70-80 BOTELLERO DECORATIVO 15":{"nombre":"ALTO 70-80 BOTELLERO DECORATIVO 15","casco":15,"montaje":10,"cant1":0,"f1":[null,null,null,null,null,null,null,null],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[]},"ALTO 70-80 BOTELLERO DECORATIVO 30":{"nombre":"ALTO 70-80 BOTELLERO DECORATIVO 30","casco":20,"montaje":10,"cant1":0,"f1":[null,null,null,null,null,null,null,null],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[]},"ALTO 70-80 CAMPANA INTEGRABLE 60":{"nombre":"ALTO 70-80 CAMPANA INTEGRABLE 60","casco":27,"montaje":15,"cant1":1,"f1":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 CAMPANA INTEGRABLE 90":{"nombre":"ALTO 70-80 CAMPANA INTEGRABLE 90","casco":34,"montaje":15,"cant1":2,"f1":[32.54,49.24,88.88,105.9,122.68,153.36,153,183.6],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 70-80 CAMPANA EXTRAÍBLE 60":{"nombre":"ALTO 70-80 CAMPANA EXTRAÍBLE 60","casco":27,"montaje":15,"cant1":1,"f1":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 RINCÓN L 60":{"nombre":"ALTO 70-80 RINCÓN L 60","casco":54,"montaje":28,"cant1":1,"f1":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 RINCÓN L RINCOMATIC 60":{"nombre":"ALTO 70-80 RINCÓN L RINCOMATIC 60","casco":54,"montaje":30,"cant1":1,"f1":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 RINCÓN CHAFLÁN 60":{"nombre":"ALTO 70-80 RINCÓN CHAFLÁN 60","casco":54,"montaje":28,"cant1":1,"f1":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 RINCÓN CIEGO 90":{"nombre":"ALTO 70-80 RINCÓN CIEGO 90","casco":41,"montaje":22,"cant1":1,"f1":[13.18,18.91,36.4,43.55,50.08,60.74,67.91,81.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 VITRINA 50":{"nombre":"ALTO 70-80 VITRINA 50","casco":23,"montaje":13,"cant1":1,"f1":[43.5,43.5,43.5,43.5,50.08,60.74,67.91,81.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 VITRINA 60":{"nombre":"ALTO 70-80 VITRINA 60","casco":27,"montaje":13,"cant1":1,"f1":[47.5,47.5,47.5,47.5,50.08,60.74,67.91,81.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 70-80 VITRINA 70":{"nombre":"ALTO 70-80 VITRINA 70","casco":29,"montaje":13,"cant1":2,"f1":[37,37,37,37,50.08,60.74,67.91,81.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 70-80 VITRINA 90":{"nombre":"ALTO 70-80 VITRINA 90","casco":34,"montaje":13,"cant1":2,"f1":[41.5,41.5,41.5,41.5,50.08,60.74,67.91,81.5],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 90-100 1 PUERTA 30":{"nombre":"ALTO 90-100 1 PUERTA 30","casco":23,"montaje":15,"cant1":1,"f1":[16.2,23.36,48.3,56.5,64.98,81.04,84.17,101],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 1 PUERTA 40":{"nombre":"ALTO 90-100 1 PUERTA 40","casco":25,"montaje":15,"cant1":1,"f1":[18.87,28.25,55.34,66.16,75.53,93.88,91.21,109.45],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 1 PUERTA 50":{"nombre":"ALTO 90-100 1 PUERTA 50","casco":28,"montaje":15,"cant1":1,"f1":[21.51,33.14,66.38,79.39,91,112.65,98.25,117.9],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 1 PUERTA 60":{"nombre":"ALTO 90-100 1 PUERTA 60","casco":32,"montaje":15,"cant1":1,"f1":[23.75,37.66,70.66,85.23,98.01,121.16,105.3,126.35],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 2 PUERTAS 70":{"nombre":"ALTO 90-100 2 PUERTAS 70","casco":33,"montaje":18,"cant1":2,"f1":[35.42,51.2,101.54,122.9,141.34,175.92,175.38,210.46],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 90-100 2 PUERTAS 80":{"nombre":"ALTO 90-100 2 PUERTAS 80","casco":36,"montaje":18,"cant1":2,"f1":[37.74,56.5,110.68,132.32,151.06,187.76,182.42,218.9],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 90-100 2 PUERTAS 90":{"nombre":"ALTO 90-100 2 PUERTAS 90","casco":38,"montaje":18,"cant1":2,"f1":[39.94,61.02,121.56,145.12,166.22,206.12,189.46,227.36],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 90-100 2 PUERTAS 100":{"nombre":"ALTO 90-100 2 PUERTAS 100","casco":41,"montaje":18,"cant1":2,"f1":[43.02,66.28,132.76,158.78,182,225.3,196.5,235.8],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 90-100 2 PUERTAS 120":{"nombre":"ALTO 90-100 2 PUERTAS 120","casco":50,"montaje":18,"cant1":2,"f1":[47.5,75.32,141.32,170.46,196.02,242.32,210.6,252.7],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 90-100 2 ESTANTES DECORATIVO 60":{"nombre":"ALTO 90-100 2 ESTANTES DECORATIVO 60","casco":36,"montaje":13,"cant1":0,"f1":[null,null,null,null,null,null,null,null],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[]},"ALTO 90-100 2 ESTANTES DECORATIVO 90":{"nombre":"ALTO 90-100 2 ESTANTES DECORATIVO 90","casco":44,"montaje":13,"cant1":0,"f1":[null,null,null,null,null,null,null,null],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[]},"ALTO 90-100 BOTELLERO DECORATIVO 15":{"nombre":"ALTO 90-100 BOTELLERO DECORATIVO 15","casco":18,"montaje":10,"cant1":0,"f1":[null,null,null,null,null,null,null,null],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[]},"ALTO 90-100 BOTELLERO DECORATIVO 30":{"nombre":"ALTO 90-100 BOTELLERO DECORATIVO 30","casco":24,"montaje":10,"cant1":0,"f1":[null,null,null,null,null,null,null,null],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[]},"ALTO 90-100 CAMPANA INTEGRABLE 60":{"nombre":"ALTO 90-100 CAMPANA INTEGRABLE 60","casco":35,"montaje":15,"cant1":1,"f1":[23.75,37.66,70.66,85.23,98.01,121.16,105.3,126.35],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 CAMPANA INTEGRABLE 90":{"nombre":"ALTO 90-100 CAMPANA INTEGRABLE 90","casco":38,"montaje":15,"cant1":2,"f1":[39.94,61.02,121.56,145.12,166.22,206.12,189.46,227.36],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 90-100 CAMPANA EXTRAÍBLE 60":{"nombre":"ALTO 90-100 CAMPANA EXTRAÍBLE 60","casco":35,"montaje":15,"cant1":1,"f1":[23.75,37.66,70.66,85.23,98.01,121.16,105.3,126.35],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 RINCÓN L 60":{"nombre":"ALTO 90-100 RINCÓN L 60","casco":57,"montaje":28,"cant1":1,"f1":[23.75,37.66,70.66,85.23,98.01,121.16,105.3,126.35],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 RINCÓN L RINCOMATIC 60":{"nombre":"ALTO 90-100 RINCÓN L RINCOMATIC 60","casco":57,"montaje":30,"cant1":1,"f1":[23.75,37.66,70.66,85.23,98.01,121.16,105.3,126.35],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 RINCÓN CHAFLÁN 60":{"nombre":"ALTO 90-100 RINCÓN CHAFLÁN 60","casco":57,"montaje":28,"cant1":1,"f1":[23.75,37.66,70.66,85.23,98.01,121.16,105.3,126.35],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 RINCÓN CIEGO 90":{"nombre":"ALTO 90-100 RINCÓN CIEGO 90","casco":45,"montaje":22,"cant1":1,"f1":[16.2,23.36,48.3,56.5,64.98,81.04,84.17,101],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 VITRINA 50":{"nombre":"ALTO 90-100 VITRINA 50","casco":28,"montaje":15,"cant1":1,"f1":[49.5,49.5,49.5,49.5,64.98,81.04,84.17,101],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 VITRINA 60":{"nombre":"ALTO 90-100 VITRINA 60","casco":32,"montaje":15,"cant1":1,"f1":[55,55,55,55,64.98,81.04,84.17,101],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO 90-100 VITRINA 70":{"nombre":"ALTO 90-100 VITRINA 70","casco":33,"montaje":15,"cant1":2,"f1":[41.5,41.5,41.5,41.5,64.98,81.04,84.17,101],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO 90-100 VITRINA 90":{"nombre":"ALTO 90-100 VITRINA 90","casco":38,"montaje":15,"cant1":2,"f1":[47,47,47,47,64.98,81.04,84.17,101],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO MO 130 1 PUERTA 60":{"nombre":"ALTO MO 130 1 PUERTA 60","casco":42,"montaje":18,"cant1":1,"f1":[23.75,37.66,70.66,85.23,98.01,121.16,105.3,126.35],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO S-FRIGO 30-40 1 PUERTA 60":{"nombre":"ALTO S-FRIGO 30-40 1 PUERTA 60","casco":22,"montaje":12,"cant1":1,"f1":[12.41,18.88,36.37,43.09,49.55,61.56,63.37,76.04],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO S-FRIGO 30-40 2 PUERTAS 70":{"nombre":"ALTO S-FRIGO 30-40 2 PUERTAS 70","casco":23,"montaje":12,"cant1":2,"f1":[18.92,27,43.28,51.58,59.32,71.64,82.36,98.82],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO S-FRIGO 30-40 2 PUERTAS 90":{"nombre":"ALTO S-FRIGO 30-40 2 PUERTAS 90","casco":25,"montaje":12,"cant1":2,"f1":[21.48,31.44,55.7,66.42,76.38,92.24,100.1,120.12],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO S-FRIGO 30-40 ABATIBLE 60":{"nombre":"ALTO S-FRIGO 30-40 ABATIBLE 60","casco":22,"montaje":12,"cant1":1,"f1":[12.41,18.88,36.37,43.09,49.55,61.56,63.37,76.04],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace C","p":"ref_h","c":1}]},"ALTO S-FRIGO 30-40 ABATIBLE 70":{"nombre":"ALTO S-FRIGO 30-40 ABATIBLE 70","casco":23,"montaje":12,"cant1":1,"f1":[13.7,19.92,38.05,45.49,52.31,62.46,72.26,86.71],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":"ref_i","c":1}]},"ALTO S-FRIGO 30-40 ABATIBLE 90":{"nombre":"ALTO S-FRIGO 30-40 ABATIBLE 90","casco":25,"montaje":12,"cant1":1,"f1":[16.41,24.28,50.77,66.16,70.67,87.96,90.03,108.03],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace D","p":"ref_i","c":1}]},"ALTO S-FRIGO 50-60 1 PUERTA 60":{"nombre":"ALTO S-FRIGO 50-60 1 PUERTA 60","casco":26,"montaje":13,"cant1":1,"f1":[17.21,26.04,54.07,63.47,72.99,88.56,70.93,85.11],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"ALTO S-FRIGO 50-60 2 PUERTAS 70":{"nombre":"ALTO S-FRIGO 50-60 2 PUERTAS 70","casco":27,"montaje":13,"cant1":2,"f1":[25.42,36.08,72.74,87.14,99.1,123.12,117.86,141.42],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO S-FRIGO 50-60 2 PUERTAS 90":{"nombre":"ALTO S-FRIGO 50-60 2 PUERTAS 90","casco":29,"montaje":13,"cant1":2,"f1":[29.2,42.62,81.58,97.42,117.22,146.52,127.46,152.94],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"ALTO S-FRIGO 50-60 ABATIBLE 60":{"nombre":"ALTO S-FRIGO 50-60 ABATIBLE 60","casco":26,"montaje":13,"cant1":1,"f1":[17.21,26.04,54.07,63.47,72.99,88.56,70.93,85.11],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace F","p":"ref_k","c":1}]},"ALTO S-FRIGO 50-60 ABATIBLE 70":{"nombre":"ALTO S-FRIGO 50-60 ABATIBLE 70","casco":27,"montaje":13,"cant1":1,"f1":[21.08,31.9,54.98,65.76,75.62,91.76,86.89,104.26],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace F","p":"ref_k","c":1}]},"ALTO S-FRIGO 50 ABATIBLE 90":{"nombre":"ALTO S-FRIGO 50 ABATIBLE 90","casco":29,"montaje":13,"cant1":1,"f1":[27.11,41.01,70.66,85.23,98.01,121.16,111.71,134.05],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Freespace F","p":"ref_k","c":1}]},"SOBRE ENCIMERA 1 PUERTA 30":{"nombre":"SOBRE ENCIMERA 1 PUERTA 30","casco":10,"montaje":10,"cant1":1,"f1":[21.34,29.16,66.49,85.49,96.81,120.75,116.66,139.99],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"SOBRE ENCIMERA 1 PUERTA 40":{"nombre":"SOBRE ENCIMERA 1 PUERTA 40","casco":13,"montaje":10,"cant1":1,"f1":[24.93,36.61,81.2,97.19,112.54,139.89,126.34,151.61],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"SOBRE ENCIMERA 1 PUERTA 50":{"nombre":"SOBRE ENCIMERA 1 PUERTA 50","casco":16,"montaje":10,"cant1":1,"f1":[28.49,44.24,96.04,115.03,134.28,167.84,136.03,163.23],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"SOBRE ENCIMERA 1 PUERTA 60":{"nombre":"SOBRE ENCIMERA 1 PUERTA 60","casco":20,"montaje":10,"cant1":1,"f1":[31.62,51.28,102.72,123.14,144.09,180.11,145.71,174.85],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"SOBRE ENCIMERA 2 PUERTA 70":{"nombre":"SOBRE ENCIMERA 2 PUERTA 70","casco":21,"montaje":12,"cant1":2,"f1":[45.8,65.58,153.84,184.08,210.58,262.12,243,291.6],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"SOBRE ENCIMERA 2 PUERTA 80":{"nombre":"SOBRE ENCIMERA 2 PUERTA 80","casco":22,"montaje":12,"cant1":2,"f1":[49.86,73.22,162.4,194.38,225.08,279.78,252.68,303.22],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"SOBRE ENCIMERA 2 PUERTA 90":{"nombre":"SOBRE ENCIMERA 2 PUERTA 90","casco":23,"montaje":12,"cant1":2,"f1":[52.96,80.86,169,214.22,247.64,307.12,262.36,314.84],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"SOBRE ENCIMERA 2 PUERTA 100":{"nombre":"SOBRE ENCIMERA 2 PUERTA 100","casco":26,"montaje":12,"cant1":2,"f1":[56.98,88.48,192.08,230.06,268.56,335.68,272.06,326.46],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4}]},"SOBRE ENCIMERA MICROONDAS + 1 PUERTA 60":{"nombre":"SOBRE ENCIMERA MICROONDAS + 1 PUERTA 60","casco":25,"montaje":15,"cant1":1,"f1":[23.75,37.66,70.66,85.23,98.01,121.16,105.3,126.35],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2}]},"SOBRE ENCIMERA PERSIANA 60":{"nombre":"SOBRE ENCIMERA PERSIANA 60","casco":26,"montaje":18,"cant1":0,"f1":[null,null,null,null,null,null,null,null],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"PERSIANA PET 60","p":260,"c":1}]},"SOBRE ENCIMERA PERSIANA 90":{"nombre":"SOBRE ENCIMERA PERSIANA 90","casco":30,"montaje":18,"cant1":0,"f1":[null,null,null,null,null,null,null,null],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"PERSIANA PET 90","p":340,"c":1}]},"SEMICOLUMNA 135-145 1 PUERTA 30":{"nombre":"SEMICOLUMNA 135-145 1 PUERTA 30","casco":40,"montaje":20,"cant1":1,"f1":[24.41,32.33,71.61,92.07,108.39,135.19,132.9,159.48],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":3},{"n":"Patas std","p":"ref_g","c":4}]},"SEMICOLUMNA 135-145 1 PUERTA 40":{"nombre":"SEMICOLUMNA 135-145 1 PUERTA 40","casco":42,"montaje":20,"cant1":1,"f1":[34.57,45.48,87.46,104.68,126.01,156.61,143.9,172.68],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":3},{"n":"Patas std","p":"ref_g","c":4}]},"SEMICOLUMNA 135-145 1 PUERTA 50":{"nombre":"SEMICOLUMNA 135-145 1 PUERTA 50","casco":48,"montaje":20,"cant1":1,"f1":[34.57,45.48,103.44,123.9,150.33,180.4,154.9,185.88],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":3},{"n":"Patas std","p":"ref_g","c":4}]},"SEMICOLUMNA 135-145 1 PUERTA 60":{"nombre":"SEMICOLUMNA 135-145 1 PUERTA 60","casco":50,"montaje":20,"cant1":1,"f1":[34.57,45.48,110.64,132.62,156.47,193.58,165.9,199.08],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":3},{"n":"Patas std","p":"ref_g","c":4}]},"SEMICOLUMNA 135-145 2 PUERTA 70":{"nombre":"SEMICOLUMNA 135-145 2 PUERTA 70","casco":51,"montaje":20,"cant1":2,"f1":[48.82,64.66,165.7,198.26,235.78,293.48,276.8,332.16],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":6},{"n":"Patas std","p":"ref_g","c":4}]},"SEMICOLUMNA 135-145 2 PUERTA 80":{"nombre":"SEMICOLUMNA 135-145 2 PUERTA 80","casco":53,"montaje":20,"cant1":2,"f1":[69.14,90.96,174.92,209.36,252.02,313.22,287.8,345.36],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":6},{"n":"Patas std","p":"ref_g","c":4}]},"SEMICOLUMNA 135-145 2 PUERTA 90":{"nombre":"SEMICOLUMNA 135-145 2 PUERTA 90","casco":55,"montaje":20,"cant1":2,"f1":[69.14,90.96,182.02,230.72,277.26,343.84,298.8,358.56],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":6},{"n":"Patas std","p":"ref_g","c":4}]},"SEMICOLUMNA 135-145 2 PUERTA 100":{"nombre":"SEMICOLUMNA 135-145 2 PUERTA 100","casco":57,"montaje":20,"cant1":2,"f1":[69.14,90.96,206.88,247.8,300.66,360.8,309.8,371.76],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":6},{"n":"Patas std","p":"ref_g","c":4}]},"SEMICOLUMNA 135-145 4 - 5 CACEROLEROS 60":{"nombre":"SEMICOLUMNA 135-145 4 - 5 CACEROLEROS 60","casco":51,"montaje":20,"cant1":5,"f1":[57.85,85.1,171.3,205.3,236.1,283.05,239.5,287.4],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 180mm","p":"ref_d","c":5},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":5}]},"SEMICOLUMNA 135-145 HORNO + 1 PUERTA 60":{"nombre":"SEMICOLUMNA 135-145 HORNO + 1 PUERTA 60","casco":54,"montaje":20,"cant1":1,"f1":[23.75,37.66,70.66,85.23,98.01,121.16,105.3,126.35],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Patas std","p":"ref_g","c":4}]},"SEMICOLUMNA 135-145 HORNO/MICROONDAS + 1 CACEROLERO 60":{"nombre":"SEMICOLUMNA 135-145 HORNO/MICROONDAS + 1 CACEROLERO 60","casco":60,"montaje":20,"cant1":2,"f1":[27.84,44.04,76.96,90.34,104.14,130.16,131.38,157.66],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"COLUMNA 200-215 1 PUERTA 30":{"nombre":"COLUMNA 200-215 1 PUERTA 30","casco":80,"montaje":28,"cant1":1,"f1":[31.82,42.97,107.45,138.18,159.03,198.36,206.02,247.23],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 1 PUERTA 40":{"nombre":"COLUMNA 200-215 1 PUERTA 40","casco":85,"montaje":28,"cant1":1,"f1":[46.49,62.96,131.22,157.09,184.89,229.8,222.96,267.56],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 1 PUERTA 50":{"nombre":"COLUMNA 200-215 1 PUERTA 50","casco":95,"montaje":28,"cant1":1,"f1":[46.49,62.96,155.22,185.93,220.58,264.69,239.9,287.88],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 1 PUERTA 60":{"nombre":"COLUMNA 200-215 1 PUERTA 60","casco":99,"montaje":28,"cant1":1,"f1":[46.49,62.96,166.05,198.98,229.6,284.04,256.84,308.21],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 2 PUERTA 70":{"nombre":"COLUMNA 200-215 2 PUERTA 70","casco":105,"montaje":28,"cant1":2,"f1":[63.64,85.94,248.7,297.58,345.94,430.62,428.98,514.78],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":8},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 2 PUERTA 80":{"nombre":"COLUMNA 200-215 2 PUERTA 80","casco":110,"montaje":28,"cant1":2,"f1":[92.98,125.92,262.44,314.18,369.78,459.6,445.92,535.12],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":8},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 2 PUERTA 90":{"nombre":"COLUMNA 200-215 2 PUERTA 90","casco":115,"montaje":28,"cant1":2,"f1":[92.98,125.92,273.12,346.16,406.82,504.52,462.86,555.44],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":8},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 2 PUERTA 100":{"nombre":"COLUMNA 200-215 2 PUERTA 100","casco":120,"montaje":28,"cant1":2,"f1":[92.98,125.92,310.44,371.86,441.16,529.38,479.8,575.76],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":8},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 1/4+3/4 1 PUERTA 30":{"nombre":"COLUMNA 200-215 1/4+3/4 1 PUERTA 30","casco":80,"montaje":28,"cant1":1,"f1":[12,16.59,33.35,39.49,45.41,55.1,56.53,67.83],"cant2":1,"f2":[31.82,42.97,81.85,105.25,130.09,162.26,157.26,188.71],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 1/4+3/4 1 PUERTA 40":{"nombre":"COLUMNA 200-215 1/4+3/4 1 PUERTA 40","casco":85,"montaje":28,"cant1":1,"f1":[13.86,19.87,35.55,42.63,49.02,59.1,61.33,73.59],"cant2":1,"f2":[46.49,62.96,99.95,119.65,151.24,187.98,170.24,204.29],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 1/4+3/4 1 PUERTA 50":{"nombre":"COLUMNA 200-215 1/4+3/4 1 PUERTA 50","casco":95,"montaje":28,"cant1":1,"f1":[15.76,23.14,40.89,48.79,56.11,67.9,66.13,79.35],"cant2":1,"f2":[46.49,62.96,118.23,141.62,180.44,216.52,183.22,219.86],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 1/4+3/4 1 PUERTA 60":{"nombre":"COLUMNA 200-215 1/4+3/4 1 PUERTA 60","casco":99,"montaje":28,"cant1":1,"f1":[17.21,26.04,49.1,58.59,67.38,81.53,70.93,85.11],"cant2":1,"f2":[46.49,62.96,126.47,151.56,187.81,232.35,196.2,235.44],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 1/4+3/4 2 PUERTAS 70":{"nombre":"COLUMNA 200-215 1/4+3/4 2 PUERTAS 70","casco":105,"montaje":28,"cant1":2,"f1":[25.42,36.08,67.5,80.5,92.58,111.8,117.86,141.42],"cant2":2,"f2":[63.64,85.94,189.44,226.66,283,352.24,327.5,393],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":10},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 1/4+3/4 2 PUERTAS 80":{"nombre":"COLUMNA 200-215 1/4+3/4 2 PUERTAS 80","casco":110,"montaje":28,"cant1":2,"f1":[27.72,39.74,71.1,85.26,98.04,118.2,122.66,147.18],"cant2":2,"f2":[92.98,125.92,199.9,239.3,302.48,375.96,340.48,408.58],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":10},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 1/4+3/4 2 PUERTAS 90":{"nombre":"COLUMNA 200-215 1/4+3/4 2 PUERTAS 90","casco":115,"montaje":28,"cant1":2,"f1":[29.2,42.62,80.06,95.98,110.38,133.04,127.46,152.94],"cant2":2,"f2":[92.98,125.92,208.02,263.66,332.78,412.7,353.46,424.14],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":10},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 1/4+3/4 2 PUERTAS 100":{"nombre":"COLUMNA 200-215 1/4+3/4 2 PUERTAS 100","casco":120,"montaje":28,"cant1":2,"f1":[31.52,46.28,81.78,97.58,112.22,135.8,132.26,158.7],"cant2":2,"f2":[92.98,125.92,236.46,283.24,360.88,433.04,366.44,439.72],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":10},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 PUERTA + H/MO + PUERTA 60":{"nombre":"COLUMNA 200-215 PUERTA + H/MO + PUERTA 60","casco":99,"montaje":28,"cant1":1,"f1":[17.21,26.04,49.1,58.59,67.38,81.53,70.93,85.11],"cant2":1,"f2":[17.21,26.04,54.07,63.47,72.99,88.56,70.93,85.11],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 PUERTA + H/MO + 2 CACEROLEROS 60":{"nombre":"COLUMNA 200-215 PUERTA + H/MO + 2 CACEROLEROS 60","casco":99,"montaje":28,"cant1":1,"f1":[17.21,26.04,49.1,58.59,67.38,81.53,70.93,85.11],"cant2":2,"f2":[23.14,34.04,68.52,82.12,94.44,113.22,95.8,114.96],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"COLUMNA 200-215 PUERTA + ELECTRODOMÉSTICO + PUERTA 60":{"nombre":"COLUMNA 200-215 PUERTA + ELECTRODOMÉSTICO + PUERTA 60","casco":99,"montaje":28,"cant1":1,"f1":[31.28,40.87,86.4,110.81,127.43,147.8,125.49,150.59],"cant2":1,"f2":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 PUERTA + ELECTRODOMÉSTICO + 2 CACER 60":{"nombre":"COLUMNA 200-215 PUERTA + ELECTRODOMÉSTICO + 2 CACER 60","casco":99,"montaje":28,"cant1":1,"f1":[31.28,40.87,86.14,103.34,139.78,174.72,125.49,150.59],"cant2":2,"f2":[23.14,34.04,68.52,82.12,94.44,113.22,95.8,114.96],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"COLUMNA 200-215 FRIGORÍFICO INTEGRADO 60":{"nombre":"COLUMNA 200-215 FRIGORÍFICO INTEGRADO 60","casco":83,"montaje":28,"cant1":1,"f1":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"cant2":1,"f2":[34.57,45.48,110.64,132.62,156.47,193.58,165.9,199.08],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 FRIGORÍFICO INTEGRADO 70":{"nombre":"COLUMNA 200-215 FRIGORÍFICO INTEGRADO 70","casco":90,"montaje":28,"cant1":1,"f1":[24.49,37.18,64.18,76.76,88.27,107.1,104.22,125.07],"cant2":1,"f2":[42.35,55.71,130.7,158.82,182.64,200.56,203.23,243.87],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 VITRINA 30":{"nombre":"COLUMNA 200-215 VITRINA 30","casco":80,"montaje":28,"cant1":1,"f1":[60.5,60.5,60.5,60.5,88.27,107.1,104.22,125.07],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":3},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 VITRINA 40":{"nombre":"COLUMNA 200-215 VITRINA 40","casco":85,"montaje":28,"cant1":1,"f1":[73,73,73,73,88.27,107.1,104.22,125.07],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":3},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 VITRINA 50":{"nombre":"COLUMNA 200-215 VITRINA 50","casco":95,"montaje":28,"cant1":1,"f1":[85.5,85.5,85.5,85.5,88.27,107.1,104.22,125.07],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":6},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 200-215 VITRINA 60":{"nombre":"COLUMNA 200-215 VITRINA 60","casco":99,"montaje":28,"cant1":1,"f1":[98.5,98.5,98.5,98.5,88.27,107.1,104.22,125.07],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":6},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1 PUERTA 30":{"nombre":"COLUMNA 220-240 1 PUERTA 30","casco":110,"montaje":32,"cant1":1,"f1":[33.84,46.03,117.7,151.36,174.57,217.75,206.02,247.23],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1 PUERTA 40":{"nombre":"COLUMNA 220-240 1 PUERTA 40","casco":115,"montaje":32,"cant1":1,"f1":[47.79,68.54,143.73,172.06,202.96,252.26,222.96,267.56],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1 PUERTA 50":{"nombre":"COLUMNA 220-240 1 PUERTA 50","casco":125,"montaje":32,"cant1":1,"f1":[47.79,68.54,170.01,203.65,242.14,290.56,239.9,287.88],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1 PUERTA 60":{"nombre":"COLUMNA 220-240 1 PUERTA 60","casco":130,"montaje":32,"cant1":1,"f1":[47.79,68.54,181.87,217.95,252.04,311.8,256.84,308.21],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 2 PUERTA 70":{"nombre":"COLUMNA 220-240 2 PUERTA 70","casco":135,"montaje":32,"cant1":2,"f1":[67.68,92.06,272.42,325.94,379.74,472.7,428.98,514.78],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":8},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 2 PUERTA 80":{"nombre":"COLUMNA 220-240 2 PUERTA 80","casco":140,"montaje":32,"cant1":2,"f1":[95.58,137.08,287.46,344.12,405.92,504.52,445.92,535.12],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":8},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 2 PUERTA 90":{"nombre":"COLUMNA 220-240 2 PUERTA 90","casco":145,"montaje":32,"cant1":2,"f1":[95.58,137.08,299.16,379.16,446.58,553.82,462.86,555.44],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":8},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 2 PUERTA 100":{"nombre":"COLUMNA 220-240 2 PUERTA 100","casco":150,"montaje":32,"cant1":2,"f1":[95.58,137.08,340.02,407.3,484.28,581.12,479.8,575.76],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":8},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1/4+3/4 1 PUERTA 30":{"nombre":"COLUMNA 220-240 1/4+3/4 1 PUERTA 30","casco":110,"montaje":32,"cant1":1,"f1":[13.18,18.91,35.95,42.17,48.5,58.23,59.78,71.73],"cant2":1,"f2":[31.82,42.97,96.71,118.42,130.09,162.26,157.26,188.71],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1/4+3/4 1 PUERTA 40":{"nombre":"COLUMNA 220-240 1/4+3/4 1 PUERTA 40","casco":115,"montaje":32,"cant1":1,"f1":[15.39,22.84,38.48,45.17,52.07,65.08,64.84,77.81],"cant2":1,"f2":[46.49,62.96,112.46,134.63,151.24,187.98,170.24,204.29],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1/4+3/4 1 PUERTA 50":{"nombre":"COLUMNA 220-240 1/4+3/4 1 PUERTA 50","casco":125,"montaje":32,"cant1":1,"f1":[17.59,26.78,45.48,54.5,60.79,74.78,69.9,83.88],"cant2":1,"f2":[46.49,62.96,133.02,159.34,180.44,216.52,183.22,219.86],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1/4+3/4 1 PUERTA 60":{"nombre":"COLUMNA 220-240 1/4+3/4 1 PUERTA 60","casco":130,"montaje":32,"cant1":1,"f1":[19.99,30.35,54.07,63.47,72.99,88.56,74.97,89.96],"cant2":1,"f2":[46.49,62.96,142.3,170.53,187.81,232.35,196.2,235.44],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1/4+3/4 2 PUERTAS 70":{"nombre":"COLUMNA 220-240 1/4+3/4 2 PUERTAS 70","casco":135,"montaje":32,"cant1":2,"f1":[30.48,41.36,72.74,86.18,99.1,123.12,124.62,149.54],"cant2":2,"f2":[63.64,85.94,213.14,255.02,283,352.24,327.5,393],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":10},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1/4+3/4 2 PUERTAS 80":{"nombre":"COLUMNA 220-240 1/4+3/4 2 PUERTAS 80","casco":140,"montaje":32,"cant1":2,"f1":[30.78,45.68,76.96,90.34,104.14,130.16,129.68,155.62],"cant2":2,"f2":[92.98,125.92,224.92,269.26,302.48,375.96,340.48,408.58],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":10},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1/4+3/4 2 PUERTAS 90":{"nombre":"COLUMNA 220-240 1/4+3/4 2 PUERTAS 90","casco":145,"montaje":32,"cant1":2,"f1":[32.54,49.24,88.14,99.06,117.22,146.52,134.74,161.7],"cant2":2,"f2":[92.98,125.92,239.52,296.66,332.78,412.7,353.46,424.14],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":10},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 1/4+3/4 2 PUERTAS 100":{"nombre":"COLUMNA 220-240 1/4+3/4 2 PUERTAS 100","casco":150,"montaje":32,"cant1":2,"f1":[35.18,53.56,90.96,109,121.58,149.56,139.8,167.76],"cant2":2,"f2":[92.98,125.92,266.04,318.68,360.88,433.04,366.44,439.72],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":10},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 PUERTA + H/MO + PUERTA 60":{"nombre":"COLUMNA 220-240 PUERTA + H/MO + PUERTA 60","casco":130,"montaje":32,"cant1":1,"f1":[23.75,37.66,56.56,67.64,77.79,94.37,95.2,114.24],"cant2":1,"f2":[17.21,26.04,54.07,63.47,72.99,88.56,70.93,85.11],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 PUERTA + H/MO + 2 CACEROLEROS 60":{"nombre":"COLUMNA 220-240 PUERTA + H/MO + 2 CACEROLEROS 60","casco":130,"montaje":32,"cant1":1,"f1":[23.75,37.66,56.56,67.64,77.79,94.37,95.2,114.24],"cant2":2,"f2":[23.14,34.04,68.52,82.12,94.44,113.22,95.8,114.96],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"COLUMNA 220-240 PUERTA + ELECTRODOMÉSTICO + PUERTA 60":{"nombre":"COLUMNA 220-240 PUERTA + ELECTRODOMÉSTICO + PUERTA 60","casco":130,"montaje":32,"cant1":1,"f1":[31.28,40.87,102.14,117.9,139.78,174.72,145.71,174.85],"cant2":1,"f2":[19.99,30.35,56.07,67.13,75.62,91.76,85.08,102.1],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":4},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 PUERTA + ELECTRODOMÉSTICO + 2 CACER 60":{"nombre":"COLUMNA 220-240 PUERTA + ELECTRODOMÉSTICO + 2 CACER 60","casco":130,"montaje":32,"cant1":1,"f1":[31.62,51.28,102.72,123.14,144.09,180.11,145.71,174.85],"cant2":2,"f2":[23.14,34.04,68.52,82.12,94.44,113.22,95.8,114.96],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":2},{"n":"Cajón 180mm","p":"ref_d","c":2},{"n":"Patas std","p":"ref_g","c":4},{"n":"Varillas cac.","p":"ref_f","c":2}]},"COLUMNA 220-240 FRIGORÍFICO INTEGRADO 60":{"nombre":"COLUMNA 220-240 FRIGORÍFICO INTEGRADO 60","casco":109,"montaje":32,"cant1":1,"f1":[23.75,37.66,64.1,76.73,86.46,107.67,95.2,114.24],"cant2":1,"f2":[46.49,62.96,126.47,151.56,187.81,232.35,196.2,235.44],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 FRIGORÍFICO INTEGRADO 70":{"nombre":"COLUMNA 220-240 FRIGORÍFICO INTEGRADO 70","casco":115,"montaje":32,"cant1":1,"f1":[29.09,46.13,73.37,87.75,100.91,122.44,116.62,139.94],"cant2":1,"f2":[56.95,77.13,148.63,190.62,219.21,240.72,240.34,288.41],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":5},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 VITRINA 30":{"nombre":"COLUMNA 220-240 VITRINA 30","casco":110,"montaje":32,"cant1":1,"f1":[64,64,64,64,100.91,122.44,116.62,139.94],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":3},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 VITRINA 40":{"nombre":"COLUMNA 220-240 VITRINA 40","casco":115,"montaje":32,"cant1":1,"f1":[78,78,78,78,100.91,122.44,116.62,139.94],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":3},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 VITRINA 50":{"nombre":"COLUMNA 220-240 VITRINA 50","casco":125,"montaje":32,"cant1":1,"f1":[91.5,91.5,91.5,91.5,100.91,122.44,116.62,139.94],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":6},{"n":"Patas std","p":"ref_g","c":4}]},"COLUMNA 220-240 VITRINA 60":{"nombre":"COLUMNA 220-240 VITRINA 60","casco":130,"montaje":32,"cant1":1,"f1":[105.5,105.5,105.5,105.5,100.91,122.44,116.62,139.94],"cant2":0,"f2":[null,null,null,null,null,null,null,null],"herrajes":[{"n":"Bisagra std","p":"ref_b","c":6},{"n":"Patas std","p":"ref_g","c":4}]}};
 var CAT_MODULES = {"ALTO 35-40":{"ABATIBLE":["40","50","60","70","80","90","100"]},"ALTO 60":{"ABATIBLE":["40","50","60"],"VITRINA":["50","60","70","90"]},"ALTO 70-80":{"1 PUERTA":["30","40","50","60"],"2 ESTANTES DECORATIVO":["60","90"],"2 PUERTAS":["70","80","90","100","120"],"BOTELLERO DECORATIVO":["15","30"],"CAMPANA EXTRAÍBLE":["60"],"CAMPANA INTEGRABLE":["60","90"],"RINCÓN CHAFLÁN":["60"],"RINCÓN CIEGO":["90"],"RINCÓN L":["60"],"RINCÓN L RINCOMATIC":["60"],"VITRINA":["50","60","70","90"]},"ALTO 90-100":{"1 PUERTA":["30","40","50","60"],"2 ESTANTES DECORATIVO":["60","90"],"2 PUERTAS":["70","80","90","100","120"],"BOTELLERO DECORATIVO":["15","30"],"CAMPANA EXTRAÍBLE":["60"],"CAMPANA INTEGRABLE":["60","90"],"RINCÓN CHAFLÁN":["60"],"RINCÓN CIEGO":["90"],"RINCÓN L":["60"],"RINCÓN L RINCOMATIC":["60"],"VITRINA":["50","60","70","90"]},"ALTO MO 130":{"1 PUERTA":["60"]},"ALTO S-FRIGO 30-40":{"1 PUERTA":["60"],"2 PUERTAS":["70","90"],"ABATIBLE":["60","70","90"]},"ALTO S-FRIGO 50":{"ABATIBLE":["90"]},"ALTO S-FRIGO 50-60":{"1 PUERTA":["60"],"2 PUERTAS":["70","90"],"ABATIBLE":["60","70"]},"ALTO 45":{"1 PUERTA":["30","40","50","60"],"2 PUERTAS":["70","80","90","100","120"],"ABATIBLE":["40","50","60"],"VITRINA":["50","60","70","90"]},"BAJO":{"1 GAVETERO 1 PUERTA":["30","40","50","60"],"1 GAVETERO 2 CACEROLEROS":["40","50","60","70","80","90","100","120"],"1 PUERTA":["30","40","50","60"],"2 CACEROLEROS":["40","50","60","70","80","90","100","120"],"2 GAVETEROS 1 CACEROLERO":["40","50","60","70","80","90","100","120"],"2 PUERTAS":["70","80","90","100","120"],"4 GAVETEROS":["30","40","50","60"],"5 GAVETEROS":["30","40","50","60"],"ESPECIERO":["15","20"],"LAVADORA INTEGRABLE":["60"],"LAVAVAJILLAS INTEGRABLE":["45","60"],"PANERO":["30","40"],"RINCÓN CIEGO":["90","100","120"],"RINCÓN EN L":["90","100"],"SOPORTE HORNO SIN CAJÓN":["60"],"SOPORTE HORNO Y 1 GAVETERO":["60"],"VITRINA":["30","40","50","60"]},"COLUMNA 200-215":{"1 PUERTA":["30","40","50","60"],"1/4+3/4 1 PUERTA":["30","40","50","60"],"1/4+3/4 2 PUERTAS":["70","80","90","100"],"2 PUERTA":["70","80","90","100"],"FRIGORÍFICO INTEGRADO":["60","70"],"PUERTA + ELECTRODOMÉSTICO + 2 CACER":["60"],"PUERTA + ELECTRODOMÉSTICO + PUERTA":["60"],"PUERTA + H/MO + 2 CACEROLEROS":["60"],"PUERTA + H/MO + PUERTA":["60"],"VITRINA":["30","40","50","60"]},"COLUMNA 220-240":{"1 PUERTA":["30","40","50","60"],"1/4+3/4 1 PUERTA":["30","40","50","60"],"1/4+3/4 2 PUERTAS":["70","80","90","100"],"2 PUERTA":["70","80","90","100"],"FRIGORÍFICO INTEGRADO":["60","70"],"PUERTA + ELECTRODOMÉSTICO + 2 CACER":["60"],"PUERTA + ELECTRODOMÉSTICO + PUERTA":["60"],"PUERTA + H/MO + 2 CACEROLEROS":["60"],"PUERTA + H/MO + PUERTA":["60"],"VITRINA":["30","40","50","60"]},"SEMICOLUMNA 135-145":{"1 PUERTA":["30","40","50","60"],"2 PUERTA":["70","80","90","100"],"4 - 5 CACEROLEROS":["60"],"HORNO + 1 PUERTA":["60"],"HORNO/MICROONDAS + 1 CACEROLERO":["60"]},"SOBRE ENCIMERA":{"1 PUERTA":["30","40","50","60"],"2 PUERTA":["70","80","90","100"],"MICROONDAS + 1 PUERTA":["60"],"PERSIANA":["60","90"]}};
-var PARAMS_DEFAULT = {"tarifa_taller":21,"inc_casco":0,"inc_puerta":0,"inc_herraje":0,"herrajes_ref":{"ref_b":2.5,"ref_c":20,"ref_d":25,"ref_e":30,"ref_f":5,"ref_g":1,"ref_h":25,"ref_i":25,"ref_j":25,"ref_k":25},"margen_muebles":30,"margen_extras":0,"margen_modo":"coste","ml_bajos":85,"ml_altos":125,"ml_col":45,"ml_sobre":35,"ml_costados":12,"ml_regletas":8,"plus_dif":20,"margen_electro":15};
+var PARAMS_DEFAULT = {"tarifa_taller":21,"inc_casco":0,"inc_puerta":0,"inc_herraje":0,"herrajes_ref":{"ref_b":2.5,"ref_c":20,"ref_d":25,"ref_e":30,"ref_f":5,"ref_g":1,"ref_h":25,"ref_i":25,"ref_j":25,"ref_k":25},"margen_muebles":30,"margen_extras":0,"margen_modo":"coste","ml_bajos":85,"ml_altos":125,"ml_col":45,"ml_sobre":35,"ml_costados":12,"ml_regletas":8,"plus_dif":20,"margen_electro":15,"casco_acab_def":"blanco 16","casco_alto_def":"70"};
 // MODMAP editable y persistido
 var MODMAP = JSON.parse(localStorage.getItem('modmap_v15')||'null') || JSON.parse(JSON.stringify(MODMAP_DEFAULT));
 // ── Modal de extras al añadir mueble ──────────────────────
@@ -1420,7 +1421,7 @@ function save() {
 // ══════════════════════════════════════════════════════════════════════
 // Precio de venta (PVP, con margen) de un elemento según su tipo de grupo.
 // Para muebles = coste calculado (calcPrice) + margen de muebles.
-function gp(m, mo, med, cal, tipo) {
+function gp(m, mo, med, cal, tipo, g) {
   if (tipo === 'electro') {
     // m = nombre del electrodoméstico; buscar en ST.electro
     var e = (ST.electro||[]).find(function(x){ return x.n === m; });
@@ -1438,12 +1439,12 @@ function gp(m, mo, med, cal, tipo) {
     var p = entry.prices[ci];
     return p != null ? pvpM(p) : null;
   }
-  var c = costeBase(m, mo, med, cal, tipo);
+  var c = costeBase(m, mo, med, cal, tipo, g);
   if (c === null) return null;
   return (tipo === 'extras') ? pvpE(c) : pvpM(c);
 }
 // Coste (sin margen) de muebles y extras generales
-function costeBase(m, mo, med, cal, tipo) {
+function costeBase(m, mo, med, cal, tipo, g) {
   if (tipo === 'extras') {
     var c = ST.exg[m];
     return c && c[mo] !== undefined ? c[mo] : null;
@@ -1452,7 +1453,7 @@ function costeBase(m, mo, med, cal, tipo) {
   if (tipo === 'muebles') {
     var calIdx = CALS.indexOf(cal);
     if (calIdx < 0) return null;
-    return calcPrice(m+' '+mo+' '+med, calIdx);
+    return calcPrice(m+' '+mo+' '+med, calIdx, g);
   }
   // Tabla de precios antigua (solo por compatibilidad)
   var e = ST.prices[tipo+'|'+m+'||'+mo+'||'+med] || ST.prices[m+'||'+mo+'||'+med];
@@ -1530,7 +1531,7 @@ function lineTotal(l, g) {
 // Cambio de frentes: solo el frente del módulo + mano de obra + bisagras
 function _lineTotalFrente(l, g) {
   {
-    var pf = precioSoloFrente(l.m, l.mo, l.med, g.cal);
+    var pf = precioSoloFrente(l.m, l.mo, l.med, g.cal, g);
     if (pf === null) return 0;
     var nf = numFrentes(l.m, l.mo, l.med);
     var esCajon = frenteEsCajon(l.m, l.mo);
@@ -1593,9 +1594,10 @@ function _rawCostFrente(l, g) {
     var mod = MODMAP[clave];
     if (!mod) return 0;
     var calIdx = CALS.indexOf(g.cal); if (calIdx<0) calIdx=2;
-    var f1 = mod.f1||[], f2 = mod.f2||[];
-    var frente = (mod.cant1||0)*((f1[calIdx])||0) + (mod.cant2||0)*((f2[calIdx])||0);
-    var nf = (mod.cant1||0)+(mod.cant2||0);
+    var pz = puertasDe(mod, g);
+    var f1 = pz.f1||[], f2 = pz.f2||[];
+    var frente = (pz.cant1||0)*((f1[calIdx])||0) + (pz.cant2||0)*((f2[calIdx])||0);
+    var nf = (pz.cant1||0)+(pz.cant2||0);
     var esCajon = frenteEsCajon(l.m, l.mo);
     var mo = (esCajon ? (ST.params.mo_frente_cajon||0) : (ST.params.mo_frente_puerta||0)) * nf;
     var bis = (l.conBisagras && !esCajon) ? nf*2*(ST.params.ref_bisagra_cambio||2.5) : 0;
@@ -1617,7 +1619,7 @@ function unitPVP(l, g) {
 }
 function _unitPVPBase(l, g) {
   var tipo = g.tipo || 'muebles';
-  var pvp = gp(l.m, l.mo, l.med, g.cal, tipo);
+  var pvp = gp(l.m, l.mo, l.med, g.cal, tipo, g);
   if (pvp === null) return null;
   var f = adjF(g) - 1;
   if (!f) return pvp;
@@ -1626,7 +1628,7 @@ function _unitPVPBase(l, g) {
 
   if (tipo === 'muebles') {
     var ci = CALS.indexOf(g.cal);
-    var bd = calcBreakdown(l.m+' '+l.mo+' '+l.med, ci);
+    var bd = calcBreakdown(l.m+' '+l.mo+' '+l.med, ci, g);
     if (!bd) return pvp;
     if (scope === 'frentes') {
       var newCost = Math.round((bd.total + bd.frentes * f) * 100)/100;
@@ -1724,19 +1726,46 @@ function computeML() {
   return ml;
 }
 
+// ── Cascos por acabado y altura de bajos (fase 2a · plantilla v13) ──
+// MODMAP[n].cascos = {"70|blanco 16": €, …} (hoja CASCOS) · MODMAP[n].b80 = puertas de bajos de 80
+var CASCO_ACABADOS = ['blanco 16','gris 16','blanco 19','antracita 19','coco 19','nogal 19','roble 19'];
+var CASCO_ALTOS = ['70','80'];
+// Sin grupo (catálogo, editor): valores por defecto de Configuración. Grupo sin g.casco
+// (presupuesto anterior a la v123): blanco 16 · 70 fijo, para que cambiar la configuración no lo mueva.
+function cascoSel(g) {
+  var p = g ? {} : (ST.params || {}), c = (g && g.casco) || {};
+  var acab = CASCO_ACABADOS.indexOf(c.acab) >= 0 ? c.acab
+    : (CASCO_ACABADOS.indexOf(p.casco_acab_def) >= 0 ? p.casco_acab_def : 'blanco 16');
+  var alto = CASCO_ALTOS.indexOf(String(c.alto)) >= 0 ? String(c.alto)
+    : (CASCO_ALTOS.indexOf(String(p.casco_alto_def)) >= 0 ? String(p.casco_alto_def) : '70');
+  return {acab: acab, alto: alto};
+}
+function cascoNuevo() { return cascoSel(null); }
+function cascoCoste(m, g) {
+  var s = cascoSel(g), v = m.cascos ? m.cascos[s.alto+'|'+s.acab] : null;
+  return (typeof v === 'number' ? v : (m.casco||0)) * (1 + (ST.params.inc_casco||0));
+}
+function puertasDe(m, g) {
+  return (m.b80 && cascoSel(g).alto === '80') ? m.b80 : m;
+}
+function hayCascos() {
+  return Object.keys(MODMAP).some(function(n){ return !!MODMAP[n].cascos; });
+}
+
 // ── Cálculo de precio (réplica de la fórmula Excel) ───────
-function calcPrice(nombre, calIdx) {
+function calcPrice(nombre, calIdx, g) {
   var p = ST.params;
   var m = MODMAP[nombre];
   if (!m) return null;
   var refs = p.herrajes_ref;
   function rr(v) { if (typeof v !== 'string') return v||0; var val = refs[v]; if (val == null) { var _d={ref_h:25,ref_i:25,ref_j:25,ref_k:25}; val=_d[v]||0; } return val||0; }
-  var casco = (m.casco||0) * (1 + (p.inc_casco||0));
+  var casco = cascoCoste(m, g);
   var montaje = ((m.montaje||0)/60) * (p.tarifa_taller||21);
+  var pz = puertasDe(m, g);
   var f1 = 0;
-  if (m.cant1 > 0 && m.f1[calIdx] != null) f1 = m.cant1 * m.f1[calIdx] * (1+(p.inc_puerta||0));
+  if (pz.cant1 > 0 && pz.f1[calIdx] != null) f1 = pz.cant1 * pz.f1[calIdx] * (1+(p.inc_puerta||0));
   var f2 = 0;
-  if (m.cant2 > 0 && m.f2[calIdx] != null) f2 = m.cant2 * m.f2[calIdx] * (1+(p.inc_puerta||0));
+  if (pz.cant2 > 0 && pz.f2[calIdx] != null) f2 = pz.cant2 * pz.f2[calIdx] * (1+(p.inc_puerta||0));
   var herr = 0;
   (m.herrajes||[]).forEach(function(h){
     if (h.n && h.c > 0) herr += rr(h.p) * h.c * (1+(p.inc_herraje||0));
@@ -1853,18 +1882,19 @@ function countUnits(tipo) {
 function adjF(g) { return 1 + ((g && g.adj) || 0)/100; }
 
 // Desglose de coste de un mueble (réplica exacta de calcPrice por componentes)
-function calcBreakdown(nombre, calIdx) {
+function calcBreakdown(nombre, calIdx, g) {
   var p = ST.params;
   var m = MODMAP[nombre];
   if (!m) return null;
   var refs = p.herrajes_ref;
   function rr(v) { return typeof v==='string' ? (refs[v]||0) : (v||0); }
-  var casco = (m.casco||0) * (1 + (p.inc_casco||0));
+  var casco = cascoCoste(m, g);
   var montaje = ((m.montaje||0)/60) * (p.tarifa_taller||21);
+  var pz = puertasDe(m, g);
   var f1 = 0;
-  if (m.cant1 > 0 && m.f1[calIdx] != null) f1 = m.cant1 * m.f1[calIdx] * (1+(p.inc_puerta||0));
+  if (pz.cant1 > 0 && pz.f1[calIdx] != null) f1 = pz.cant1 * pz.f1[calIdx] * (1+(p.inc_puerta||0));
   var f2 = 0;
-  if (m.cant2 > 0 && m.f2[calIdx] != null) f2 = m.cant2 * m.f2[calIdx] * (1+(p.inc_puerta||0));
+  if (pz.cant2 > 0 && pz.f2[calIdx] != null) f2 = pz.cant2 * pz.f2[calIdx] * (1+(p.inc_puerta||0));
   var herr = 0;
   (m.herrajes||[]).forEach(function(h){
     if (h.n && h.c > 0) herr += rr(h.p) * h.c * (1+(p.inc_herraje||0));
@@ -1907,7 +1937,7 @@ function freefoldCascoFrenteExtra(l, g) {
   if (_congelado() && l && l.fzFF != null) return l.fzFF;
   var ci = CALS.indexOf(g.cal);
   if (ci < 0) return 0;
-  var bd = calcBreakdown(l.m+' '+l.mo+' '+l.med, ci);
+  var bd = calcBreakdown(l.m+' '+l.mo+' '+l.med, ci, g);
   if (!bd) return 0;
   // casco×(2-1) + frentes×(2-1) = una vez más cada uno
   return pvpM(Math.round((bd.casco + bd.frentes)*100)/100);
@@ -2042,13 +2072,14 @@ function setExmInstByKey(key, valor) {
 // CAMBIO DE FRENTES rehecho — usa el módulo real, solo el frente
 // (sin casco). El usuario elige el mueble igual que siempre.
 // Precio solo del frente de un módulo (cant1×f1 + cant2×f2), por calidad
-function precioSoloFrente(m, mo, med, cal) {
+function precioSoloFrente(m, mo, med, cal, g) {
   var clave = (med && med !== '\u2014') ? (m+' '+mo+' '+med) : (m+' '+mo);
   var mod = MODMAP[clave];
   if (!mod) return null;
   var calIdx = CALS.indexOf(cal); if (calIdx < 0) calIdx = 2;
-  var f1 = mod.f1 || [], f2 = mod.f2 || [];
-  var c1 = mod.cant1||0, c2 = mod.cant2||0;
+  var pz = puertasDe(mod, g);
+  var f1 = pz.f1 || [], f2 = pz.f2 || [];
+  var c1 = pz.cant1||0, c2 = pz.cant2||0;
   var frente = c1*((f1[calIdx])||0) + c2*((f2[calIdx])||0);
   // margen de muebles sobre el frente (material+fabricación)
   return frente * _factorMargenMuebles();
@@ -2157,7 +2188,7 @@ function _addLineMueble(gid) {
 
   _pendL = {gid:gid, m:m, mo:mo, med:med, und:und, nombre:m+' '+mo+' '+med, exs:exs};
   var ci = CALS.indexOf(g.cal);
-  var bd = calcBreakdown(m+' '+mo+' '+med, ci) || {casco:0,frentes:0};
+  var bd = calcBreakdown(m+' '+mo+' '+med, ci, g) || {casco:0,frentes:0};
   var ffCascoFrente = pvpM(Math.round((bd.casco+bd.frentes)*100)/100);
 
   var html = '<table style="width:100%;border-collapse:collapse;font-size:.83rem">'
@@ -2230,7 +2261,7 @@ function confirmGrp() {
     var name = document.getElementById('MNAME').value.trim() || TIPOS[tipo].label;
     closeMod();
     var ci = ST.groups.length % GCOLS.length;
-    ST.groups.push({id:nid(), name:name, tipo:tipo, cal:cal, ci:ci, lines:[], open:true});
+    ST.groups.push({id:nid(), name:name, tipo:tipo, cal:cal, ci:ci, lines:[], open:true, casco:cascoNuevo()});
     renderGroups(); upBan();
   } else {
     _confirmGrpBase();
@@ -2240,7 +2271,7 @@ function _confirmGrpBase() {
   var name = document.getElementById('MNAME').value.trim() || TIPOS[_mtype].label;
   closeMod();
   var ci = ST.groups.length % GCOLS.length;
-  ST.groups.push({id:nid(), name:name, tipo:_mtype, cal:'ENTRADA', ci:ci, lines:[], open:true});
+  ST.groups.push({id:nid(), name:name, tipo:_mtype, cal:'ENTRADA', ci:ci, lines:[], open:true, casco:cascoNuevo()});
   renderGroups(); upBan();
 }
 
@@ -2327,6 +2358,7 @@ function renderGroups() {
   _rgPasoCalidadesCostados();
   _rgPasoOcultarCalidadExtras();
   _rgPasoAjuste();
+  _rgPasoCasco();
   _rgPasoFormularioElectroLibre();
   _rgPasoColorTipo();
   _rgPasoContadorYMover();
@@ -2450,6 +2482,36 @@ function _rgPasoAjuste() {
     if (mtabs && mtabs.nextSibling) body.insertBefore(div, mtabs.nextSibling);
     else body.insertBefore(div, body.firstChild);
   });
+}
+// Fase 2a: acabado del casco y altura de los bajos por grupo de muebles (plantilla v13)
+function _rgPasoCasco() {
+  if (!hayCascos()) return;
+  ST.groups.forEach(function(g){
+    var tipo = g.tipo||'muebles';
+    if (tipo !== 'muebles' && tipo !== 'frentes') return;
+    var body = document.getElementById('gb'+g.id);
+    if (!body || document.getElementById('gcasco'+g.id)) return;
+    var s = cascoSel(g);
+    var div = document.createElement('div');
+    div.id = 'gcasco'+g.id;
+    div.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;padding:7px 10px;background:#eef4fb;border:1px solid #bcd0e6;border-radius:7px';
+    div.innerHTML = '<span style="font-size:.76rem;color:#2c4a6b;font-weight:600">'+(tipo==='frentes'?'Altura:':'Casco:')+'</span>'
+      +'<select id="gcacab'+g.id+'"'+(tipo==='frentes'?' hidden':'')+' style="width:auto;padding:4px 6px;font-size:.78rem" onchange="setGroupCasco('+g.id+',\'acab\',this.value)">'
+      +CASCO_ACABADOS.map(function(a){ return '<option value="'+a+'"'+(a===s.acab?' selected':'')+'>'+a+' mm</option>'; }).join('')
+      +'</select>'
+      +'<select id="gcalto'+g.id+'" style="width:auto;padding:4px 6px;font-size:.78rem" onchange="setGroupCasco('+g.id+',\'alto\',this.value)">'
+      +CASCO_ALTOS.map(function(a){ return '<option value="'+a+'"'+(a===s.alto?' selected':'')+'>bajos de '+a+'</option>'; }).join('')
+      +'</select>';
+    var adj = document.getElementById('gadj'+g.id);
+    var ref = adj ? adj.parentNode : body.querySelector('.mtabs');
+    if (ref && ref.nextSibling) body.insertBefore(div, ref.nextSibling);
+    else body.insertBefore(div, body.firstChild);
+  });
+}
+function setGroupCasco(gid, campo, val) {
+  var g = ST.groups.find(function(g){return g.id===gid;}); if(!g) return;
+  var s = cascoSel(g); s[campo] = val; g.casco = s;
+  renderLines(gid); upBan(); save();
 }
 function _rgPasoFormularioElectroLibre() {
   ST.groups.forEach(function(g){
@@ -2624,7 +2686,7 @@ function _renderLinesBase(gid) {
   var sub=0;
   var adj=(g.adj||0)!==0;
   var rows=g.lines.map(function(l,i){
-    var p0=gp(l.m,l.mo,l.med,g.cal,g.tipo);
+    var p0=gp(l.m,l.mo,l.med,g.cal,g.tipo,g);
     var p=unitPVP(l,g);
     var hasFF=(l.extras||[]).some(function(ex){return ex.freefold;});
     var ffExtra=hasFF?freefoldCascoFrenteExtra(l,g):0;
@@ -2915,7 +2977,7 @@ function _onMoPasoPrecioFrente(gid) { try{ _updFrentePrecio(gid); }catch(e){} }
 
 function addGroup(name, cal) {
   var ci=ST.groups.length%GCOLS.length;
-  ST.groups.push({id:nid(),name:name||'Nuevo grupo',cal:cal||'ENTRADA',ci:ci,lines:[],open:true});
+  ST.groups.push({id:nid(),name:name||'Nuevo grupo',cal:cal||'ENTRADA',ci:ci,lines:[],open:true,casco:cascoNuevo()});
   renderGroups();upBan();
 }
 
@@ -3321,14 +3383,14 @@ function _updFrentePrecio(gid) {
   if (!m || !mo) { cont.innerHTML = semDiv + '<span style="font-size:.7rem;color:var(--muted)">Elige el mueble para ver el precio del frente por calidad.</span>'; return; }
   if (typeof precioSoloFrente !== 'function') { cont.innerHTML=''; return; }
   var chips = CALS.map(function(cal, i){
-    var v = precioSoloFrente(m, mo, med, cal);
+    var v = precioSoloFrente(m, mo, med, cal, g);
     var txt = (v!=null && isFinite(v)) ? (Math.round(v*100)/100).toFixed(2) : '—';
     var activo = (cal === g.cal);
     return '<span style="display:inline-block;padding:2px 7px;margin:2px 3px 2px 0;border-radius:8px;font-size:.72rem;'
       + (activo ? 'background:var(--verde,#2d6a4f);color:#fff;font-weight:600' : 'background:#eef1f4;color:#445')
       + '" title="'+eh(cal)+'">G'+(i+1)+' '+txt+'€</span>';
   }).join('');
-  var actual = precioSoloFrente(m, mo, med, g.cal);
+  var actual = precioSoloFrente(m, mo, med, g.cal, g);
   var actTxt = (actual!=null && isFinite(actual)) ? (Math.round(actual*100)/100).toFixed(2)+'€' : '—';
   cont.innerHTML = semDiv + '<div style="font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;margin-bottom:2px">'
     + 'Precio del frente que aplica el sistema · por calidad (sin montaje) · <b style="color:var(--verde,#2d6a4f)">actual: '+actTxt+'</b></div>'
@@ -3733,7 +3795,7 @@ function fichaTaller() {
         +'<td style="padding:5px 8px;border:1px solid #ccc;font-size:.78rem">'+eh(herr)+'</td>'
         +'</tr>';
     }).join('');
-    return '<div style="'+((g.tipo||'muebles')!=='muebles'?'page-break-inside:avoid;break-inside:avoid':'')+'">'+'<h3 style="margin:14px 0 6px;font-size:1rem;break-after:avoid;page-break-after:avoid">'+ti.label+' \u2014 '+eh(g.name)+' ('+g.cal+')'+(g.opcional?' \u00b7 OPCIONAL':'')+'</h3>'
+    return '<div style="'+((g.tipo||'muebles')!=='muebles'?'page-break-inside:avoid;break-inside:avoid':'')+'">'+'<h3 style="margin:14px 0 6px;font-size:1rem;break-after:avoid;page-break-after:avoid">'+ti.label+' \u2014 '+eh(g.name)+' ('+g.cal+')'+(g.opcional?' \u00b7 OPCIONAL':'')+((g.tipo||'muebles')==='muebles'&&hayCascos()?' \u00b7 Casco: '+cascoSel(g).acab+' mm \u00b7 bajos de '+cascoSel(g).alto:'')+'</h3>'
       +'<table style="width:100%;border-collapse:collapse;font-size:.84rem">'
       +'<thead><tr style="background:#eee">'
       +'<th style="padding:5px 8px;border:1px solid #ccc;width:30px">#</th>'
@@ -3977,7 +4039,7 @@ function budgetCost() {
       if (g.tipo === 'muebles') {
         var nombre = l.m+' '+l.mo+' '+l.med;
         var ci = CALS.indexOf(g.cal);
-        var bd = calcBreakdown(nombre, ci);
+        var bd = calcBreakdown(nombre, ci, g);
         if (bd) {
           coste += bd.total * l.und;
           // V41: si se han quitado las varillas en esta línea, descontar su coste (mismo cálculo que calcBreakdown)
@@ -4122,10 +4184,11 @@ function desgloseComponentes() {
         var m = MODMAP[nombre];
         if (m) {
           var und = l.und || 1;
-          d.casco += (m.casco||0) * (1+(p.inc_casco||0)) * und;
+          d.casco += cascoCoste(m, g) * und;
           d.montaje += ((m.montaje||0)/60) * (p.tarifa_taller||21) * und;
-          if (m.cant1 > 0 && m.f1[ci] != null) d.frentes += m.cant1 * m.f1[ci] * (1+(p.inc_puerta||0)) * und;
-          if (m.cant2 > 0 && m.f2[ci] != null) d.frentes += m.cant2 * m.f2[ci] * (1+(p.inc_puerta||0)) * und;
+          var pz = puertasDe(m, g);
+          if (pz.cant1 > 0 && pz.f1[ci] != null) d.frentes += pz.cant1 * pz.f1[ci] * (1+(p.inc_puerta||0)) * und;
+          if (pz.cant2 > 0 && pz.f2[ci] != null) d.frentes += pz.cant2 * pz.f2[ci] * (1+(p.inc_puerta||0)) * und;
           (m.herrajes||[]).forEach(function(h){
             if (h.n && h.c > 0) {
               if (l.sinVarillas && h.p === 'ref_f') return;  // varillas quitadas en esta línea: no contarlas
@@ -4150,7 +4213,7 @@ function desgloseComponentes() {
       (l.extras||[]).forEach(function(ex){
         d.extras += rawFromPvpE(ex.p) * (l.und||1);
         if (ex.freefold && g.tipo === 'muebles') {
-          var bdf = calcBreakdown(l.m+' '+l.mo+' '+l.med, CALS.indexOf(g.cal));
+          var bdf = calcBreakdown(l.m+' '+l.mo+' '+l.med, CALS.indexOf(g.cal), g);
           if (bdf) { d.casco += bdf.casco * (l.und||1); d.frentes += bdf.frentes * (l.und||1); }
         }
       });
@@ -5396,6 +5459,9 @@ function _saveCfgParametros() {
   ST.params.inc_casco  = gv('p-casco',0);
   ST.params.inc_puerta = gv('p-puerta',0);
   ST.params.inc_herraje= gv('p-herraje',0);
+  var _ca = document.getElementById('p-casco-acab'), _cl = document.getElementById('p-casco-alto');
+  if (_ca) ST.params.casco_acab_def = _ca.value;
+  if (_cl) ST.params.casco_alto_def = _cl.value;
   ST.params.herrajes_ref.ref_b = gv('hr-b',2.5);
   ST.params.herrajes_ref.ref_c = gv('hr-c',20);
   ST.params.herrajes_ref.ref_d = gv('hr-d',25);
@@ -5524,6 +5590,38 @@ async function _importExcelBase(e) {
       nMod++;
     }
     if (nMod < 10) throw new Error('Solo '+nMod+' m\u00f3dulos encontrados \u2014 estructura inesperada');
+    // Fase 2a (v13): casco por acabado y altura (CASCOS) y puertas de bajos de 80 (BAJOS_80)
+    var nCascos = 0, nB80 = 0;
+    if (sheetMap['CASCOS']) {
+      var cRows = parseSheetXML(files[sheetMap['CASCOS']], shared), cab = cRows[1] || {};
+      var cols = Object.keys(cab).filter(function(k){ return k !== 'A' && cab[k] && typeof cab[k].v === 'string'; });
+      for (var r = 2; r < cRows.length; r++) {
+        var cm = cell(cRows[r],'A').v;
+        if (!cm || !newModmap[cm]) continue;
+        var mapa = {};
+        cols.forEach(function(k){
+          var v = cell(cRows[r],k).v, t = String(cab[k].v).split(' \u00b7 ');
+          if (typeof v === 'number' && t.length === 2) mapa[t[0]+'|'+t[1]] = Math.round(v*100)/100;
+        });
+        newModmap[cm].cascos = mapa; nCascos++;
+      }
+    }
+    if (sheetMap['BAJOS_80']) {
+      var bRows = parseSheetXML(files[sheetMap['BAJOS_80']], shared);
+      var L1 = ['C','D','E','F','G','H','I','J'], L2 = ['L','M','N','O','P','Q','R','S'];
+      var num = function(row, c){ var v = cell(row,c).v; return typeof v === 'number' ? Math.round(v*10000)/10000 : null; };
+      for (var r = 2; r < bRows.length; r++) {
+        var bm = cell(bRows[r],'A').v;
+        if (!bm || !newModmap[bm]) continue;
+        newModmap[bm].b80 = {
+          cant1: cell(bRows[r],'B').v ? parseInt(cell(bRows[r],'B').v) : 0,
+          f1: L1.map(function(c){ return num(bRows[r], c); }),
+          cant2: cell(bRows[r],'K').v ? parseInt(cell(bRows[r],'K').v) : 0,
+          f2: L2.map(function(c){ return num(bRows[r], c); })
+        };
+        nB80++;
+      }
+    }
     
     // ── Parsear EXTRAS ──
     var newExm = [], newExg = {};
@@ -5593,7 +5691,7 @@ async function _importExcelBase(e) {
       return n ? mapa : null;
     }
     var newCost = leerMedidas('COSTADOS'), newRegl = leerMedidas('REGLETAS');
-    if (!confirm('Importar '+nMod+' m\u00f3dulos'+(extSheetName?(', '+newExm.length+' extras de mueble y '+Object.keys(newExg).length+' categor\u00edas generales'):'')+(newCost?', '+Object.keys(newCost).length+' medidas de costado':'')+(newRegl?', '+Object.keys(newRegl).length+' de regleta':'')+'?\\nSe reemplazar\u00e1n los datos actuales.')) {
+    if (!confirm('Importar '+nMod+' m\u00f3dulos'+(extSheetName?(', '+newExm.length+' extras de mueble y '+Object.keys(newExg).length+' categor\u00edas generales'):'')+(newCost?', '+Object.keys(newCost).length+' medidas de costado':'')+(newRegl?', '+Object.keys(newRegl).length+' de regleta':'')+(nCascos?', cascos por acabado de '+nCascos+' m\u00f3dulos y '+nB80+' bajos de 80':'')+'?\\nSe reemplazar\u00e1n los datos actuales.')) {
       status.textContent = 'Importaci\u00f3n cancelada';
       e.target.value = '';
       return;
@@ -5616,7 +5714,7 @@ async function _importExcelBase(e) {
     });
     try { localStorage.setItem('map_costados', JSON.stringify(MAP_COSTADOS)); localStorage.setItem('map_regletas', JSON.stringify(MAP_REGLETAS)); } catch(err){}
     // Reconstruir catálogo de muebles
-    var TYPES = ['BAJO','ALTO 35-40','ALTO 45','ALTO 60','ALTO 70-80','ALTO 90-100','ALTO MO 130','ALTO S-FRIGO 30-40','ALTO S-FRIGO 50-60','SOBRE ENCIMERA','SEMICOLUMNA 135-145','COLUMNA 200-215','COLUMNA 220-240'];
+    var TYPES = ['BAJO','ALTO 35-40','ALTO 45','ALTO 60','ALTO 70-80','ALTO 90-100','ALTO MO 130','ALTO S-FRIGO 30-40','ALTO S-FRIGO 50-60','ALTO PUENTE 30-40','ALTO PUENTE 50-60','SOBRE ENCIMERA','SEMICOLUMNA 135-145','COLUMNA 200-215','COLUMNA 220-240'];
     var newCat = {};
     Object.keys(newModmap).forEach(function(nombre){
       var mtype = null;
@@ -5698,6 +5796,11 @@ function _renderParamsPanelBase() {
     +'<div><lbl>Incremento puerta/frente</lbl><input type="number" id="p-puerta" step="0.01"></div>'
     +'<div><lbl>Incremento herraje</lbl><input type="number" id="p-herraje" step="0.01"></div>'
     +'</div>'
+    +'<div style="margin-top:14px"><lbl>Cascos por defecto (grupos sin elegir)</lbl>'
+    +'<div class="g2" style="margin-top:8px">'
+    +'<div><lbl>Acabado</lbl><select id="p-casco-acab">'+CASCO_ACABADOS.map(function(a){return '<option value="'+a+'">'+a+' mm</option>';}).join('')+'</select></div>'
+    +'<div><lbl>Altura de bajos</lbl><select id="p-casco-alto">'+CASCO_ALTOS.map(function(a){return '<option value="'+a+'">'+a+' cm</option>';}).join('')+'</select></div>'
+    +'</div></div>'
     +'<div style="margin-top:14px"><lbl>Precios herrajes de referencia (\u20ac/ud)</lbl>'
     +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px">'
     +'<div><lbl>Bisagra std</lbl><input type="number" id="hr-b" step="0.1" min="0"></div>'
@@ -5905,6 +6008,7 @@ function _fillParams() {
   var f = function(id,v){ var el=document.getElementById(id); if(el) el.value=v; };
   f('p-taller', P.tarifa_taller); f('p-casco', P.inc_casco);
   f('p-puerta', P.inc_puerta); f('p-herraje', P.inc_herraje);
+  f('p-casco-acab', cascoSel(null).acab); f('p-casco-alto', cascoSel(null).alto);
   f('hr-b',P.herrajes_ref.ref_b); f('hr-c',P.herrajes_ref.ref_c);
   f('hr-d',P.herrajes_ref.ref_d); f('hr-e',P.herrajes_ref.ref_e);
   f('hr-f',P.herrajes_ref.ref_f); f('hr-g',P.herrajes_ref.ref_g);
@@ -5989,11 +6093,24 @@ function updModComp(inp) {
   var val = parseFloat(inp.value);
   if (isNaN(val)) val = null;
   
-  if (field === 'casco') m.casco = val||0;
+  if (field === 'casco') {
+    var antes = m.casco||0;
+    m.casco = val||0;
+    // v13: el casco editado se reparte en proporción por todos los acabados y alturas
+    if (m.cascos) Object.keys(m.cascos).forEach(function(k){
+      m.cascos[k] = antes > 0 ? Math.round(m.cascos[k] * m.casco / antes * 100)/100 : m.casco;
+    });
+  }
   else if (field === 'montaje') m.montaje = val||0;
   else if (field === 'f1' || field === 'f2') {
     var ci = parseInt(inp.getAttribute('data-ci'));
+    var ant = m[field][ci];
     m[field][ci] = val;
+    // v13: la misma variación en la puerta de bajos de 80
+    if (m.b80 && m.b80[field]) {
+      var v80 = m.b80[field][ci];
+      m.b80[field][ci] = (val == null) ? null : (ant > 0 && v80 != null ? Math.round(v80 * val / ant * 10000)/10000 : val);
+    }
   }
   save();
   // Update the summary price display
@@ -6031,15 +6148,19 @@ function applyIncrement() {
   if (target === 'cascos' || target === 'todo') {
     Object.keys(MODMAP).forEach(function(n){
       if (MODMAP[n].casco) MODMAP[n].casco = r2(MODMAP[n].casco * f);
+      var cs = MODMAP[n].cascos;
+      if (cs) Object.keys(cs).forEach(function(k){ cs[k] = r2(cs[k] * f); });
     });
   }
   if (target === 'frentes' || target === 'todo') {
     Object.keys(MODMAP).forEach(function(n){
-      var m = MODMAP[n];
-      ['f1','f2'].forEach(function(field){
-        m[field].forEach(function(v,ci){
-          if (v == null) return;
-          if (target === 'todo' || grupo < 0 || grupo === ci) m[field][ci] = r2(v*f);
+      [MODMAP[n], MODMAP[n].b80].forEach(function(m){
+        if (!m) return;
+        ['f1','f2'].forEach(function(field){
+          m[field].forEach(function(v,ci){
+            if (v == null) return;
+            if (target === 'todo' || grupo < 0 || grupo === ci) m[field][ci] = r2(v*f);
+          });
         });
       });
     });
@@ -7689,7 +7810,7 @@ function arrancar() {
   // Fecha de hoy y grupo inicial
   var d = new Date();
   document.getElementById('FF').value = String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
-  if (!ST.groups.length) ST.groups.push({id:nid(), name:'Bajos', cal:'ENTRADA', ci:0, lines:[], open:true});
+  if (!ST.groups.length) ST.groups.push({id:nid(), name:'Bajos', cal:'ENTRADA', ci:0, lines:[], open:true, casco:cascoNuevo()});
 
   // Catálogos, precios y migraciones de datos (mismo orden que siempre)
 if (!ST.cats) {
