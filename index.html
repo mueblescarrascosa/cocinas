@@ -263,12 +263,15 @@ body.bloq #ESTADO-AVISO { display:block; }
   #HISTMOD .btn.bsm { padding:6px 8px !important; min-height:34px; font-size:13px !important; }
 }
 /* v120: todo a mano y botones en una sola línea */
-.ba #dirty-ind { flex:1 0 100%; order:-1; }
-.ba .menu-wrap { flex:1 1 auto; min-width:0; }
+/* v121: el aviso «Sin guardar» ocupa su propia fila; sin flex-wrap los botones se quedaban sin ancho y se montaban */
+.ba { flex-wrap:wrap; justify-content:flex-end; align-items:center; }
+.ba #dirty-ind { flex:1 0 100%; order:-1; justify-content:flex-end; }
+.ba .menu-wrap { flex:0 0 auto; min-width:max-content; }
 .ba .menu-wrap > .btn { width:100%; white-space:nowrap; }
 @media (max-width: 600px) {
-  .ba { flex-wrap:wrap; gap:5px !important; }
-  .ba .menu-wrap { flex:1 1 auto !important; }
+  .ba { flex:1 1 100%; flex-wrap:wrap; gap:5px !important; }
+  .ba #dirty-ind { justify-content:flex-start; }
+  .ba .menu-wrap { flex:1 1 auto !important; min-width:max-content; }
   .ba .btn { padding:9px 4px !important; font-size:13px !important; justify-content:center; }
   .ba .mico { display:none; }
   #pp > .np { flex-wrap:nowrap !important; gap:6px; }
@@ -3955,8 +3958,11 @@ function totalEnCalidad(cal) {
     // V114: aplicar también el descuento del grupo (antes la fila "actual" no cuadraba con el total)
     var gc = g;
     if (g.tipo === 'muebles') { gc = {}; for (var k in g) gc[k] = g[k]; gc.cal = cal; }
+    // V121: con el presupuesto cerrado, las otras calidades se calculan con las tarifas de hoy
+    // (el precio congelado solo vale para la calidad con la que se cerró)
+    var otra = g.tipo === 'muebles' && cal !== g.cal;
     var st = 0;
-    g.lines.forEach(function(l){ st += lineTotal(l, gc); });
+    g.lines.forEach(function(l){ st += otra ? _enVivo(function(){ return lineTotal(l, gc); }) : lineTotal(l, gc); });
     t += st - descuentoGrupo(g, st);
   });
   return Math.round(t*100)/100;
@@ -3995,6 +4001,9 @@ function openComparador() {
       _prevTot = tot;
   });
   html += '</tbody></table>';
+  if (ST.bloqueado) {
+    html += '<p class="mut" style="margin-top:10px;font-size:.8rem">🔒 Presupuesto cerrado: la calidad actual sale con su precio congelado y las demás, con las tarifas de hoy.</p>';
+  }
   if (_hayInversionRara) {
     html += '<div style="margin-top:10px;padding:10px 12px;background:#fdeaea;border:1px solid #e8b4b4;border-radius:6px;font-size:.8rem;color:#922">'
       +'\u26A0 <strong>Revisar:</strong> una calidad sale m\u00e1s barata que la anterior en una transici\u00f3n inusual. Podr\u00eda ser un error de precios \u2014 conviene comprobarlo.'
