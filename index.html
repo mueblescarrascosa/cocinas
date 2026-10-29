@@ -264,6 +264,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 }
 /* v120: todo a mano y botones en una sola línea */
 /* v121: el aviso «Sin guardar» ocupa su propia fila; sin flex-wrap los botones se quedaban sin ancho y se montaban */
+/* v122: semáforo de modelos, ajuste automático, arranque sin recarga y menús sin subir/bajar nube */
 .ba { flex-wrap:wrap; justify-content:flex-end; align-items:center; }
 .ba #dirty-ind { flex:1 0 100%; order:-1; justify-content:flex-end; }
 .ba .menu-wrap { flex:0 0 auto; min-width:max-content; }
@@ -297,7 +298,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v120</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v122</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -403,18 +404,14 @@ body.bloq #ESTADO-AVISO { display:block; }
         <div class="menu-drop" id="m-anal">
           <a onclick="openComparador();closeMenus()">&#x2696; Comparar calidades</a>
           <a onclick="openRentabilidad();closeMenus()">&#x1F4CA; Rentabilidad (privado)</a>
-          <a onclick="openResumenTaller();closeMenus()">&#x1F528; Resumen para taller</a>
         </div>
       </div>
       <div class="menu-wrap">
         <button class="btn bgh" style="color:#fff;border-color:rgba(255,255,255,.2)" onclick="toggleMenu('m-file')"><span class="mico">&#x1F4BE; </span>Archivo &#x25BE;</button>
         <div class="menu-drop" id="m-file">
-          <a onclick="guardarProyecto();closeMenus()">&#x1F4BE; Guardar proyecto</a><a onclick="saveBudgetFile();closeMenus()">&#x1F4BE; Guardar como archivo</a>
-          <label style="display:block"><span>&#x1F4C2; Abrir desde archivo</span><input type="file" accept=".json" style="display:none" onchange="loadBudgetFile(event);closeMenus()"></label>
+          <a onclick="guardarProyecto();closeMenus()">&#x1F4BE; Guardar proyecto</a>
           <a onclick="openHistory();closeMenus()">&#x1F4C1; Proyectos guardados</a>
           <a onclick="abrirCopiasNube();closeMenus()">&#x1F5C4; Copias autom&#225;ticas (nube)</a>
-          <a onclick="subirTodoALaNube();closeMenus()" style="border-top:1px solid #eee">&#x2601;&#xFE0F; Subir mis datos a la nube</a>
-          <a onclick="bajarTodoDeLaNube();closeMenus()">&#x2601;&#xFE0F; Bajar datos de la nube</a>
           <a onclick="supaLogout()" style="border-top:1px solid #eee;color:#c0392b">&#x1F511; Cerrar sesi&#xF3;n</a>
           <a onclick="descargarCopiaSeguridad();closeMenus()" style="border-top:1px solid #eee">&#x1F4BE; Copia de seguridad (todo)</a>
           <label style="display:block"><span>&#x267B;&#xFE0F; Restaurar copia</span><input type="file" accept=".json" style="display:none" onchange="restaurarCopiaSeguridad(this);closeMenus()"></label>
@@ -573,8 +570,8 @@ body.bloq #ESTADO-AVISO { display:block; }
   <div class="pf" id="PF"></div>
 </div>
 
-<script>
-// Muebles Carrascosa · Presupuestador · v120
+<script type="text/x-presupuestador" id="APP-SRC">
+// Muebles Carrascosa · Presupuestador · v122
 // Estructura: datos y estado → funciones por área → arranque (al final del archivo).
 // Cada función está definida UNA sola vez. Para cambiar algo, edítalo en su sitio.
 
@@ -1178,7 +1175,7 @@ async function supaCargarTodo() {
       _syncCache[clave] = localStorage.getItem(clave);  // V114: lo que hay en local (evita resubidas)
     }
     // IMPORTANTE: ya NO subimos automáticamente cuando la nube está vacía.
-    // El usuario sube sus datos a propósito con el botón "Subir a la nube".
+    // Cada clave se sube sola en cuanto cambia (guardado automático); ya no hay botón de subir.
   }
   if (algunaError) {
     _mostrarEstadoSync('error', '\u26a0 Sin conexi\u00f3n (usando local)');
@@ -1395,62 +1392,8 @@ async function supaGuardarHistorial(h) {
 
 // Control manual de sincronización (subir/bajar a propósito)
 // SUBIR todos mis datos locales a la nube (este dispositivo manda)
-async function subirTodoALaNube() {
-  if (!confirm('Vas a SUBIR los datos de ESTE dispositivo a la nube (precios, cat\u00e1logos, configuraci\u00f3n...).\n\nEsto reemplazar\u00e1 lo que haya en la nube. \u00bfContinuar?')) return;
-  _mostrarEstadoSync('cargando', '\u2601 Subiendo tus datos...');
-  var ok = 0, fallo = 0;
-  for (var i = 0; i < CLAVES_SYNC.length; i++) {
-    var clave = CLAVES_SYNC[i];
-    var local = localStorage.getItem(clave);
-    if (local !== null) {
-      var r = await supaGuardarClave(clave, local);
-      if (r) ok++; else fallo++;
-    }
-  }
-  // También el historial
-  var hist = localStorage.getItem('historial_v1');
-  if (hist !== null) { await supaGuardarHistorial(JSON.parse(hist)); }
-  if (fallo === 0) {
-    _mostrarEstadoSync('ok', '\u2601 Datos subidos \u2713');
-    toast('Tus datos se han subido a la nube \u2713');
-  } else {
-    _mostrarEstadoSync('error', '\u26a0 Error al subir');
-    toast('Hubo un problema subiendo algunos datos');
-  }
-}
 
 // BAJAR todos los datos de la nube (la nube manda)
-async function bajarTodoDeLaNube() {
-  if (!confirm('Vas a BAJAR los datos de la nube a ESTE dispositivo.\n\nEsto reemplazar\u00e1 los datos de este dispositivo por los de la nube. \u00bfContinuar?')) return;
-  _mostrarEstadoSync('cargando', '\u2601 Bajando datos...');
-  var fallo = false;
-  for (var i = 0; i < CLAVES_SYNC.length; i++) {
-    var clave = CLAVES_SYNC[i];
-    var datosNube = await supaLeerClave(clave);
-    if (datosNube === undefined) { fallo = true; }
-    else if (datosNube !== null) {
-      var valorStr = (typeof datosNube === 'string') ? datosNube : JSON.stringify(datosNube);
-      if (clave === 'pnum') valorStr = String(Math.max(parseInt(valorStr)||1, parseInt(localStorage.getItem('pnum'))||1));
-      try { _origSetItem(clave, valorStr); } catch(e){}
-    }
-  }
-  // El historial
-  var h = await supaLeerClave('historial_v1');
-  // historial se guarda con su propia función de carga; lo leemos de la tabla presupuestos
-  try {
-    var resp = await fetch(SUPA_URL + '/rest/v1/presupuestos?clave=eq.historial_v1&select=datos', { headers: _supaHeaders() });
-    var filas = await resp.json();
-    if (filas.length && filas[0].datos) _origSetItem('historial_v1', JSON.stringify(filas[0].datos));
-  } catch(e){}
-  if (fallo) {
-    _mostrarEstadoSync('error', '\u26a0 Sin conexi\u00f3n');
-    toast('No se pudo conectar con la nube');
-    return;
-  }
-  toast('Datos bajados \u2014 recargando...');
-  sessionStorage.removeItem('_recargaSync');
-  setTimeout(function(){ location.reload(); }, 800);
-}
 
 // ══════════════════════════════════════════════════════════════════════
 // ESTADO Y GUARDADO
@@ -2623,14 +2566,15 @@ function _rgPasoBuscadorExtras() {
 }
 function _rgPasoModeloFrente() {
   ST.groups.forEach(function(g){
-    if (g.tipo !== 'frentes') return;
+    var esMuebles = (g.tipo || 'muebles') === 'muebles';
+    if (g.tipo !== 'frentes' && !esMuebles) return;
     var body = document.getElementById('gb'+g.id);
     if (!body || body.querySelector('.frmodelo-pick')) return;
     var alr = body.querySelector('.alr');
     var div = document.createElement('div');
     div.className = 'frmodelo-pick';
     div.style.cssText = 'margin:8px 0 2px';
-    div.innerHTML = '<span style="display:block;font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;margin-bottom:2px">Modelo de frente (opcional \u00b7 sale solo en la ficha de taller)</span>'
+    div.innerHTML = '<span style="display:block;font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;margin-bottom:2px">'+(esMuebles ? 'Modelo de puertas (opcional \u00b7 fija la calidad, avisa si hay que subir y sale en la ficha de taller)' : 'Modelo de frente (opcional \u00b7 sale solo en la ficha de taller)')+'</span>'
       +'<input id="af-fmodelo'+g.id+'" list="FRG-DL" placeholder="Busca: marca \u00b7 modelo \u00b7 acabado\u2026" value="'+(g.frenteRef?eh(_frenteRefStr(g.frenteRef)):'')+'" onchange="setFrenteModelo('+g.id+',this.value)" style="width:100%;box-sizing:border-box;padding:6px 9px;border:1px solid var(--line);border-radius:6px">';
     if (alr) body.insertBefore(div, alr); else body.appendChild(div);
     if (!body.querySelector('.frente-precio-cal')) {
@@ -3342,11 +3286,12 @@ function setFrenteModelo(gid, val) {
   var hit = MODELOS_GRUPOS.filter(function(m){ return !/COSTADO|REGLETA/i.test((m.marca||'')+' '+(m.modelo||'')); })
                           .filter(function(m){ return _optStrFrente(m) === val; })[0];
   if (hit) {
-    g.frenteRef = {marca:hit.marca, material:hit.material||'', modelo:hit.modelo, color:hit.color||'', acabado:hit.acabado||'', gf:hit.gf||'', g:Number(hit.g)};
+    g.frenteRef = {marca:hit.marca, material:hit.material||'', modelo:hit.modelo, color:hit.color||'', acabado:hit.acabado||'', gf:hit.gf||'', g:Number(hit.g), d:hit.d, am:!!hit.am};
     var cal = CALS[Number(hit.g)-1];
     if (cal) g.cal = cal;
     renderGroups(); upBan();
-    toast('Frente: '+_frenteRefStr(g.frenteRef)+' \u00b7 calidad '+(cal||'')+' \u2713');
+    var sem = semaforoModelo(hit);
+    toast('Frente: '+_frenteRefStr(g.frenteRef)+' \u00b7 calidad '+(cal||'')+(sem && sem.color!=='#2d6a4f' ? ' \u00b7 \u26a0 '+sem.txt : ' \u2713'));
   } else {
     // Texto libre: se guarda para el taller, sin tocar la calidad
     g.frenteRef = {marca:'', modelo:val, acabado:'', g:null};
@@ -3361,9 +3306,19 @@ function _updFrentePrecio(gid) {
   if (!cont) return;
   var g = ST.groups.find(function(x){return x.id===gid;});
   var mSel = document.getElementById('am'+gid), moSel = document.getElementById('amo'+gid), medSel = document.getElementById('amed'+gid);
-  if (!g || g.tipo!=='frentes' || !mSel || !moSel) { cont.innerHTML=''; return; }
+  if (!g) { cont.innerHTML=''; return; }
+  var sem = g.frenteRef ? semaforoHtml(g.frenteRef) : '';
+  var boton = '';
+  if (sem && !g.frenteRef.am && Number(g.frenteRef.d) > 5) {
+    var sube = Math.ceil(Number(g.frenteRef.d));
+    boton = (g.adj === sube && g.adjScope === 'frentes')
+      ? ' <span style="font-size:.72rem;color:#2d6a4f;font-weight:600">✓ ajuste +'+sube+' % aplicado a las puertas</span>'
+      : ' <button class="btn bgh bsm" style="padding:2px 9px;font-size:.72rem" onclick="aplicarAjusteSemaforo('+gid+')">Aplicar +'+sube+' % a las puertas</button>';
+  }
+  var semDiv = sem ? '<div style="margin:2px 0 4px;display:flex;flex-wrap:wrap;align-items:center;gap:6px">'+sem+boton+'</div>' : '';
+  if (g.tipo !== 'frentes' || !mSel || !moSel) { cont.innerHTML = semDiv; return; }   // muebles: solo el aviso
   var m = mSel.value, mo = moSel.value, med = medSel ? medSel.value : '—';
-  if (!m || !mo) { cont.innerHTML = '<span style="font-size:.7rem;color:var(--muted)">Elige el mueble para ver el precio del frente por calidad.</span>'; return; }
+  if (!m || !mo) { cont.innerHTML = semDiv + '<span style="font-size:.7rem;color:var(--muted)">Elige el mueble para ver el precio del frente por calidad.</span>'; return; }
   if (typeof precioSoloFrente !== 'function') { cont.innerHTML=''; return; }
   var chips = CALS.map(function(cal, i){
     var v = precioSoloFrente(m, mo, med, cal);
@@ -3375,7 +3330,7 @@ function _updFrentePrecio(gid) {
   }).join('');
   var actual = precioSoloFrente(m, mo, med, g.cal);
   var actTxt = (actual!=null && isFinite(actual)) ? (Math.round(actual*100)/100).toFixed(2)+'€' : '—';
-  cont.innerHTML = '<div style="font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;margin-bottom:2px">'
+  cont.innerHTML = semDiv + '<div style="font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;margin-bottom:2px">'
     + 'Precio del frente que aplica el sistema · por calidad (sin montaje) · <b style="color:var(--verde,#2d6a4f)">actual: '+actTxt+'</b></div>'
     + '<div style="line-height:1.7">'+chips+'</div>';
 }
@@ -3772,7 +3727,7 @@ function fichaTaller() {
       return '<tr>'
         +'<td style="padding:5px 8px;border:1px solid #ccc">'+(i+1)+'</td>'
         +'<td style="padding:5px 8px;border:1px solid #ccc"><strong>'+eh(l.m)+'</strong>'+(ext?'<br><small>+ '+eh(ext)+'</small>':'')+'</td>'
-        +'<td style="padding:5px 8px;border:1px solid #ccc">'+(g.tipo==='electro'?eh([l.marca,l.modelo].filter(Boolean).join(' '))+(l.notas?'<br><small style="color:#555">'+eh(l.notas)+'</small>':''):(g.tipo==='frentes'&&g.frenteRef?eh(l.mo)+'<br><small style="color:#555">'+eh(_frenteRefStr(g.frenteRef))+'</small>':eh(l.mo)))+'</td>'
+        +'<td style="padding:5px 8px;border:1px solid #ccc">'+(g.tipo==='electro'?eh([l.marca,l.modelo].filter(Boolean).join(' '))+(l.notas?'<br><small style="color:#555">'+eh(l.notas)+'</small>':''):((g.tipo==='frentes'||(g.tipo||'muebles')==='muebles')&&g.frenteRef?eh(l.mo)+'<br><small style="color:#555">'+eh(_frenteRefStr(g.frenteRef))+'</small>':eh(l.mo)))+'</td>'
         +'<td style="padding:5px 8px;border:1px solid #ccc;text-align:center">'+(l.med==='\u2014'?'\u2014':l.med+' cm')+'</td>'
         +'<td style="padding:5px 8px;border:1px solid #ccc;text-align:center">'+l.und+'</td>'
         +'<td style="padding:5px 8px;border:1px solid #ccc;font-size:.78rem">'+eh(herr)+'</td>'
@@ -4242,42 +4197,6 @@ function contarMateriales() {
   return {muebles:muebles, herrajes:herrajes, totalFrentes:totalFrentes, totalCascos:totalCascos};
 }
 
-function openResumenTaller() {
-  if (!totalL()) { toast('A\u00f1ade muebles primero'); return; }
-  var mat = contarMateriales();
-  var html = '<table style="width:100%;border-collapse:collapse;font-size:.85rem"><tbody>';
-  // Sección muebles
-  html += '<tr><td colspan="2" style="padding:8px 10px;font-weight:700;background:#f5f5f5;border-bottom:1px solid var(--line)">\ud83d\udce6 Muebles a fabricar</td></tr>';
-  var nombresM = Object.keys(mat.muebles).sort();
-  if (nombresM.length) {
-    nombresM.forEach(function(n){
-      html += '<tr style="border-bottom:1px solid var(--line)"><td style="padding:6px 10px">'+eh(n)+'</td>'
-        +'<td style="padding:6px 10px;text-align:right;font-weight:600">'+mat.muebles[n]+' ud</td></tr>';
-    });
-  } else {
-    html += '<tr><td colspan="2" style="padding:6px 10px;color:var(--muted)">Sin muebles</td></tr>';
-  }
-  // Totales generales
-  html += '<tr><td colspan="2" style="padding:8px 10px;font-weight:700;background:#f5f5f5;border-bottom:1px solid var(--line)">\ud83d\udcd0 Totales</td></tr>';
-  html += '<tr style="border-bottom:1px solid var(--line)"><td style="padding:6px 10px">\ud83e\udeb5 Cascos (estructuras)</td><td style="padding:6px 10px;text-align:right;font-weight:600">'+mat.totalCascos+' ud</td></tr>';
-  html += '<tr style="border-bottom:1px solid var(--line)"><td style="padding:6px 10px">\ud83d\udeaa Frentes (puertas + cajones vista)</td><td style="padding:6px 10px;text-align:right;font-weight:600">'+mat.totalFrentes+' ud</td></tr>';
-  // Sección herrajes
-  html += '<tr><td colspan="2" style="padding:8px 10px;font-weight:700;background:#f5f5f5;border-bottom:1px solid var(--line)">\u2699\ufe0f Herrajes a pedir</td></tr>';
-  var nombresH = Object.keys(mat.herrajes).sort();
-  if (nombresH.length) {
-    nombresH.forEach(function(n){
-      html += '<tr style="border-bottom:1px solid var(--line)"><td style="padding:6px 10px">'+eh(n)+'</td>'
-        +'<td style="padding:6px 10px;text-align:right;font-weight:600">'+mat.herrajes[n]+' ud</td></tr>';
-    });
-  } else {
-    html += '<tr><td colspan="2" style="padding:6px 10px;color:var(--muted)">Sin herrajes</td></tr>';
-  }
-  html += '</tbody></table>';
-  html += '<p class="mut" style="margin-top:10px;font-size:.78rem">Cantidades totales del presupuesto actual. \u00datil para pedir material o pasar al taller.</p>';
-  // Mostrar en el modal de rentabilidad (reutilizado)
-  document.getElementById('RENT-BODY').innerHTML = '<div style="font-family:\'DM Serif Display\',serif;font-size:1.1rem;margin-bottom:10px">\ud83d\udd28 Resumen para el taller</div>' + html;
-  document.getElementById('RENTMOD').style.display = 'flex';
-}
 
 // ══════════════════════════════════════════════════════════════════════
 // CATÁLOGO (pestañas, explorador, frentes, altas)
@@ -4527,11 +4446,11 @@ function renderCatContent() {
 
 function searchGrupo(q) {
   var el = document.getElementById('GRP-RESULTS');
-  q = (q||'').trim().toUpperCase();
+  q = _sinAcentos((q||'').trim());
   if (q.length < 2) { el.innerHTML = ''; return; }
   var hits = MODELOS_GRUPOS.filter(function(m){
     if (/COSTADO|REGLETA/i.test((m.marca||'')+' '+(m.modelo||''))) return false; // costados/regletas tienen su propio apartado
-    return (m.marca+' '+m.modelo).toUpperCase().indexOf(q) >= 0;
+    return _sinAcentos([m.marca, m.material, m.modelo, m.color, m.acabado, m.gf].filter(Boolean).join(' ')).indexOf(q) >= 0;
   });
   if (!hits.length) {
     el.innerHTML = '<p class="mut" style="padding:8px">Sin resultados para "'+eh(q)+'". Prueba con menos letras.</p>';
@@ -4548,7 +4467,8 @@ function searchGrupo(q) {
   hits.slice(0, 40).forEach(function(m){
     html += '<tr style="border-bottom:1px solid var(--line)">'
       +'<td style="padding:6px 8px">'+eh(m.marca)+'</td>'
-      +'<td style="padding:6px 8px;font-weight:600">'+eh(m.modelo)+'</td>'
+      +'<td style="padding:6px 8px;font-weight:600">'+semaforoHtml(m, true)+' '+eh(_frenteDesc(m) || m.modelo)
+      +(semaforoModelo(m) && semaforoModelo(m).color !== '#2d6a4f' ? '<div style="font-weight:400">'+semaforoHtml(m)+'</div>' : '')+'</td>'
       +'<td style="padding:6px 8px;text-align:center"><span style="background:'+GRUPO_COLORES[m.g]+';color:#fff;padding:2px 9px;border-radius:10px;font-size:.78rem;font-weight:600">G'+m.g+' '+GRUPO_NOMBRES[m.g]+'</span></td>'
       +'<td style="padding:6px 8px;text-align:right">'+(typeof m.f==='number'?m.f.toFixed(2)+' \u20ac':'\u2014')+'</td>'
       +'<td style="padding:6px 8px;text-align:right">'+(typeof m.p==='number'?m.p.toFixed(2)+' \u20ac':'\u2014')+'</td>'
@@ -5055,6 +4975,45 @@ function _frentePrecios(m) {
   return (c?('caj\u00f3n '+c):'') + (c&&p?' \u00b7 ':'') + (p?('puerta '+p):'') + ' \u20ac';
 }
 
+// \u2500\u2500 Sem\u00e1foro: cu\u00e1nto cuesta el modelo por encima del precio de su grupo \u2500\u2500
+// m.d = % del coste del modelo sobre la media de su grupo (lista importada); m.am = \u00aba medida\u00bb
+function semaforoModelo(m) {
+  if (!m) return null;
+  if (m.am) return {color:'#c0392b', fondo:'#fdecea', txt:'A MEDIDA \u00b7 consultar precio al proveedor'};
+  if (m.d == null || !isFinite(m.d)) return null;
+  var d = Number(m.d), sube = Math.ceil(d);
+  if (d > 15) return {color:'#c0392b', fondo:'#fdecea', txt:'+'+sube+' % sobre su grupo \u00b7 sube las puertas un '+sube+' %'};
+  if (d > 5) return {color:'#b7950b', fondo:'#fef9e7', txt:'+'+sube+' % sobre su grupo \u00b7 valora subir un '+sube+' %'};
+  return {color:'#2d6a4f', fondo:'#e9f5ee', txt:'precio del grupo correcto'};
+}
+
+// Botón del aviso: pone en el «Ajuste de este presupuesto» del grupo el % que falta, solo sobre puertas
+function aplicarAjusteSemaforo(gid) {
+  var g = ST.groups.find(function(x){ return x.id===gid; });
+  if (!g || !g.frenteRef || g.frenteRef.d == null) return;
+  var sube = Math.ceil(Number(g.frenteRef.d));
+  g.adjScope = 'frentes';
+  setGroupAdj(gid, sube);
+  var inp = document.getElementById('gadj'+gid); if (inp) inp.value = sube;
+  var sel = document.getElementById('gadjs'+gid); if (sel) sel.value = 'frentes';
+  _updFrentePrecio(gid);
+  save();
+  toast('Ajuste +'+sube+' % aplicado a las puertas de este grupo ✓');
+}
+
+// Para buscar sin tener en cuenta acentos ni mayúsculas («baltico» encuentra «BÁLTICO»)
+function _sinAcentos(s) {
+  return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+}
+
+function semaforoHtml(m, corto) {
+  var s = semaforoModelo(m);
+  if (!s) return '';
+  return '<span title="'+eh(s.txt)+'" style="display:inline-flex;align-items:center;gap:5px;font-size:.72rem;color:'+s.color+(corto?'':';background:'+s.fondo+';padding:2px 8px;border-radius:9px')+'">'
+    +'<span style="width:10px;height:10px;border-radius:50%;background:'+s.color+';display:inline-block;flex:none"></span>'
+    +(corto?'':eh(s.txt))+'</span>';
+}
+
 function _frenteCampos(o) {
   var p = [o.marca||''];
   if (o.material) p.push(o.material);
@@ -5095,11 +5054,11 @@ function _buildFrenteDatalist() {
 }
 
 function frgIndicesFiltrados() {
-  var q = _frgFiltro.toUpperCase();
+  var q = _sinAcentos(_frgFiltro);
   var res = [];
   MODELOS_GRUPOS.forEach(function(m, i){
     if (/COSTADO|REGLETA/i.test((m.marca||'')+' '+(m.modelo||''))) return;
-    var txt = ((m.marca||'')+' '+(m.material||'')+' '+(m.modelo||'')+' '+(m.color||'')+' '+(m.acabado||'')+' '+(m.gf||'')+' G'+m.g).replace(/\s+/g,' ').toUpperCase();
+    var txt = _sinAcentos(((m.marca||'')+' '+(m.material||'')+' '+(m.modelo||'')+' '+(m.color||'')+' '+(m.acabado||'')+' '+(m.gf||'')+' G'+m.g).replace(/\s+/g,' '));
     if (!q || txt.indexOf(q) >= 0) res.push(i);
   });
   return res;
@@ -5145,6 +5104,7 @@ function renderGestorFrentes() {
     var m = MODELOS_GRUPOS[idx];
     var sel = gopts.replace('value="'+m.g+'"', 'value="'+m.g+'" selected');
     return '<div style="border:1px solid var(--line);border-radius:8px;padding:8px 9px;margin-bottom:7px;background:#fff">'
+      +(semaforoModelo(m) ? '<div style="margin-bottom:5px">'+semaforoHtml(m)+'</div>' : '')
       +'<div style="display:flex;gap:7px;align-items:center;margin-bottom:6px">'
       +'<input data-campo="modelo" value="'+eh(m.modelo||'')+'" onchange="frgSet('+idx+',\'modelo\',this.value)" style="flex:1;font-weight:600;padding:5px 7px;border:1px solid var(--line);border-radius:6px;min-width:0" title="'+eh(_frenteCampos(m))+'">'
       +'<button onclick="frgDel('+idx+')" title="Eliminar" style="border:1px solid #d33;color:#d33;background:#fff;border-radius:6px;padding:3px 8px;cursor:pointer">\u2715</button>'
@@ -5182,7 +5142,10 @@ function abrirGestorFrentes() {
   m.innerHTML = '<div style="background:#fff;border-radius:12px;padding:14px;max-width:560px;width:100%;max-height:92vh;display:flex;flex-direction:column">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
     +'<h3 style="margin:0">\ud83d\udeaa Gestionar frentes</h3>'
-    +'<button class="btn bgh bsm" onclick="cerrarGestorFrentes()">Cerrar</button></div>'
+    +'<div style="display:flex;gap:6px">'
+    +'<label class="btn bgh bsm" style="cursor:pointer" title="Sustituye la lista por la del Excel modelos_por_grupo">\ud83d\udce5 Importar Excel'
+    +'<input type="file" accept=".xlsx" style="display:none" onchange="importarModelosExcel(this)"></label>'
+    +'<button class="btn bgh bsm" onclick="cerrarGestorFrentes()">Cerrar</button></div></div>'
     +'<div style="font-size:.76rem;color:var(--muted);margin-bottom:8px">Marca \u00b7 modelo \u00b7 acabado \u00b7 grupo. El grupo fija la calidad/precio. Los cambios se guardan y sincronizan.</div>'
     +'<div style="display:flex;gap:7px;margin-bottom:10px">'
     +'<input id="FRG-FILTRO" placeholder="\ud83d\udd0d Filtrar (marca, modelo, acabado, G3\u2026)" oninput="frgFiltrar(this.value)" style="flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:6px;min-width:0">'
@@ -5192,6 +5155,70 @@ function abrirGestorFrentes() {
     +'</div>';
   m.style.display = 'flex';
   _frgFiltro=''; renderGestorFrentes();
+}
+
+// Importar la lista de modelos desde el Excel «modelos_por_grupo» (tarifa por grupos):
+// Grupo | Calidad | Marca | Modelo / Acabado | Precio frente € | Colores | Sobre su grupo %
+async function importarModelosExcel(input) {
+  var file = input.files[0];
+  if (!file) return;
+  try {
+    var files = await unzipXlsx(await file.arrayBuffer());
+    var shared = [];
+    if (files['xl/sharedStrings.xml']) {
+      var ssDoc = new DOMParser().parseFromString(new TextDecoder().decode(files['xl/sharedStrings.xml']), 'application/xml');
+      var sis = ssDoc.getElementsByTagName('si');
+      for (var i=0;i<sis.length;i++){
+        var ts = sis[i].getElementsByTagName('t'), txt='';
+        for (var j=0;j<ts.length;j++) txt += ts[j].textContent;
+        shared.push(txt);
+      }
+    }
+    var wbDoc = new DOMParser().parseFromString(new TextDecoder().decode(files['xl/workbook.xml']),'application/xml');
+    var relsDoc = new DOMParser().parseFromString(new TextDecoder().decode(files['xl/_rels/workbook.xml.rels']),'application/xml');
+    var relMap = {}, rels = relsDoc.getElementsByTagName('Relationship');
+    for (var i=0;i<rels.length;i++) relMap[rels[i].getAttribute('Id')] = rels[i].getAttribute('Target').replace(/^\//,'');
+    var sh = wbDoc.getElementsByTagName('sheet')[0];
+    var target = relMap[sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id') || sh.getAttribute('r:id')];
+    if (target && !target.startsWith('xl/')) target = 'xl/'+target;
+    var rows = parseSheetXML(files[target], shared);
+    function v(row, col) { return row && row[col] ? row[col].v : null; }
+    if (!/GRUPO/i.test(String(v(rows[1],'A')||'')) || !/MODELO/i.test(String(v(rows[1],'D')||''))) {
+      toast('No es el Excel de modelos por grupo'); input.value=''; return;
+    }
+    var nuevos = [];
+    for (var r = 2; r < rows.length; r++) {
+      var grupo = String(v(rows[r],'A')||'').trim().toUpperCase(), g = null, am = false;
+      var mg = /^G(\d)$/.exec(grupo);
+      if (mg) g = Number(mg[1]);
+      else if (grupo === 'A MEDIDA') { g = 8; am = true; }
+      else continue;
+      var marca = String(v(rows[r],'C')||'').trim();
+      var texto = String(v(rows[r],'D')||'');
+      if (/LAMINADO/i.test(marca)) texto = texto.replace(/\s*·\s*G1$/, '');   // los laminados no tienen grupo de fabricante
+      texto = texto.replace(/\s*·\s*/g,' ').replace(/\bG(\d)\b/g,'GRUPO $1').trim();
+      var f = v(rows[r],'E'), d = v(rows[r],'G');
+      var m = {marca:marca, modelo:texto, g:g,
+               f:(typeof f==='number'?Math.round(f*100)/100:null), p:null, r:null,
+               d:(typeof d==='number'?d:null), am:am, colores:String(v(rows[r],'F')||'')};
+      _parseFrenteV3(m);
+      nuevos.push(m);
+    }
+    if (!nuevos.length) { toast('El Excel no tiene modelos'); input.value=''; return; }
+    var nAm = nuevos.filter(function(m){return m.am;}).length;
+    var nRojo = nuevos.filter(function(m){var s=semaforoModelo(m); return s && s.color==='#c0392b' && !m.am;}).length;
+    if (!confirm('Importar '+nuevos.length+' modelos ('+nAm+' a medida, '+nRojo+' en rojo)?\nSe sustituyen los '+MODELOS_GRUPOS.length+' modelos actuales.')) { input.value=''; return; }
+    MODELOS_GRUPOS.length = 0;
+    nuevos.forEach(function(m){ MODELOS_GRUPOS.push(m); });
+    save();
+    try { localStorage.setItem('modelos_grupos_v1', JSON.stringify(MODELOS_GRUPOS)); } catch(err){}
+    try { _buildFrenteDatalist(); } catch(err){}
+    _frgFiltro=''; renderGestorFrentes();
+    toast(nuevos.length+' modelos importados ✓');
+  } catch(err) {
+    toast('Error al importar: '+err.message);
+  }
+  input.value = '';
 }
 
 function cerrarGestorFrentes() {
@@ -5548,13 +5575,46 @@ async function _importExcelBase(e) {
     }
     
     // ── Aplicar ──
-    if (!confirm('Importar '+nMod+' m\u00f3dulos'+(extSheetName?(', '+newExm.length+' extras de mueble y '+Object.keys(newExg).length+' categor\u00edas generales'):'')+'?\\nSe reemplazar\u00e1n los datos actuales.')) {
+    // Costados y regletas (hojas COSTADOS / REGLETAS: ancho, alto y 6 acabados)
+    function leerMedidas(nombreHoja) {
+      if (!sheetMap[nombreHoja]) return null;
+      var filas = parseSheetXML(files[sheetMap[nombreHoja]], shared), mapa = {}, n = 0;
+      for (var r = 3; r < filas.length; r++) {
+        var a0 = cell(filas[r],'A').v;
+        if (typeof a0 === 'string' && /FABRICACI/i.test(a0)) break; // la fabricaci\u00f3n propia va aparte
+        var an = cell(filas[r],'A').v, al = cell(filas[r],'B').v;
+        if (typeof an !== 'number' || typeof al !== 'number') continue;
+        var prices = ['C','D','E','F','G','H'].map(function(c){
+          var v = cell(filas[r],c).v;
+          return typeof v === 'number' ? Math.round(v*10000)/10000 : null;
+        });
+        mapa[an+'x'+al] = {ancho:an, alto:al, prices:prices}; n++;
+      }
+      return n ? mapa : null;
+    }
+    var newCost = leerMedidas('COSTADOS'), newRegl = leerMedidas('REGLETAS');
+    if (!confirm('Importar '+nMod+' m\u00f3dulos'+(extSheetName?(', '+newExm.length+' extras de mueble y '+Object.keys(newExg).length+' categor\u00edas generales'):'')+(newCost?', '+Object.keys(newCost).length+' medidas de costado':'')+(newRegl?', '+Object.keys(newRegl).length+' de regleta':'')+'?\\nSe reemplazar\u00e1n los datos actuales.')) {
       status.textContent = 'Importaci\u00f3n cancelada';
       e.target.value = '';
       return;
     }
     MODMAP = newModmap;
     if (extSheetName) { ST.exm = newExm; ST.exg = newExg; rebuildExtrasCatalog(); }
+    [['costados', newCost, MAP_COSTADOS], ['regletas', newRegl, MAP_REGLETAS]].forEach(function(t){
+      var tipo = t[0], nuevo = t[1], mapa = t[2];
+      if (!nuevo) return;
+      Object.keys(mapa).forEach(function(k){ delete mapa[k]; });
+      Object.keys(nuevo).forEach(function(k){
+        mapa[k] = nuevo[k];
+        var arbol = ST.cats && ST.cats[tipo];
+        if (arbol) {
+          var a = nuevo[k].ancho+'mm', al = nuevo[k].alto+'mm';
+          if (!arbol[a]) arbol[a] = {};
+          if (!arbol[a][al]) arbol[a][al] = ['—'];
+        }
+      });
+    });
+    try { localStorage.setItem('map_costados', JSON.stringify(MAP_COSTADOS)); localStorage.setItem('map_regletas', JSON.stringify(MAP_REGLETAS)); } catch(err){}
     // Reconstruir catálogo de muebles
     var TYPES = ['BAJO','ALTO 35-40','ALTO 45','ALTO 60','ALTO 70-80','ALTO 90-100','ALTO MO 130','ALTO S-FRIGO 30-40','ALTO S-FRIGO 50-60','SOBRE ENCIMERA','SEMICOLUMNA 135-145','COLUMNA 200-215','COLUMNA 220-240'];
     var newCat = {};
@@ -6674,19 +6734,6 @@ function _serializeBudgetBase() {
   };
 }
 
-function saveBudgetFile() {
-  if (!totalL() && !document.getElementById('FC').value) { toast('Presupuesto vac\u00edo'); return; }
-  var d = serializeBudget();
-  d.images = ST.images || [];   // el archivo lleva las fotos completas
-  var cliente = (d.cliente || 'sin_cliente').replace(/[^a-zA-Z0-9\u00e1\u00e9\u00ed\u00f3\u00fa\u00f1 ]/g,'').trim().replace(/ +/g,'_');
-  var fecha = (d.fecha || '').replace(/\//g,'-');
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(d)], {type:'application/json'}));
-  a.download = 'presupuesto_'+cliente+(fecha?'_'+fecha:'')+'.json';
-  a.click();
-  toast('Presupuesto guardado \u2713');
-  clearDirty();
-}
 
 function duplicarDesdeHistorial(i) {
   var h = getHistory();
@@ -6818,25 +6865,6 @@ function _abPasoReparar(d) {
 }
 function _abPasoProyecto(d) { try{ _updProyectoBadge(); }catch(e){} }
 
-function loadBudgetFile(e) {
-  var f = e.target.files[0]; if (!f) return;
-  var r = new FileReader();
-  r.onload = function(ev) {
-    try {
-      var d = JSON.parse(ev.target.result);
-      if (!d.groups) throw new Error('formato');
-      if (totalL() > 0 && !confirm('Cargar este presupuesto? Se perder\u00e1 el actual si no lo has guardado.')) {
-        e.target.value = ''; return;
-      }
-      applyBudget(d);
-      toast('Presupuesto cargado \u2713');
-    } catch(ex) {
-      toast('Archivo no v\u00e1lido');
-    }
-    e.target.value = '';
-  };
-  r.readAsText(f);
-}
 
 // ── Historial (localStorage) ──────────────────────────────
 function getHistory() {
@@ -8004,6 +8032,48 @@ setTimeout(function(){ try{ _updProyectoBadge(); }catch(e){} }, 400);
 arrancar();
 
 
+</script>
+<script>
+// v122 · Arranque sin recargas: antes de arrancar la app se bajan de la nube los datos de la cuenta
+// (una sola petición, como mucho 4 s). La app arranca ya con lo último y no tiene que recargarse.
+// Sin conexión, sin sesión o si la nube no responde, arranca con lo del dispositivo y la app
+// sincroniza como siempre.
+(function(){
+  var fuente = document.getElementById('APP-SRC').textContent;
+  function arrancarApp() {
+    var s = document.createElement('script');
+    s.text = fuente;
+    document.body.appendChild(s);
+  }
+  var url = (/var SUPA_URL = "([^"]+)"/.exec(fuente) || [])[1];
+  var key = (/var SUPA_KEY = "([^"]+)"/.exec(fuente) || [])[1];
+  var claves = [];
+  try { claves = JSON.parse(((/var CLAVES_SYNC = (\[[\s\S]*?\]);/.exec(fuente) || [])[1] || '[]').replace(/'/g, '"')); } catch(e) {}
+  var tok = null, uid = null;
+  try { tok = (JSON.parse(localStorage.getItem('supa_session') || 'null') || {}).access_token; } catch(e) {}
+  try { uid = JSON.parse(atob(tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub; } catch(e) {}
+  if (!url || !key || !claves.length || !tok || !uid || localStorage.getItem('supa_uid') !== uid || navigator.onLine === false) {
+    arrancarApp();
+    return;
+  }
+  var ctl = ('AbortController' in window) ? new AbortController() : null;
+  var tiempo = setTimeout(function(){ if (ctl) ctl.abort(); }, 4000);
+  fetch(url + '/rest/v1/presupuestos?select=clave,datos&clave=in.(' + claves.join(',') + ')',
+        {headers: {apikey: key, Authorization: 'Bearer ' + tok}, signal: ctl ? ctl.signal : undefined})
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(filas){
+      filas.forEach(function(f){
+        if (f.datos === null || f.datos === undefined || claves.indexOf(f.clave) < 0) return;
+        var v = (typeof f.datos === 'string') ? f.datos : JSON.stringify(f.datos);
+        // pnum (numeración de presupuestos): siempre gana el número más alto
+        if (f.clave === 'pnum') v = String(Math.max(parseInt(v)||1, parseInt(localStorage.getItem('pnum'))||1));
+        try { localStorage.setItem(f.clave, v); } catch(e) {}
+      });
+      sessionStorage.setItem('_recargaSync', '1');   // la app ve los datos frescos y no los vuelve a bajar
+    })
+    .catch(function(){})
+    .then(function(){ clearTimeout(tiempo); arrancarApp(); });
+})();
 </script>
 <footer class="np" style="text-align:center;padding:18px 12px 22px;font-size:.79rem;color:#8888aa">
 Dise&#241;ado y dirigido por <strong>Alfonso Carrascosa Mart&#237;nez</strong> &#183; programado con Claude (Anthropic) &#183; Muebles Carrascosa SL &#169; 2026
