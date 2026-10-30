@@ -270,6 +270,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 /* v125: cajón Würth Evobox, bisagra Würth Softline, especiero/panero Briforma, Menage Confort o DB K-Line por grupo */
 /* v126: extras con código y precio de compra, margen por categoría, cajón interior por gama (plantilla v15);
    tirador por grupo: tramo, gola (barras J/C/superior/vertical + tapas) o uñero por frente */
+/* v130: tiradores integrados en puerta (gamma, forma, grada, vector, lineal) por frente con mecanizado; tramos con tirador real Briforma */
 /* v129: iconos de los grupos (muebles, electrodomésticos, costados, regletas, extras, otros) */
 /* v128: extras por medida y tipo de mueble (cuberteros y fondos de su ancho; carrito y bandeja de fregadero por ancho, solo bajos con puerta), casilla en los de una unidad;
    colores de cajón por gama (Evobox blanco/grafito); el Explorador ya da precio a los módulos sin puerta;
@@ -310,7 +311,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v129</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v130</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -583,7 +584,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </div>
 
 <script type="text/x-presupuestador" id="APP-SRC">
-// Muebles Carrascosa · Presupuestador · v129
+// Muebles Carrascosa · Presupuestador · v130
 // Estructura: datos y estado → funciones por área → arranque (al final del archivo).
 // Cada función está definida UNA sola vez. Para cambiar algo, edítalo en su sitio.
 
@@ -2808,7 +2809,7 @@ function _rgPasoHerrajes() {
           + ops.map(function(o){ return '<option value="'+o+'"'+(o===ts[campo]?' selected':'')+'>'+TIR_NOMBRES[o]+'</option>'; }).join('') + '</select>';
       };
       div.innerHTML += '<span style="font-size:.74rem;color:#2f5a23">tirador</span>' + tsel('tipo', TIR_TIPOS)
-        + (ts.tipo === 'gola' || ts.tipo === 'unero' ? tsel('color', ts.tipo === 'unero' ? ['plata','blanco','negro','antracita'] : ['plata','blanco','negro']) : '');
+        + (ts.tipo === 'gola' || ts.tipo === 'unero' || ts.tipo === 'gamma' ? tsel('color', ts.tipo === 'gola' ? ['plata','blanco','negro'] : ['plata','blanco','negro','antracita']) : '');
       var tc = tiradorGrupo(g).coste;
       if (tc) div.innerHTML += '<span style="font-size:.74rem;color:#2f5a23" title="'+eh(tiradorTexto(g))+'">('+fmt(tc * (1 + margenExtCat('tiradores')))+')</span>';
     }
@@ -2847,8 +2848,11 @@ function extrasCajon(nombre, g) {
   return out;
 }
 // ── Tiradores por grupo (fase 2c · 4b) ──
-var TIR_TIPOS = ['ninguno','economico','medio','premium','gola','unero'];
+var TIR_TIPOS = ['ninguno','economico','medio','premium','gola','unero','gamma','forma','grada','vector','lineal'];
+// integrados en puerta (Briforma p77-78): por frente seg\u00fan su ancho, con el mecanizado
+var TIR_INTEGRADOS = {forma:'inox', grada:'inox', vector:'negro', lineal:'inox'};
 var TIR_NOMBRES = {ninguno:'ninguno', economico:'econ\u00f3mico', medio:'medio', premium:'premium', gola:'gola', unero:'u\u00f1ero',
+  gamma:'gamma (integrado)', forma:'forma (integrado)', grada:'grada (integrado)', vector:'vector (integrado)', lineal:'lineal (integrado)',
   plata:'plata', blanco:'blanco', negro:'negro', antracita:'antracita'};
 function hayTir() { return Object.keys(TIR.filas || {}).length > 0; }
 function tiradorSel(g) {
@@ -2868,9 +2872,9 @@ function _tirFrentes(l) {
   return n ? [[n, 0, an]] : [];
 }
 // € por frente de uñero: el mayor entre fuentes, por ancho (o por alto en columnas) y color
-function uneroPrecio(largo, color) {
+function uneroPrecio(largo, color, fuente) {
   var col = {plata:2, blanco:3, negro:4, antracita:5}[color] || 2, porF = {};
-  (TIR.uneros||[]).forEach(function(r){ (porF[r[0]] = porF[r[0]] || []).push(r); });
+  (TIR.uneros||[]).forEach(function(r){ if (!fuente || r[0] === fuente) (porF[r[0]] = porF[r[0]] || []).push(r); });
   var mx = 0;
   Object.keys(porF).forEach(function(f){
     var fs = porF[f].sort(function(a,b){ return a[1]-b[1]; });
@@ -2881,6 +2885,13 @@ function uneroPrecio(largo, color) {
   return Math.round(mx*100)/100;
 }
 function _tirFila(k) { return (TIR.filas||{})[k]; }
+// € por frente de un integrado (forma, grada, vector, lineal) según su ancho; más ancho que la tabla, regla de tres
+function integradoPrecio(modelo, ancho) {
+  var fs = (TIR.integrados||[]).filter(function(r){ return r[0] === modelo; }).sort(function(a,b){ return a[1]-b[1]; });
+  if (!fs.length) return 0;
+  var r = fs.filter(function(x){ return x[1] >= ancho - 3; })[0];
+  return Math.round((r ? r[2] : fs[fs.length-1][2] * ancho / fs[fs.length-1][1]) * 100) / 100;
+}
 // Tirador del grupo: piezas, coste de compra y reparto por línea {lid: coste de todas sus unidades}
 function tiradorGrupo(g) {
   var s = tiradorSel(g), out = {items: [], coste: 0, porLinea: {}};
@@ -2906,6 +2917,19 @@ function tiradorGrupo(g) {
       suma(l.id, c * (l.und||1));
     });
     if (nf) out.items.push({cod: '', n: 'U\u00f1ero ' + TIR_NOMBRES[s.color] + ' (por frente, montado)', cant: nf, ud: 'frentes'});
+  } else if (s.tipo === 'gamma' || TIR_INTEGRADOS[s.tipo]) {
+    // integrados en puerta: por frente seg\u00fan su ancho (tambi\u00e9n en columnas: va en el canto, no a lo alto)
+    var ni = 0;
+    lines.forEach(function(l){
+      var c = 0;
+      _tirFrentes(l).forEach(function(x){
+        c += x[0] * (s.tipo === 'gamma' ? uneroPrecio(x[2], s.color, 'briforma') : integradoPrecio(s.tipo, x[2]));
+        ni += x[0] * (l.und||1);
+      });
+      suma(l.id, c * (l.und||1));
+    });
+    var acab = s.tipo === 'gamma' ? TIR_NOMBRES[s.color] : TIR_INTEGRADOS[s.tipo];
+    if (ni) out.items.push({cod: '', n: 'Tirador integrado ' + s.tipo + ' ' + acab + ' (Briforma, por frente con mecanizado)', cant: ni, ud: 'frentes'});
   } else {   // gola: J en bajos, C por hueco en cajoneros, superior en altos, vertical por columna; barras enteras
     var color = s.color === 'antracita' ? 'negro' : s.color, m = {J: {}, C: {}, sup: {}, vert: {}}, nAltos = {};
     lines.forEach(function(l){
@@ -2948,7 +2972,7 @@ function tiradorLineaPVP(l, g) {
 function tiradorTexto(g) {
   var s = tiradorSel(g), t = tiradorGrupo(g);
   if (s.tipo === 'ninguno' || !t.items.length) return '';
-  return 'Tirador: ' + TIR_NOMBRES[s.tipo] + (s.tipo === 'gola' || s.tipo === 'unero' ? ' ' + TIR_NOMBRES[s.color] : '') + ' \u2014 '
+  return 'Tirador: ' + TIR_NOMBRES[s.tipo] + (s.tipo === 'gola' || s.tipo === 'unero' || s.tipo === 'gamma' ? ' ' + TIR_NOMBRES[s.color] : (TIR_INTEGRADOS[s.tipo] ? ' ' + TIR_INTEGRADOS[s.tipo] : '')) + ' \u2014 '
     + t.items.map(function(x){ return x.cant + ' ' + x.ud + ' ' + x.n + (x.cod ? ' [' + x.cod + ']' : ''); }).join(' \u00b7 ');
 }
 function setGroupTir(gid, campo, val) {
@@ -6264,6 +6288,14 @@ async function _importExcelBase(e) {
         uf.push([String(cell(uRows[r],'A').v), ua].concat(['C','D','E','F'].map(function(c){ return cell(uRows[r],c).v; })));
       }
       TIR.uneros = uf;
+    }
+    if (sheetMap['INTEGRADOS']) {   // tiradores integrados en puerta: [modelo, ancho, compra por frente con mecanizado]
+      var iRows = parseSheetXML(files[sheetMap['INTEGRADOS']], shared), itf = [];
+      for (var r = 2; r < iRows.length; r++) {
+        var ia = cell(iRows[r],'B').v, ip = cell(iRows[r],'C').v;
+        if (typeof ia === 'number' && typeof ip === 'number') itf.push([String(cell(iRows[r],'A').v), ia, ip]);
+      }
+      TIR.integrados = itf;
     }
     if (extSheetName) { ST.exm = newExm; ST.exg = newExg; ST.exgInfo = newExgInfo; rebuildExtrasCatalog(); }
     if (sheetMap['MARGENES_EXTRAS']) {   // márgenes por categoría (v15); los que ya tengas no se pisan
