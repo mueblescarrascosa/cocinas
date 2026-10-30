@@ -270,6 +270,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 /* v125: cajón Würth Evobox, bisagra Würth Softline, especiero/panero Briforma, Menage Confort o DB K-Line por grupo */
 /* v126: extras con código y precio de compra, margen por categoría, cajón interior por gama (plantilla v15);
    tirador por grupo: tramo, gola (barras J/C/superior/vertical + tapas) o uñero por frente */
+/* v135: suplemento de cajón automático por modelo (frentes de cajón por encima del percentil 90 de su grupo) */
 /* v134: tipo «Placa con extractor» (Johnson XPER y 10 de otras marcas, Cata AS 600/750 incluidas) */
 /* v133: electrodomésticos con colores para elegir (un aparato por modelo) y catálogo completo de Johnson (124) */
 /* v132: auditoría — los altos de 45 vuelven a tener precio; decorativos G3-G4 en lacado blanco; la lista inicial de electrodomésticos ya no borra la tuya; frigorífico JRFS1986ENGN de vuelta en el catálogo */
@@ -315,7 +316,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v134</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v135</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -588,7 +589,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </div>
 
 <script type="text/x-presupuestador" id="APP-SRC">
-// Muebles Carrascosa · Presupuestador · v134
+// Muebles Carrascosa · Presupuestador · v135
 // Estructura: datos y estado → funciones por área → arranque (al final del archivo).
 // Cada función está definida UNA sola vez. Para cambiar algo, edítalo en su sitio.
 
@@ -1635,9 +1636,9 @@ function _rawCostFrente(l, g) {
     var mod = MODMAP[clave];
     if (!mod) return 0;
     var calIdx = CALS.indexOf(g.cal); if (calIdx<0) calIdx=2;
-    var pz = puertasDe(mod, g);
+    var pz = puertasDe(mod, g), sc = _factSupCajon(mod, g, calIdx);
     var f1 = pz.f1||[], f2 = pz.f2||[];
-    var frente = (pz.cant1||0)*((f1[calIdx])||0) + (pz.cant2||0)*((f2[calIdx])||0);
+    var frente = (pz.cant1||0)*((f1[calIdx])||0)*sc[0] + (pz.cant2||0)*((f2[calIdx])||0)*sc[1];
     var nf = (pz.cant1||0)+(pz.cant2||0);
     var esCajon = frenteEsCajon(l.m, l.mo);
     var mo = (esCajon ? (ST.params.mo_frente_cajon||0) : (ST.params.mo_frente_puerta||0)) * nf;
@@ -1988,11 +1989,11 @@ function calcPrice(nombre, calIdx, g) {
   function rr(v) { if (typeof v !== 'string') return v||0; var val = refs[v]; if (val == null) { var _d={ref_h:25,ref_i:25,ref_j:25,ref_k:25}; val=_d[v]||0; } return val||0; }
   var casco = cascoCoste(m, g, calIdx);
   var montaje = ((m.montaje||0)/60) * (p.tarifa_taller||21);
-  var pz = puertasDe(m, g);
+  var pz = puertasDe(m, g), sc = _factSupCajon(m, g, calIdx);
   var f1 = 0;
-  if (pz.cant1 > 0 && pz.f1[calIdx] != null) f1 = pz.cant1 * pz.f1[calIdx] * (1+(p.inc_puerta||0));
+  if (pz.cant1 > 0 && pz.f1[calIdx] != null) f1 = pz.cant1 * pz.f1[calIdx] * (1+(p.inc_puerta||0)) * sc[0];
   var f2 = 0;
-  if (pz.cant2 > 0 && pz.f2[calIdx] != null) f2 = pz.cant2 * pz.f2[calIdx] * (1+(p.inc_puerta||0));
+  if (pz.cant2 > 0 && pz.f2[calIdx] != null) f2 = pz.cant2 * pz.f2[calIdx] * (1+(p.inc_puerta||0)) * sc[1];
   var herr = herrCoste(m, g).total;
   return Math.round((casco+montaje+f1+f2+herr)*100)/100;
 }
@@ -2122,11 +2123,11 @@ function calcBreakdown(nombre, calIdx, g) {
   function rr(v) { return typeof v==='string' ? (refs[v]||0) : (v||0); }
   var casco = cascoCoste(m, g, calIdx);
   var montaje = ((m.montaje||0)/60) * (p.tarifa_taller||21);
-  var pz = puertasDe(m, g);
+  var pz = puertasDe(m, g), sc = _factSupCajon(m, g, calIdx);
   var f1 = 0;
-  if (pz.cant1 > 0 && pz.f1[calIdx] != null) f1 = pz.cant1 * pz.f1[calIdx] * (1+(p.inc_puerta||0));
+  if (pz.cant1 > 0 && pz.f1[calIdx] != null) f1 = pz.cant1 * pz.f1[calIdx] * (1+(p.inc_puerta||0)) * sc[0];
   var f2 = 0;
-  if (pz.cant2 > 0 && pz.f2[calIdx] != null) f2 = pz.cant2 * pz.f2[calIdx] * (1+(p.inc_puerta||0));
+  if (pz.cant2 > 0 && pz.f2[calIdx] != null) f2 = pz.cant2 * pz.f2[calIdx] * (1+(p.inc_puerta||0)) * sc[1];
   var herr = herrCoste(m, g).total;
   return {casco:casco, montaje:montaje, frentes:f1+f2, herrajes:herr,
           total: Math.round((casco+montaje+f1+f2+herr)*100)/100};
@@ -2341,10 +2342,28 @@ function precioSoloFrente(m, mo, med, cal, g) {
   var calIdx = CALS.indexOf(cal); if (calIdx < 0) calIdx = 2;
   var pz = puertasDe(mod, g);
   var f1 = pz.f1 || [], f2 = pz.f2 || [];
-  var c1 = pz.cant1||0, c2 = pz.cant2||0;
-  var frente = c1*((f1[calIdx])||0) + c2*((f2[calIdx])||0);
+  var c1 = pz.cant1||0, c2 = pz.cant2||0, sc = _factSupCajon(mod, g, calIdx);
+  var frente = c1*((f1[calIdx])||0)*sc[0] + c2*((f2[calIdx])||0)*sc[1];
   // margen de muebles sobre el frente (material+fabricación)
   return frente * _factorMargenMuebles();
+}
+
+// Suplemento de cajón del modelo elegido en el grupo (v135, usuario 31/10): el grupo cobra el frente de
+// cajón al percentil 90 de sus modelos; los que cuestan más traen su % en el buscador (columna I) y aquí
+// se suma solo a los frentes de cajón (hoja FRENTES CAJON de la plantilla), solo en la calidad del modelo.
+var _dcIdx = null;
+function _supCajonPct(g, calIdx) {
+  var fr = g && g.frenteRef;
+  if (!fr || fr.am || !fr.g || Number(fr.g) !== calIdx + 1) return 0;
+  if (!_dcIdx) { _dcIdx = {}; (MODELOS_GRUPOS || []).forEach(function(m){ if (m.dc > 0) _dcIdx[_optStrFrente(m)] = m.dc; }); }
+  var k = _frenteRefStr(fr);
+  var dc = Object.prototype.hasOwnProperty.call(_dcIdx, k) ? _dcIdx[k] : (fr.dc || 0);
+  return dc > 0 ? dc / 100 : 0;
+}
+// Factores de los dos frentes del mueble: [frente 1, frente 2]
+function _factSupCajon(mod, g, calIdx) {
+  var s = _supCajonPct(g, calIdx), cj = (mod && mod.cj) || [0, 0];
+  return [1 + (cj[0] ? s : 0), 1 + (cj[1] ? s : 0)];
 }
 
 // ¿El módulo es de cajón o de puerta? (para mano de obra y bisagras)
@@ -3872,7 +3891,7 @@ function setFrenteModelo(gid, val) {
   var hit = MODELOS_GRUPOS.filter(function(m){ return !/COSTADO|REGLETA/i.test((m.marca||'')+' '+(m.modelo||'')); })
                           .filter(function(m){ return _optStrFrente(m) === val; })[0];
   if (hit) {
-    g.frenteRef = {marca:hit.marca, material:hit.material||'', modelo:hit.modelo, color:hit.color||'', acabado:hit.acabado||'', gf:hit.gf||'', g:Number(hit.g), d:hit.d, am:!!hit.am};
+    g.frenteRef = {marca:hit.marca, material:hit.material||'', modelo:hit.modelo, color:hit.color||'', acabado:hit.acabado||'', gf:hit.gf||'', g:Number(hit.g), d:hit.d, am:!!hit.am, dc:hit.dc||0};
     var cal = CALS[Number(hit.g)-1];
     if (cal) g.cal = cal;
     renderGroups(); upBan();
@@ -3901,7 +3920,9 @@ function _updFrentePrecio(gid) {
       ? ' <span style="font-size:.72rem;color:#2d6a4f;font-weight:600">✓ ajuste +'+sube+' % aplicado a las puertas</span>'
       : ' <button class="btn bgh bsm" style="padding:2px 9px;font-size:.72rem" onclick="aplicarAjusteSemaforo('+gid+')">Aplicar +'+sube+' % a las puertas</button>';
   }
-  var semDiv = sem ? '<div style="margin:2px 0 4px;display:flex;flex-wrap:wrap;align-items:center;gap:6px">'+sem+boton+'</div>' : '';
+  var _sc = g.frenteRef ? _supCajonPct(g, CALS.indexOf(g.cal)) : 0;
+  if (_sc) boton += ' <span style="font-size:.72rem;color:#2d6a4f;font-weight:600" title="Sus frentes de cajón cuestan más que el grupo: se suma solo a los cajones">✓ suplemento cajón +'+(Math.round(_sc*1000)/10)+' % incluido</span>';
+  var semDiv = (sem || _sc) ? '<div style="margin:2px 0 4px;display:flex;flex-wrap:wrap;align-items:center;gap:6px">'+sem+boton+'</div>' : '';
   if (g.tipo !== 'frentes' || !mSel || !moSel) { cont.innerHTML = semDiv; return; }   // muebles: solo el aviso
   var m = mSel.value, mo = moSel.value, med = medSel ? medSel.value : '—';
   if (!m || !mo) { cont.innerHTML = semDiv + '<span style="font-size:.7rem;color:var(--muted)">Elige el mueble para ver el precio del frente por calidad.</span>'; return; }
@@ -5831,10 +5852,11 @@ async function importarModelosExcel(input) {
       var texto = String(v(rows[r],'D')||'');
       if (/LAMINADO/i.test(marca)) texto = texto.replace(/\s*·\s*G1$/, '');   // los laminados no tienen grupo de fabricante
       texto = texto.replace(/\s*·\s*/g,' ').replace(/\bG(\d)\b/g,'GRUPO $1').trim();
-      var f = v(rows[r],'E'), d = v(rows[r],'G'), pu = v(rows[r],'H');
+      var f = v(rows[r],'E'), d = v(rows[r],'G'), pu = v(rows[r],'H'), dc = v(rows[r],'I');
       var m = {marca:marca, modelo:texto, g:g,
                f:(typeof f==='number'?Math.round(f*100)/100:null), p:(typeof pu==='number'?Math.round(pu*100)/100:null), r:null,
-               d:(typeof d==='number'?d:null), am:am, colores:String(v(rows[r],'F')||'')};
+               d:(typeof d==='number'?d:null), am:am, colores:String(v(rows[r],'F')||''),
+               dc:(typeof dc==='number'&&dc>0?dc:0)};
       _parseFrenteV3(m);
       nuevos.push(m);
     }
@@ -5844,6 +5866,7 @@ async function importarModelosExcel(input) {
     if (!confirm('Importar '+nuevos.length+' modelos ('+nAm+' a medida, '+nRojo+' en rojo)?\nSe sustituyen los '+MODELOS_GRUPOS.length+' modelos actuales.')) { input.value=''; return; }
     MODELOS_GRUPOS.length = 0;
     nuevos.forEach(function(m){ MODELOS_GRUPOS.push(m); });
+    _dcIdx = null;
     save();
     try { localStorage.setItem('modelos_grupos_v1', JSON.stringify(MODELOS_GRUPOS)); } catch(err){}
     try { _buildFrenteDatalist(); } catch(err){}
@@ -6200,6 +6223,14 @@ async function _importExcelBase(e) {
         var rn = normModulo(cell(rRows[r],'A').v), rj = cell(rRows[r],'B').v;
         if (!rn || !newModmap[rn] || typeof rj !== 'string') continue;
         try { newModmap[rn].receta = JSON.parse(rj); nRec++; } catch(err) {}
+      }
+    }
+    if (sheetMap['FRENTES CAJON']) {   // v135: qué frente de cada mueble es de cajón
+      var cjRows = parseSheetXML(files[sheetMap['FRENTES CAJON']], shared);
+      for (var r = 1; r < cjRows.length; r++) {
+        var cjn = normModulo(cell(cjRows[r],'A').v);
+        if (!cjn || !newModmap[cjn]) continue;
+        newModmap[cjn].cj = [cell(cjRows[r],'B').v ? 1 : 0, cell(cjRows[r],'C').v ? 1 : 0];
       }
     }
     if (sheetMap['BAJOS_80']) {
