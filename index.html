@@ -2310,6 +2310,11 @@ function _addLineMueble(gid) {
   }
 
   _pendL = {gid:gid, m:m, mo:mo, med:med, und:und, nombre:m+' '+mo+' '+med, exs:exs};
+  _mostrarVentanaExtras(g);
+}
+// Ventana de extras de un mueble (al añadirlo o, con _pendL.lid, en una línea ya hecha)
+function _mostrarVentanaExtras(g) {
+  var m = _pendL.m, mo = _pendL.mo, med = _pendL.med, exs = _pendL.exs;
   var ci = CALS.indexOf(g.cal);
   var bd = calcBreakdown(m+' '+mo+' '+med, ci, g) || {casco:0,frentes:0};
   var ffCascoFrente = pvpM(Math.round((bd.casco+bd.frentes)*100)/100);
@@ -2342,6 +2347,18 @@ function _addLineMueble(gid) {
   document.getElementById('EXMOD-NAME').textContent = _pendL.nombre;
   document.getElementById('EXMOD-LIST').innerHTML = html;
   document.getElementById('EXMOD').style.display = 'flex';
+}
+// Añadir extras a una línea que ya está en el presupuesto
+function editExtrasLinea(gid, lid) {
+  var g = ST.groups.find(function(x){return x.id===gid;}); if (!g) return;
+  var l = g.lines.find(function(x){return x.id===lid;}); if (!l) return;
+  var nombre = l.m+' '+l.mo+' '+l.med;
+  var exs = applicableExtras(l.m, l.mo, l.med).concat(extrasCajon(nombre, g).map(function(x){
+    return {n:x.n, p:x.coste, herr:true, cod:x.cod, cant:x.cant};
+  }));
+  if (!exs.length) { toast('Este mueble no tiene extras'); return; }
+  _pendL = {gid:gid, lid:lid, m:l.m, mo:l.mo, med:l.med, und:l.und, nombre:nombre, exs:exs};
+  _mostrarVentanaExtras(g);
 }
 // Costados, regletas, extras y frentes (selector tipo → modelo → medida)
 function _addLineBase(gid) {
@@ -2898,7 +2915,10 @@ function _renderLinesBase(gid) {
       +'<td class="tr" style="vertical-align:top">'+(p!==null?p.toFixed(2)+' \u20ac':'\u2014')
         +(adj&&p0!==null?'<div style="font-size:.77rem;color:#b08a1e">base '+p0.toFixed(2)+'</div>':'')+'</td>'
       +'<td class="tr" style="vertical-align:top">'+lt.toFixed(2)+' \u20ac</td>'
-      +'<td style="vertical-align:top"><button class="btn bdr bsm" onclick="remLine('+gid+','+l.id+')">&#x2715;</button></td>'
+      +'<td style="vertical-align:top;white-space:nowrap">'
+        +(((g.tipo||'muebles')==='muebles' && !_congelado() && (applicableExtras(l.m,l.mo,l.med).length || extrasCajon(l.m+' '+l.mo+' '+l.med, g).length))
+          ? '<button class="btn bgh bsm" title="Añadir extras a este mueble" onclick="editExtrasLinea('+gid+','+l.id+')">+ extras</button> ' : '')
+        +'<button class="btn bdr bsm" onclick="remLine('+gid+','+l.id+')">&#x2715;</button></td>'
       +'</tr>';
   }).join('');
   el.innerHTML='<table class="lt"><thead><tr>'
@@ -3294,7 +3314,12 @@ function skipExtras() { _finishAdd([]); }
 function _finishAdd(extrasSel) {
   if (!_pendL) return;
   var g = ST.groups.find(function(g){return g.id===_pendL.gid;});
-  if (g) {
+  var lHecha = (g && _pendL.lid) ? g.lines.find(function(x){return x.id===_pendL.lid;}) : null;
+  if (lHecha) {
+    lHecha.extras = (lHecha.extras||[]).concat(extrasSel);
+    renderLines(_pendL.gid); upBan(); save();
+    toast(extrasSel.length ? 'Extras añadidos ✓' : 'Sin cambios');
+  } else if (g) {
     g.lines.push({id:nid(), m:_pendL.m, mo:_pendL.mo, med:_pendL.med, und:_pendL.und, extras:extrasSel});
     _resetAddForm(_pendL.gid);
     renderLines(_pendL.gid); upBan();
