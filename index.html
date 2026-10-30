@@ -268,6 +268,8 @@ body.bloq #ESTADO-AVISO { display:block; }
 /* v123: casco por acabado y altura de bajos (70/80) por grupo, plantilla v13, módulos de cocina puente */
 /* v124: herrajes Briforma con código, gama de cajón y abatible por grupo, extras de cajón (plantilla v14) */
 /* v125: cajón Würth Evobox, bisagra Würth Softline, especiero/panero Briforma, Menage Confort o DB K-Line por grupo */
+/* v126: extras con código y precio de compra, margen por categoría, cajón interior por gama (plantilla v15);
+   tirador por grupo: tramo, gola (barras J/C/superior/vertical + tapas) o uñero por frente */
 .ba { flex-wrap:wrap; justify-content:flex-end; align-items:center; }
 .ba #dirty-ind { flex:1 0 100%; order:-1; justify-content:flex-end; }
 .ba .menu-wrap { flex:0 0 auto; min-width:max-content; }
@@ -301,7 +303,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v125</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v126</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -574,7 +576,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </div>
 
 <script type="text/x-presupuestador" id="APP-SRC">
-// Muebles Carrascosa · Presupuestador · v125
+// Muebles Carrascosa · Presupuestador · v126
 // Estructura: datos y estado → funciones por área → arranque (al final del archivo).
 // Cada función está definida UNA sola vez. Para cambiar algo, edítalo en su sitio.
 
@@ -603,7 +605,7 @@ var SUPA_REFRESH = null;
 var CLAVES_SYNC = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
   'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1',
   'logo','map_costados','map_regletas','modmap_v15','modelos_grupos_v1','params','pnum','prices',
-  'texto_base_v1','presentacion_base_v1','herr_cat_v1'];
+  'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1'];
 // (historial_v1 se sincroniza aparte; ultimo_backup y pnum quedan locales)
 var _syncCache = {};
 // hasta haber descargado la nube NO se sube nada. Antes, al abrir la app se subían
@@ -1412,7 +1414,8 @@ function save() {
   localStorage.setItem('params', JSON.stringify(ST.params));
   localStorage.setItem('modmap_v15', JSON.stringify(MODMAP));
   try { localStorage.setItem('herr_cat_v1', JSON.stringify(HERR_CAT)); } catch(e){}
-  localStorage.setItem('extras_v1', JSON.stringify({exm:ST.exm, exg:ST.exg}));
+  try { localStorage.setItem('tiradores_v1', JSON.stringify(TIR)); } catch(e){}
+  localStorage.setItem('extras_v1', JSON.stringify({exm:ST.exm, exg:ST.exg, exgInfo:ST.exgInfo||{}}));
   localStorage.setItem('map_costados', JSON.stringify(MAP_COSTADOS));
   localStorage.setItem('map_regletas', JSON.stringify(MAP_REGLETAS));
   try { localStorage.setItem('modelos_grupos_v1', JSON.stringify(MODELOS_GRUPOS)); } catch(e){}
@@ -1442,6 +1445,7 @@ function gp(m, mo, med, cal, tipo, g) {
     var p = entry.prices[ci];
     return p != null ? pvpM(p) : null;
   }
+  if (tipo === 'extras') { var pc = extraCompraP(extraInfoGeneral(m, mo)); if (pc != null) return pc; }
   var c = costeBase(m, mo, med, cal, tipo, g);
   if (c === null) return null;
   return (tipo === 'extras') ? pvpE(c) : pvpM(c);
@@ -1449,6 +1453,8 @@ function gp(m, mo, med, cal, tipo, g) {
 // Coste (sin margen) de muebles y extras generales
 function costeBase(m, mo, med, cal, tipo, g) {
   if (tipo === 'extras') {
+    var xinf = extraInfoGeneral(m, mo);
+    if (xinf && xinf.compra != null) return xinf.compra;
     var c = ST.exg[m];
     return c && c[mo] !== undefined ? c[mo] : null;
   }
@@ -1513,6 +1519,8 @@ function lineTotal(l, g) {
   if (hasFF) base = Math.round((((p||0) + ext + freefoldCascoFrenteExtra(l, g))) * l.und * 100)/100;
   else base = Math.round((((p!==null?p:0) + ext)) * l.und * 100)/100;
   if (l.dif) base = Math.round(base * (1 + l.dif/100) * 100)/100;
+  // Tirador del grupo (4b): la parte de esta línea (tramo y uñero exactos; gola repartida por metros)
+  if (g && g.tipo === 'muebles') { var _tp = tiradorLineaPVP(l, g); if (_tp) base = Math.round((base + _tp) * 100) / 100; }
   // Varillas quitadas (se descuenta su coste con el margen de muebles)
   if (g && g.tipo === 'muebles' && l.sinVarillas) {
     var margen = _factorMargenMuebles();
@@ -1573,6 +1581,8 @@ function rawCost(l, g) {
     var instTotal = 0;
     (l.extras||[]).forEach(function(ex){ instTotal += (ex.inst||0); });
     if (instTotal) base = (base||0) + instTotal;
+    var _tc = tiradorLineaCoste(l, g);       // tirador del grupo (4b), por unidad
+    if (_tc) base = (base||0) + _tc / (l.und||1);
   }
   return base;
 }
@@ -1586,6 +1596,8 @@ function _rawCostBase(l, g) {
     return e.prices[ci];
   }
   if (g.tipo === 'extras') {
+    var xinf = extraInfoGeneral(l.m, l.mo);
+    if (xinf && xinf.compra != null) return xinf.compra;
     var c = ST.exg[l.m];
     return c && c[l.mo] !== undefined ? c[l.mo] : null;
   }
@@ -1688,7 +1700,41 @@ function _applicableExtrasBase(mueble, modelo, medida) {
   });
 }
 
+// ── Extras con código y compra (fase 2c · plantilla v15) ──
+function margenExtCat(cat) {
+  var m = ((ST.params && ST.params.margen_ext_cat) || {})[cat];
+  return typeof m === 'number' ? m : 0;
+}
+function extraCompraP(info) {
+  if (!info || info.compra == null || info.compra === '') return null;
+  return Math.round(info.compra * (1 + margenExtCat(info.catm)) * 100) / 100;
+}
+function extraInfoGeneral(cat, nombre) { return ((ST.exgInfo || {})[cat] || {})[nombre] || null; }
+// Cajón interior según la gama de cajón del grupo (columnas, semicolumnas, bajos de 1 puerta)
+function cajonInteriorGama(ex, nombre, g) {
+  if (!hayHerr()) return ex;
+  var s = herrSel(g), a = parseInt(String(nombre).split(' ').pop()) || 60, c1 = null, c2 = null;
+  if (s.cajon === 'atira') c1 = 'CATIRAI' + ({plata:'',blanco:'B',antracita:'A'})[s.color] + (a <= 60 ? '60' : '90');
+  else if (s.cajon === 'avantech') c1 = 'ICIAH10' + (a <= 60 ? '60' : a <= 90 ? '90' : '120');
+  else if (s.cajon === 'evobox') { var bl = s.color === 'blanco'; c1 = bl ? '0684320505' : '0684318505'; c2 = bl ? '0684320528' : '0684318528'; }
+  if (!c1 || !HERR_CAT[c1] || (c2 && !HERR_CAT[c2])) return ex;   // Uniset: sin interior, precio de siempre
+  var coste = (herrPrecio(c1) + (c2 ? herrPrecio(c2) : 0)) * (1 + (ST.params.inc_herraje||0));
+  return {n: ex.n + ' (' + (HERR_NOMBRES[s.cajon] || s.cajon) + ')', p: Math.round(coste*100)/100, herr: true, cod: c1, cod2: c2 || undefined, cant: 1};
+}
+// Extras que se ofrecen para un mueble: sin los duplicados de la 2b y con el cajón interior por gama
+function extrasOfrecidos(m, mo, med, g) {
+  var nombre = m + ' ' + mo + ' ' + med;
+  return applicableExtras(m, mo, med).filter(function(ex){
+    return !(hayHerr() && (ex.tipo === 'duplicado' || ex.tipo === 'absorbido'));
+  }).map(function(ex){ return ex.tipo === 'gama_cajon' ? cajonInteriorGama(ex, nombre, g) : ex; });
+}
 function extraEffectivePrice(ex, nombre, g) {
+  if (ex.compra != null) {   // v15: compra × (1 + margen de su categoría), descontando el herraje incluido
+    var mm = 1 + margenExtCat(ex.catm), incl = 0;
+    if (ex.m === 'ABATIBLE' || ex.freefold) incl = freespaceIncludedPrice(nombre, g);
+    else if (ex.rep) incl = includedHerrajePrice(nombre, g);
+    return Math.round((Math.max(0, ex.compra - incl) + (ex.freefold ? 40 : 0)) * mm * 100) / 100;
+  }
   if (ex.m === 'ABATIBLE' && !ex.freefold) {
     return pvpE(Math.max(0, ex.p - freespaceIncludedPrice(nombre, g)));
   }
@@ -1759,6 +1805,8 @@ function hayCascos() {
 // HERR_CAT[codigo] = {d, fam, gama, guia, med, color, p} (hoja HERRAJES) · MODMAP[n].receta (hoja RECETAS)
 // Réplica de resolver() de scripts/herrajes.py; se coteja con cotejo_herrajes_2026.json.
 var HERR_CAT = JSON.parse(localStorage.getItem('herr_cat_v1')||'null') || {};
+// Tiradores por grupo (fase 2c · 4b): {filas: {clave: {n, cod, compra, ud, largo}}, uneros: [[fuente, ancho, plata, blanco, negro, antracita]]}
+var TIR = JSON.parse(localStorage.getItem('tiradores_v1')||'null') || {filas:{}, uneros:[]};
 var HERR_SEL_DEF = {cajon:'atira', guia:'normal', color:'plata', abatible:'normal', extraible:'bri_cromo', bisagra:'wurth'};
 var HERR_GUIAS = {uniset:['normal'], atira:['normal','50kg','expulsion'], avantech:['quadro','actro'], evobox:['normal']};
 var HERR_EXTRAIBLES = ['bri_cromo','bri_antracita','myc_classic','myc_flat','db_kline'];
@@ -2030,8 +2078,13 @@ function rawFromPvpE(p) {
 // Extra con la resta del herraje incluido al día (gama actual del grupo). Extras anteriores a la v124: igual.
 function _exVivo(ex, g) {
   if (!ex || ex.base == null || !ex.mod || (_congelado() && ex.fzP != null)) return ex;
-  var v = extraEffectivePrice({p: ex.base, m: ex.mex, rep: ex.rep, freefold: ex.freefold}, ex.mod, g);
+  var v = extraEffectivePrice({p: ex.base, m: ex.mex, rep: ex.rep, freefold: ex.freefold, compra: ex.compra, catm: ex.catm}, ex.mod, g);
   return Object.assign({}, ex, {p: Math.round(v*100)/100});
+}
+// Coste de un extra de línea para rentabilidad y desglose (v126: los de compra, precio vivo ÷ su margen)
+function _exCoste(ex, g) {
+  var p = _exVivo(ex, g).p;
+  return ex.compra != null ? p / (1 + margenExtCat(ex.catm)) : rawFromPvpE(p);
 }
 function extraPVP(ex, g) {
   if (_congelado() && ex && ex.fzP != null) return ex.fzP;
@@ -2267,6 +2320,7 @@ function confirmExtras() {
         freefold: !!ex.freefold,
         inst: inst || 0,
         herr: !!ex.herr, cod: ex.cod, cod2: ex.cod2, cant: ex.cant,
+        compra: ex.compra != null ? ex.compra : undefined, catm: ex.catm,
         // para recalcular la resta del herraje incluido si luego cambia la gama del grupo
         base: (ex.rep || ex.m === 'ABATIBLE' || ex.freefold) ? ex.p : undefined, mex: ex.m, mod: _pendL.nombre
       });
@@ -2322,7 +2376,7 @@ function _addLineMueble(gid) {
   var und = parseInt(document.getElementById('au'+gid).value)||1;
   if (!m||!mo||!med){toast('Selecciona tipo, modelo y medida');return;}
 
-  var exs = applicableExtras(m, mo, med).concat(extrasCajon(m+' '+mo+' '+med, g).map(function(x){
+  var exs = extrasOfrecidos(m, mo, med, g).concat(extrasCajon(m+' '+mo+' '+med, g).map(function(x){
     return {n:x.n, p:x.coste, herr:true, cod:x.cod, cod2:x.cod2, cant:x.cant};
   }));
   if (!exs.length) {
@@ -2374,7 +2428,7 @@ function editExtrasLinea(gid, lid) {
   var g = ST.groups.find(function(x){return x.id===gid;}); if (!g) return;
   var l = g.lines.find(function(x){return x.id===lid;}); if (!l) return;
   var nombre = l.m+' '+l.mo+' '+l.med;
-  var exs = applicableExtras(l.m, l.mo, l.med).concat(extrasCajon(nombre, g).map(function(x){
+  var exs = extrasOfrecidos(l.m, l.mo, l.med, g).concat(extrasCajon(nombre, g).map(function(x){
     return {n:x.n, p:x.coste, herr:true, cod:x.cod, cod2:x.cod2, cant:x.cant};
   }));
   if (!exs.length) { toast('Este mueble no tiene extras'); return; }
@@ -2697,6 +2751,16 @@ function _rgPasoHerrajes() {
       + '<span style="font-size:.74rem;color:#2f5a23">bisagras</span>' + sel('bisagra', ['wurth','sensys'])
       + '<span style="font-size:.74rem;color:#2f5a23">abatible</span>' + sel('abatible', ['normal','push'])
       + '<span style="font-size:.74rem;color:#2f5a23">especiero/panero</span>' + sel('extraible', HERR_EXTRAIBLES);
+    if (hayTir()) {
+      var ts = tiradorSel(g), tsel = function(campo, ops){
+        return '<select id="gt'+campo+g.id+'" style="width:auto;padding:4px 6px;font-size:.78rem" onchange="setGroupTir('+g.id+',\''+campo+'\',this.value)">'
+          + ops.map(function(o){ return '<option value="'+o+'"'+(o===ts[campo]?' selected':'')+'>'+TIR_NOMBRES[o]+'</option>'; }).join('') + '</select>';
+      };
+      div.innerHTML += '<span style="font-size:.74rem;color:#2f5a23">tirador</span>' + tsel('tipo', TIR_TIPOS)
+        + (ts.tipo === 'gola' || ts.tipo === 'unero' ? tsel('color', ts.tipo === 'unero' ? ['plata','blanco','negro','antracita'] : ['plata','blanco','negro']) : '');
+      var tc = tiradorGrupo(g).coste;
+      if (tc) div.innerHTML += '<span style="font-size:.74rem;color:#2f5a23" title="'+eh(tiradorTexto(g))+'">('+fmt(tc * (1 + margenExtCat('tiradores')))+')</span>';
+    }
     var ref = document.getElementById('gcasco'+g.id) || (document.getElementById('gadj'+g.id)||{}).parentNode || body.querySelector('.mtabs');
     if (ref && ref.nextSibling) body.insertBefore(div, ref.nextSibling);
     else body.insertBefore(div, body.firstChild);
@@ -2730,6 +2794,118 @@ function extrasCajon(nombre, g) {
   }
   add(({plata:'EFCG', blanco:'EFCB', antracita:'EFCA'})[s.color], metros, 'm');
   return out;
+}
+// ── Tiradores por grupo (fase 2c · 4b) ──
+var TIR_TIPOS = ['ninguno','economico','medio','premium','gola','unero'];
+var TIR_NOMBRES = {ninguno:'ninguno', economico:'econ\u00f3mico', medio:'medio', premium:'premium', gola:'gola', unero:'u\u00f1ero',
+  plata:'plata', blanco:'blanco', negro:'negro', antracita:'antracita'};
+function hayTir() { return Object.keys(TIR.filas || {}).length > 0; }
+function tiradorSel(g) {
+  var t = (g && g.tir) || {};
+  return {tipo: TIR_TIPOS.indexOf(t.tipo) >= 0 ? t.tipo : 'ninguno', color: t.color || 'plata'};
+}
+function _tirFam(nombre) {
+  if (/^BAJO/.test(nombre)) return 'bajo';
+  if (/^(COLUMNA|SEMICOLUMNA)/.test(nombre)) return 'columna';
+  return 'alto';
+}
+// frentes de la línea: [[cant, alto, ancho]] (receta v15); sin receta, cant1 + cant2 del ancho del módulo
+function _tirFrentes(l) {
+  var nombre = l.m+' '+l.mo+' '+l.med, m = MODMAP[nombre];
+  if (m && m.receta && m.receta.frentes) return m.receta.frentes;
+  var n = m ? (m.cant1||0) + (m.cant2||0) : 0, an = (parseFloat(l.med)||0) * 10;
+  return n ? [[n, 0, an]] : [];
+}
+// € por frente de uñero: el mayor entre fuentes, por ancho (o por alto en columnas) y color
+function uneroPrecio(largo, color) {
+  var col = {plata:2, blanco:3, negro:4, antracita:5}[color] || 2, porF = {};
+  (TIR.uneros||[]).forEach(function(r){ (porF[r[0]] = porF[r[0]] || []).push(r); });
+  var mx = 0;
+  Object.keys(porF).forEach(function(f){
+    var fs = porF[f].sort(function(a,b){ return a[1]-b[1]; });
+    var r = fs.filter(function(x){ return x[1] >= largo - 3; })[0], v;
+    if (r) v = r[col]; else { r = fs[fs.length-1]; v = r[col] * largo / r[1]; }   // más largo que la tabla: regla de tres
+    if (v > mx) mx = v;
+  });
+  return Math.round(mx*100)/100;
+}
+function _tirFila(k) { return (TIR.filas||{})[k]; }
+// Tirador del grupo: piezas, coste de compra y reparto por línea {lid: coste de todas sus unidades}
+function tiradorGrupo(g) {
+  var s = tiradorSel(g), out = {items: [], coste: 0, porLinea: {}};
+  if (!hayTir() || s.tipo === 'ninguno' || (g.tipo||'muebles') !== 'muebles') return out;
+  var lines = (g.lines||[]).filter(function(l){ return l.pmanual == null || l.pmanual === '' || isNaN(parseFloat(l.pmanual)); });
+  function suma(lid, v) { out.porLinea[lid] = (out.porLinea[lid]||0) + v; out.coste += v; }
+  if (s.tipo === 'economico' || s.tipo === 'medio' || s.tipo === 'premium') {
+    var f = _tirFila('tramo_' + s.tipo); if (!f) return out;
+    var nud = 0;
+    lines.forEach(function(l){
+      var n = _tirFrentes(l).reduce(function(a, x){ return a + x[0]; }, 0) * (l.und||1);
+      nud += n; suma(l.id, n * f.compra);
+    });
+    if (nud) out.items.push({cod: f.cod, n: f.n, cant: nud, ud: 'ud'});
+  } else if (s.tipo === 'unero') {
+    var nf = 0;
+    lines.forEach(function(l){
+      var fam = _tirFam(l.m+' '+l.mo+' '+l.med), c = 0;
+      _tirFrentes(l).forEach(function(x){
+        var largo = fam === 'columna' && x[1] ? x[1] : x[2];
+        c += x[0] * uneroPrecio(largo, s.color); nf += x[0] * (l.und||1);
+      });
+      suma(l.id, c * (l.und||1));
+    });
+    if (nf) out.items.push({cod: '', n: 'U\u00f1ero ' + TIR_NOMBRES[s.color] + ' (por frente, montado)', cant: nf, ud: 'frentes'});
+  } else {   // gola: J en bajos, C por hueco en cajoneros, superior en altos, vertical por columna; barras enteras
+    var color = s.color === 'antracita' ? 'negro' : s.color, m = {J: {}, C: {}, sup: {}, vert: {}}, nAltos = {};
+    lines.forEach(function(l){
+      var nombre = l.m+' '+l.mo+' '+l.med, fam = _tirFam(nombre), fr = _tirFrentes(l), u = l.und||1;
+      if (!fr.length) return;
+      var an = (parseFloat(l.med)||0) / 100, nfr = fr.reduce(function(a, x){ return a + x[0]; }, 0);
+      var rec = (MODMAP[nombre]||{}).receta || {};
+      var cajonero = (rec.cajones||[]).length || (rec.caceroleros||[]).length;
+      if (fam === 'bajo') {
+        m.J[l.id] = an * u;
+        if (cajonero && nfr > 1) m.C[l.id] = (nfr - 1) * an * u;
+      } else if (fam === 'alto') { m.sup[l.id] = an * u; nAltos[l.id] = u; }
+      else m.vert[l.id] = u;
+    });
+    Object.keys(m).forEach(function(pf){
+      var tot = 0; Object.keys(m[pf]).forEach(function(k){ tot += m[pf][k]; });
+      var f = _tirFila('gola_' + pf + '_' + color); if (!tot || !f) return;
+      var barras = pf === 'vert' ? tot : Math.ceil(tot / (f.largo || 3) - 1e-9);
+      var tapa = _tirFila('tapa_' + pf + '_' + color), cb = barras * (f.compra + (tapa ? tapa.compra : 0));
+      out.items.push({cod: f.cod, n: f.n, cant: barras, ud: 'barras'});
+      if (tapa) out.items.push({cod: tapa.cod, n: tapa.n, cant: barras, ud: 'juegos'});
+      Object.keys(m[pf]).forEach(function(k){ suma(+k, cb * m[pf][k] / tot); });
+    });
+    var ca = _tirFila('casco_alto_gola'), na = 0;
+    if (ca) Object.keys(nAltos).forEach(function(k){ na += nAltos[k]; suma(+k, ca.compra * nAltos[k]); });
+    if (ca && na) out.items.push({cod: '', n: ca.n, cant: na, ud: 'altos'});
+  }
+  out.coste = Math.round(out.coste*100)/100;
+  return out;
+}
+// Coste de compra del tirador de una línea (todas sus unidades) y su precio de venta
+function tiradorLineaCoste(l, g) {
+  if (!g || (g.tipo||'muebles') !== 'muebles' || tiradorSel(g).tipo === 'ninguno') return 0;
+  return tiradorGrupo(g).porLinea[l.id] || 0;
+}
+function tiradorLineaPVP(l, g) {
+  var c = tiradorLineaCoste(l, g);
+  return c ? Math.round(c * (1 + margenExtCat('tiradores')) * 100) / 100 : 0;
+}
+function tiradorTexto(g) {
+  var s = tiradorSel(g), t = tiradorGrupo(g);
+  if (s.tipo === 'ninguno' || !t.items.length) return '';
+  return 'Tirador: ' + TIR_NOMBRES[s.tipo] + (s.tipo === 'gola' || s.tipo === 'unero' ? ' ' + TIR_NOMBRES[s.color] : '') + ' \u2014 '
+    + t.items.map(function(x){ return x.cant + ' ' + x.ud + ' ' + x.n + (x.cod ? ' [' + x.cod + ']' : ''); }).join(' \u00b7 ');
+}
+function setGroupTir(gid, campo, val) {
+  var g = ST.groups.find(function(g){return g.id===gid;}); if(!g) return;
+  var s = tiradorSel(g); s[campo] = val; g.tir = s;
+  var w = document.getElementById('gherr'+gid); if (w) w.remove();
+  _rgPasoHerrajes();
+  renderLines(gid); upBan(); save();
 }
 function setGroupHerr(gid, campo, val) {
   var g = ST.groups.find(function(g){return g.id===gid;}); if(!g) return;
@@ -4052,6 +4228,9 @@ function fichaTaller() {
         var m = MODMAP[l.m+' '+l.mo+' '+l.med];
         if (m && m.receta && hayHerr()) herr = herrResolver(m.receta, herrSel(g)).filter(function(it){ return !(l.sinVarillas && (HERR_CAT[it.cod]||{}).fam === 'varilla'); }).map(function(it){ return it.cod+'\u00d7'+(it.cant*l.und); }).join(', ');
         else if (m && m.herrajes) herr = m.herrajes.filter(function(h){return !(l.sinVarillas && h.p==='ref_f');}).map(function(h){return h.n+'\u00d7'+(h.c*l.und);}).join(', ');
+      } else if (g.tipo === 'extras') {
+        var xinf = extraInfoGeneral(l.m, l.mo);
+        if (xinf && xinf.cod) herr = xinf.cod + '\u00d7' + l.und;
       }
       var ext = (l.extras||[]).map(function(e){return e.n;}).join(', ');
       return '<tr>'
@@ -4064,6 +4243,7 @@ function fichaTaller() {
         +'</tr>';
     }).join('');
     return '<div style="'+((g.tipo||'muebles')!=='muebles'?'page-break-inside:avoid;break-inside:avoid':'')+'">'+'<h3 style="margin:14px 0 6px;font-size:1rem;break-after:avoid;page-break-after:avoid">'+ti.label+' \u2014 '+eh(g.name)+' ('+g.cal+')'+(g.opcional?' \u00b7 OPCIONAL':'')+((g.tipo||'muebles')==='muebles'&&hayCascos()?' \u00b7 Casco: '+cascoSel(g).acab+' mm \u00b7 bajos de '+cascoSel(g).alto:'')+'</h3>'
+      +((g.tipo||'muebles')==='muebles'&&tiradorTexto(g)?'<div style="font-size:.8rem;margin:0 0 6px">'+eh(tiradorTexto(g))+'</div>':'')
       +'<table style="width:100%;border-collapse:collapse;font-size:.84rem">'
       +'<thead><tr style="background:#eee">'
       +'<th style="padding:5px 8px;border:1px solid #ccc;width:30px">#</th>'
@@ -4317,13 +4497,13 @@ function budgetCost() {
           minutos += ((MODMAP[nombre]||{}).montaje||0) * l.und;
         }
         (l.extras||[]).forEach(function(ex){
-          coste += rawFromPvpE(_exVivo(ex, g).p) * l.und;
+          coste += _exCoste(ex, g) * l.und;
           if (ex.freefold && bd) coste += (bd.casco + bd.frentes) * l.und;
         });
       } else {
         var raw = rawCost(l, g);
         if (raw != null) coste += raw * l.und;
-        (l.extras||[]).forEach(function(ex){ coste += rawFromPvpE(ex.p) * l.und; });
+        (l.extras||[]).forEach(function(ex){ coste += _exCoste(ex, g) * l.und; });
       }
     });
   });
@@ -4498,7 +4678,7 @@ function desgloseComponentes() {
       }
       // Extras de la línea (todos los tipos de grupo), a coste — en paridad con budgetCost
       (l.extras||[]).forEach(function(ex){
-        d.extras += rawFromPvpE(_exVivo(ex, g).p) * (l.und||1);
+        d.extras += _exCoste(ex, g) * (l.und||1);
         if (ex.freefold && g.tipo === 'muebles') {
           var bdf = calcBreakdown(l.m+' '+l.mo+' '+l.med, CALS.indexOf(g.cal), g);
           if (bdf) { d.casco += bdf.casco * (l.und||1); d.frentes += bdf.frentes * (l.und||1); }
@@ -5744,6 +5924,8 @@ function _saveCfgParametros() {
   ST.params.inc_casco  = gv('p-casco',0);
   ST.params.inc_puerta = gv('p-puerta',0);
   ST.params.inc_herraje= gv('p-herraje',0);
+  if (!ST.params.margen_ext_cat) ST.params.margen_ext_cat = {};
+  [['interior','Equipamiento interior'],['cubos','Cubos de basura'],['tiradores','Tiradores y golas'],['iluminacion','Iluminaci\u00f3n'],['enchufes','Enchufes'],['encimeras','Encimeras, copetes, z\u00f3calos'],['fregaderos','Fregaderos y grifos'],['campanas','Campanas'],['abatibles','Abatibles'],['otros','Otros']].forEach(function(c){ var e = document.getElementById('p-mext-'+c[0]); if (e && e.value !== '') ST.params.margen_ext_cat[c[0]] = (parseFloat(e.value)||0)/100; });
   var _ca = document.getElementById('p-casco-acab'), _cl = document.getElementById('p-casco-alto');
   if (_ca) ST.params.casco_acab_def = _ca.value;
   if (_cl) ST.params.casco_alto_def = _cl.value;
@@ -5823,7 +6005,8 @@ async function _importExcelBase(e) {
     var modSheetName = null, extSheetName = null;
     Object.keys(sheetMap).forEach(function(n){
       var up = n.toUpperCase();
-      if (up.indexOf('EXTRA') >= 0) extSheetName = n;
+      if (up === 'MARGENES_EXTRAS') return;   // v15: hoja de márgenes, no de extras
+      if (up.indexOf('EXTRA') >= 0) { if (!extSheetName || up === 'EXTRAS') extSheetName = n; }
       else if (!modSheetName) modSheetName = n;
     });
     if (!modSheetName) throw new Error('No se encontr\u00f3 la hoja de m\u00f3dulos');
@@ -5930,7 +6113,7 @@ async function _importExcelBase(e) {
     }
     
     // ── Parsear EXTRAS ──
-    var newExm = [], newExg = {};
+    var newExm = [], newExg = {}, newExgInfo = {};
     if (extSheetName) {
       status.textContent = 'Procesando extras...';
       var extRows = parseSheetXML(files[sheetMap[extSheetName]], shared);
@@ -5941,6 +6124,9 @@ async function _importExcelBase(e) {
         var row = extRows[r];
         if (!row) continue;
         var a = cell(row,'A').v, b = cell(row,'B').v, c = cell(row,'C').v, d = cell(row,'D').v, ev = cell(row,'E').v;
+        // v15 (fase 2c): código, proveedor, compra, categoría de margen y tipo
+        var xi = {cod: cell(row,'G').v, prov: cell(row,'H').v, compra: (typeof cell(row,'I').v === 'number' ? Math.round(cell(row,'I').v*100)/100 : null),
+                  catm: cell(row,'J').v, tipo: cell(row,'K').v};
         var aS = a!=null?String(a).trim():null;
         var bS = b!=null?String(b).trim():null;
         var cS = c!=null?String(c).trim():null;
@@ -5959,7 +6145,8 @@ async function _importExcelBase(e) {
           }
           newExm.push({m:curM, mo:curMo, n:exN, med:med, p:Math.round(ev*100)/100,
             rep:(curMo==='ESPECIERO'||curMo==='PANERO'||(curS==='ABATIBLES'&&exN!=='FREEFOLD')),
-            freefold:(exN==='FREEFOLD')});
+            freefold:(exN==='FREEFOLD'),
+            cod:xi.cod||undefined, prov:xi.prov||undefined, compra:xi.compra, catm:xi.catm||undefined, tipo:xi.tipo||undefined});
         } else {
           var cat = curS || 'OTROS';
           var name;
@@ -5974,6 +6161,7 @@ async function _importExcelBase(e) {
           var key = name, k = 2;
           while (newExg[cat][key] !== undefined) { key = name+' ('+k+')'; k++; }
           newExg[cat][key] = Math.round(ev*100)/100;
+          if (xi.tipo) { if (!newExgInfo[cat]) newExgInfo[cat] = {}; newExgInfo[cat][key] = xi; }
         }
       }
     }
@@ -6004,7 +6192,33 @@ async function _importExcelBase(e) {
     }
     MODMAP = newModmap;
     HERR_CAT = newHerr;
-    if (extSheetName) { ST.exm = newExm; ST.exg = newExg; rebuildExtrasCatalog(); }
+    if (sheetMap['TIRADORES']) {
+      var tRows = parseSheetXML(files[sheetMap['TIRADORES']], shared), tf = {};
+      for (var r = 2; r < tRows.length; r++) {
+        var tk = cell(tRows[r],'A').v, tc = cell(tRows[r],'D').v;
+        if (!tk || typeof tc !== 'number') continue;
+        tf[tk] = {n: String(cell(tRows[r],'B').v||''), cod: cell(tRows[r],'C').v ? String(cell(tRows[r],'C').v) : '', compra: tc,
+                  ud: String(cell(tRows[r],'E').v||''), largo: cell(tRows[r],'F').v || null};
+      }
+      TIR.filas = tf;
+    }
+    if (sheetMap['UNEROS']) {
+      var uRows = parseSheetXML(files[sheetMap['UNEROS']], shared), uf = [];
+      for (var r = 2; r < uRows.length; r++) {
+        var ua = cell(uRows[r],'B').v; if (typeof ua !== 'number') continue;
+        uf.push([String(cell(uRows[r],'A').v), ua].concat(['C','D','E','F'].map(function(c){ return cell(uRows[r],c).v; })));
+      }
+      TIR.uneros = uf;
+    }
+    if (extSheetName) { ST.exm = newExm; ST.exg = newExg; ST.exgInfo = newExgInfo; rebuildExtrasCatalog(); }
+    if (sheetMap['MARGENES_EXTRAS']) {   // márgenes por categoría (v15); los que ya tengas no se pisan
+      var mRows = parseSheetXML(files[sheetMap['MARGENES_EXTRAS']], shared);
+      if (!ST.params.margen_ext_cat) ST.params.margen_ext_cat = {};
+      for (var r = 2; r < mRows.length; r++) {
+        var mk = cell(mRows[r],'A').v, mv = cell(mRows[r],'B').v;
+        if (mk && typeof mv === 'number' && ST.params.margen_ext_cat[mk] == null) ST.params.margen_ext_cat[mk] = mv;
+      }
+    }
     [['costados', newCost, MAP_COSTADOS], ['regletas', newRegl, MAP_REGLETAS]].forEach(function(t){
       var tipo = t[0], nuevo = t[1], mapa = t[2];
       if (!nuevo) return;
@@ -6107,6 +6321,10 @@ function _renderParamsPanelBase() {
     +'<div class="g2" style="margin-top:8px">'
     +'<div><lbl>Acabado</lbl><select id="p-casco-acab">'+CASCO_ACABADOS.map(function(a){return '<option value="'+a+'">'+a+' mm</option>';}).join('')+'</select></div>'
     +'<div><lbl>Altura de bajos</lbl><select id="p-casco-alto">'+CASCO_ALTOS.map(function(a){return '<option value="'+a+'">'+a+' cm</option>';}).join('')+'</select></div>'
+    +'</div></div>'
+    +'<div style="margin-top:14px"><lbl>M\u00e1rgenes de extras con precio de compra (%)</lbl>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px">'
+    +[['interior','Equipamiento interior'],['cubos','Cubos de basura'],['tiradores','Tiradores y golas'],['iluminacion','Iluminaci\u00f3n'],['enchufes','Enchufes'],['encimeras','Encimeras, copetes, z\u00f3calos'],['fregaderos','Fregaderos y grifos'],['campanas','Campanas'],['abatibles','Abatibles'],['otros','Otros']].map(function(c){ return '<div><lbl>'+c[1]+'</lbl><input type="number" step="1" id="p-mext-'+c[0]+'"></div>'; }).join('')
     +'</div></div>'
     +'<div style="margin-top:14px"><lbl>Herrajes por defecto (grupos nuevos)</lbl>'
     +'<div class="g2" style="margin-top:8px">'
@@ -6344,6 +6562,7 @@ function _fillParams() {
   f('p-taller', P.tarifa_taller); f('p-casco', P.inc_casco);
   f('p-puerta', P.inc_puerta); f('p-herraje', P.inc_herraje);
   f('p-casco-acab', cascoSel(null).acab); f('p-casco-alto', cascoSel(null).alto);
+  [['interior','Equipamiento interior'],['cubos','Cubos de basura'],['tiradores','Tiradores y golas'],['iluminacion','Iluminaci\u00f3n'],['enchufes','Enchufes'],['encimeras','Encimeras, copetes, z\u00f3calos'],['fregaderos','Fregaderos y grifos'],['campanas','Campanas'],['abatibles','Abatibles'],['otros','Otros']].forEach(function(c){ f('p-mext-'+c[0], Math.round(margenExtCat(c[0])*1000)/10); });
   var _hs = herrNuevo();
   f('p-herr-cajon', _hs.cajon); f('p-herr-guia', _hs.guia === 'quadro' ? 'normal' : _hs.guia);
   f('p-herr-color', _hs.color); f('p-herr-abatible', _hs.abatible); f('p-herr-extraible', _hs.extraible); f('p-herr-bisagra', _hs.bisagra);
@@ -6725,6 +6944,12 @@ function parseSheetXML(xmlBytes, shared) {
 // 2. Bandeja fondo fregadero + Carrito butano → extras de mueble BAJO
 // 3. Marcos microondas → solo muebles/modelos con microondas
 function applyExtrasRules() {
+  // v126: el extra general que pasa a ser de mueble se lleva su código y su compra
+  function conInfo(cat, name, ex) {
+    var i = extraInfoGeneral(cat, name);
+    if (i) { ex.cod = i.cod || undefined; ex.prov = i.prov || undefined; ex.compra = i.compra; ex.catm = i.catm || undefined; ex.tipo = i.tipo || undefined; }
+    return ex;
+  }
   var CAJONES_EXTRAS = /^(CUBERTERO|FONDO MADERA)/i;
   // 1. cond 'cajones' a cuberteros/fondos de BAJO sin modelo
   ST.exm.forEach(function(ex){
@@ -6737,7 +6962,7 @@ function applyExtrasRules() {
   Object.keys(ST.exg).forEach(function(cat){
     MOVE_BAJO.forEach(function(name){
       if (ST.exg[cat][name] !== undefined) {
-        ST.exm.push({m:'BAJO', mo:null, n:name, med:null, p:ST.exg[cat][name], rep:false});
+        ST.exm.push(conInfo(cat, name, {m:'BAJO', mo:null, n:name, med:null, p:ST.exg[cat][name], rep:false}));
         delete ST.exg[cat][name];
       }
     });
@@ -6746,7 +6971,7 @@ function applyExtrasRules() {
   if (ST.exg['ACCESORIOS MUEBLES ALTOS']) {
     var _nombresAlto = Object.keys(ST.exg['ACCESORIOS MUEBLES ALTOS']);
     _nombresAlto.forEach(function(name){
-      ST.exm.push({m:null, mo:null, n:name, med:null, p:ST.exg['ACCESORIOS MUEBLES ALTOS'][name], rep:false, cond:'alto'});
+      ST.exm.push(conInfo('ACCESORIOS MUEBLES ALTOS', name, {m:null, mo:null, n:name, med:null, p:ST.exg['ACCESORIOS MUEBLES ALTOS'][name], rep:false, cond:'alto'}));
     });
     delete ST.exg['ACCESORIOS MUEBLES ALTOS'];
   }
@@ -6754,7 +6979,7 @@ function applyExtrasRules() {
   Object.keys(ST.exg).forEach(function(cat){
     Object.keys(ST.exg[cat]).forEach(function(name){
       if (/MARCO MICROONDAS/i.test(name)) {
-        ST.exm.push({m:null, mo:null, n:name, med:null, p:ST.exg[cat][name], rep:false, cond:'microondas'});
+        ST.exm.push(conInfo(cat, name, {m:null, mo:null, n:name, med:null, p:ST.exg[cat][name], rep:false, cond:'microondas'}));
         delete ST.exg[cat][name];
       }
     });
@@ -7463,7 +7688,7 @@ function descargarCopiaSeguridad() {
     'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1','historial_v1',
     'modelos_grupos_v1',
     'logo','map_costados','map_regletas','modmap_v15','params','pnum','prices',
-    'texto_base_v1','presentacion_base_v1','herr_cat_v1'];
+    'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1'];
   claves.forEach(function(k){
     var v = localStorage.getItem(k);
     if (v !== null) backup.datos[k] = v;
@@ -8185,7 +8410,7 @@ if (!ST.images) ST.images = [];
 (function(){
   var stored = JSON.parse(localStorage.getItem('extras_v1')||'null');
   if (stored) {
-    ST.exm = stored.exm; ST.exg = stored.exg;
+    ST.exm = stored.exm; ST.exg = stored.exg; ST.exgInfo = stored.exgInfo || {};
   } else {
     ST.exm = JSON.parse(JSON.stringify(EXTRAS_MUEBLE));
     ST.exg = JSON.parse(JSON.stringify(EXTRAS_GENERAL));
