@@ -266,6 +266,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 /* v121: el aviso «Sin guardar» ocupa su propia fila; sin flex-wrap los botones se quedaban sin ancho y se montaban */
 /* v122: semáforo de modelos, ajuste automático, arranque sin recarga y menús sin subir/bajar nube */
 /* v123: casco por acabado y altura de bajos (70/80) por grupo, plantilla v13, módulos de cocina puente */
+/* v124: herrajes Briforma con código, gama de cajón y abatible por grupo, extras de cajón (plantilla v14) */
 .ba { flex-wrap:wrap; justify-content:flex-end; align-items:center; }
 .ba #dirty-ind { flex:1 0 100%; order:-1; justify-content:flex-end; }
 .ba .menu-wrap { flex:0 0 auto; min-width:max-content; }
@@ -299,7 +300,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v123</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v124</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -572,7 +573,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </div>
 
 <script type="text/x-presupuestador" id="APP-SRC">
-// Muebles Carrascosa · Presupuestador · v123
+// Muebles Carrascosa · Presupuestador · v124
 // Estructura: datos y estado → funciones por área → arranque (al final del archivo).
 // Cada función está definida UNA sola vez. Para cambiar algo, edítalo en su sitio.
 
@@ -601,7 +602,7 @@ var SUPA_REFRESH = null;
 var CLAVES_SYNC = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
   'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1',
   'logo','map_costados','map_regletas','modmap_v15','modelos_grupos_v1','params','pnum','prices',
-  'texto_base_v1','presentacion_base_v1'];
+  'texto_base_v1','presentacion_base_v1','herr_cat_v1'];
 // (historial_v1 se sincroniza aparte; ultimo_backup y pnum quedan locales)
 var _syncCache = {};
 // hasta haber descargado la nube NO se sube nada. Antes, al abrir la app se subían
@@ -1409,6 +1410,7 @@ function save() {
   if (ST.logo) localStorage.setItem('logo', ST.logo);
   localStorage.setItem('params', JSON.stringify(ST.params));
   localStorage.setItem('modmap_v15', JSON.stringify(MODMAP));
+  try { localStorage.setItem('herr_cat_v1', JSON.stringify(HERR_CAT)); } catch(e){}
   localStorage.setItem('extras_v1', JSON.stringify({exm:ST.exm, exg:ST.exg}));
   localStorage.setItem('map_costados', JSON.stringify(MAP_COSTADOS));
   localStorage.setItem('map_regletas', JSON.stringify(MAP_REGLETAS));
@@ -1685,16 +1687,16 @@ function _applicableExtrasBase(mueble, modelo, medida) {
   });
 }
 
-function extraEffectivePrice(ex, nombre) {
+function extraEffectivePrice(ex, nombre, g) {
   if (ex.m === 'ABATIBLE' && !ex.freefold) {
-    return pvpE(Math.max(0, ex.p - freespaceIncludedPrice(nombre)));
+    return pvpE(Math.max(0, ex.p - freespaceIncludedPrice(nombre, g)));
   }
   if (ex.freefold) {
     // incremento herraje dinámico + 40€ dificultad
-    return pvpE(Math.max(0, ex.p - freespaceIncludedPrice(nombre)) + 40);
+    return pvpE(Math.max(0, ex.p - freespaceIncludedPrice(nombre, g)) + 40);
   }
   if (ex.rep) {
-    return pvpE(Math.max(0, ex.p - includedHerrajePrice(nombre)));
+    return pvpE(Math.max(0, ex.p - includedHerrajePrice(nombre, g)));
   }
   return pvpE(ex.p);
 }
@@ -1752,6 +1754,96 @@ function hayCascos() {
   return Object.keys(MODMAP).some(function(n){ return !!MODMAP[n].cascos; });
 }
 
+// ── Herrajes con código (fase 2b · plantilla v14) ──
+// HERR_CAT[codigo] = {d, fam, gama, guia, med, color, p} (hoja HERRAJES) · MODMAP[n].receta (hoja RECETAS)
+// Réplica de resolver() de scripts/herrajes.py; se coteja con cotejo_herrajes_2026.json.
+var HERR_CAT = JSON.parse(localStorage.getItem('herr_cat_v1')||'null') || {};
+var HERR_SEL_DEF = {cajon:'atira', guia:'normal', color:'plata', abatible:'normal'};
+var HERR_GUIAS = {uniset:['normal'], atira:['normal','50kg','expulsion'], avantech:['quadro','actro']};
+var HERR_COLORES = ['plata','blanco','antracita'];
+var HERR_FONDOS = [30,35,40,45,50,60,70,80,90,100,120];
+var HERR_FAM_APP = {bisagra:'bisagras', base:'bisagras', cajon:'cajones', cacerolero:'cajones',
+  fondo_cajon:'cajones', fondo_cacerolero:'cajones', abatible:'cajones', pata:'patas',
+  varilla:'varillas', especial:'otros', extra_cajon:'otros'};
+function hayHerr() {
+  return Object.keys(HERR_CAT).length > 0 && Object.keys(MODMAP).some(function(n){ return !!MODMAP[n].receta; });
+}
+// Sin grupo: valor por defecto de Configuración. Grupo sin g.herr (presupuesto anterior a la v124):
+// Atira normal + Freespace normal fijo, para que cambiar la configuración no lo mueva.
+function herrSel(g) {
+  var base = g ? HERR_SEL_DEF : ((ST.params && ST.params.herr_def) || HERR_SEL_DEF), h = (g && g.herr) || {};
+  var s = {};
+  ['cajon','guia','color','abatible'].forEach(function(k){ s[k] = h[k] || base[k] || HERR_SEL_DEF[k]; });
+  if (!HERR_GUIAS[s.cajon]) s.cajon = 'atira';
+  if (HERR_GUIAS[s.cajon].indexOf(s.guia) < 0) s.guia = HERR_GUIAS[s.cajon][0];
+  if (HERR_COLORES.indexOf(s.color) < 0) s.color = 'plata';
+  if (s.abatible !== 'push') s.abatible = 'normal';
+  return s;
+}
+function herrNuevo() { return herrSel(null); }
+function _herrFondo(ancho) {
+  for (var i = 0; i < HERR_FONDOS.length; i++) if (ancho && HERR_FONDOS[i] >= ancho) return HERR_FONDOS[i];
+  return 120;
+}
+function _herrCajon(sel, alto, cacerolero) {
+  if (sel.cajon === 'uniset') return cacerolero ? 'CACUNISET15' : ({100:'CUNISET8',130:'CUNISET12',180:'CUNISET15'})[alto];
+  if (sel.cajon === 'avantech') return (cacerolero ? 'CAVANT18' : ({100:'CAVANT10',130:'CAVANT13',180:'CAVANT18'})[alto]) + (sel.guia === 'actro' ? 'A' : '');
+  var cod = 'CATIRA' + ({plata:'',blanco:'B',antracita:'A'})[sel.color] + (({normal:'','50kg':'50',expulsion:'E'})[sel.guia] || '');
+  return cacerolero ? 'CA' + cod : cod;
+}
+function herrResolver(rec, sel) {
+  var items = {}, orden = [];
+  function add(c, n) { if (!n) return; if (!(c in items)) { items[c] = 0; orden.push(c); } items[c] += n; }
+  if (rec.bisagras) {
+    add(({vitrina:'BSENSYSVITRINA','165':'BSENSYS165'})[rec.bisagra] || 'BSENSYS', rec.bisagras);
+    add('BASENSYS', rec.bisagras);
+  }
+  (rec.cajones||[]).forEach(function(c){ add(_herrCajon(sel, c[1], false), c[0]); add('FMTC'+_herrFondo(c[2])+'/B/A', c[0]); });
+  (rec.caceroleros||[]).forEach(function(c){ add(_herrCajon(sel, 180, true), c[0]); add('FMTCC'+_herrFondo(c[1])+'/B/A', c[0]); });
+  if (rec.fs) add((sel.abatible === 'push' && HERR_CAT['FREESPACEPUSH'+rec.fs]) ? 'FREESPACEPUSH'+rec.fs : 'FREESPACE'+rec.fs, 1);
+  add('PM10', rec.patas||0);
+  (rec.fijos||[]).forEach(function(f){ add(f[0], f[1]); });
+  return orden.map(function(c){ return {cod:c, cant:items[c]}; });
+}
+// Precio de un código; si el color cambia el precio, el más alto de sus colores (nunca de menos)
+function herrPrecio(cod) {
+  var h = HERR_CAT[cod]; if (!h) return 0;
+  if (!h.color) return h.p;
+  var v = h.p;
+  Object.keys(HERR_CAT).forEach(function(k){
+    var x = HERR_CAT[k];
+    if (x.fam === h.fam && x.gama === h.gama && x.guia === h.guia && x.med === h.med && x.p > v) v = x.p;
+  });
+  return v;
+}
+// Coste de herrajes de un módulo (con incremento de herraje). Sin receta: los 5 huecos de siempre.
+// l (opcional): con l.sinVarillas no cuenta las varillas.
+function herrCoste(m, g, l) {
+  var p = ST.params, f = 1 + (p.inc_herraje||0);
+  var d = {bisagras:0, cajones:0, patas:0, varillas:0, otros:0, total:0};
+  if (m.receta && hayHerr()) {
+    herrResolver(m.receta, herrSel(g)).forEach(function(it){
+      var h = HERR_CAT[it.cod]; if (!h) return;
+      var fam = HERR_FAM_APP[h.fam] || 'otros';
+      if (l && l.sinVarillas && fam === 'varillas') return;
+      d[fam] += herrPrecio(it.cod) * it.cant * f;
+    });
+  } else {
+    var refs = p.herrajes_ref;
+    var rr = function(v) { if (typeof v !== 'string') return v||0; var val = refs[v]; if (val == null) { var _d={ref_h:25,ref_i:25,ref_j:25,ref_k:25}; val=_d[v]||0; } return val||0; };
+    (m.herrajes||[]).forEach(function(h){
+      if (!(h.n && h.c > 0)) return;
+      if (l && l.sinVarillas && h.p === 'ref_f') return;
+      var n = (h.n||'').toUpperCase();
+      var fam = n.indexOf('BISAGRA') >= 0 ? 'bisagras' : n.indexOf('VARILLA') >= 0 ? 'varillas'
+        : n.indexOf('PATA') >= 0 ? 'patas' : (n.indexOf('CAJ') >= 0 || n.indexOf('FREESPACE') >= 0) ? 'cajones' : 'otros';
+      d[fam] += rr(h.p) * h.c * f;
+    });
+  }
+  d.total = d.bisagras + d.cajones + d.patas + d.varillas + d.otros;
+  return d;
+}
+
 // ── Cálculo de precio (réplica de la fórmula Excel) ───────
 function calcPrice(nombre, calIdx, g) {
   var p = ST.params;
@@ -1766,16 +1858,21 @@ function calcPrice(nombre, calIdx, g) {
   if (pz.cant1 > 0 && pz.f1[calIdx] != null) f1 = pz.cant1 * pz.f1[calIdx] * (1+(p.inc_puerta||0));
   var f2 = 0;
   if (pz.cant2 > 0 && pz.f2[calIdx] != null) f2 = pz.cant2 * pz.f2[calIdx] * (1+(p.inc_puerta||0));
-  var herr = 0;
-  (m.herrajes||[]).forEach(function(h){
-    if (h.n && h.c > 0) herr += rr(h.p) * h.c * (1+(p.inc_herraje||0));
-  });
+  var herr = herrCoste(m, g).total;
   return Math.round((casco+montaje+f1+f2+herr)*100)/100;
 }
 
 // ── Herraje incluido numérico (para incrementos especiero/panero) ──
-function includedHerrajePrice(nombre) {
+function includedHerrajePrice(nombre, g) {
   var m = MODMAP[nombre]; if (!m) return 0;
+  if (m.receta && hayHerr()) {
+    var v = 0;
+    herrResolver(m.receta, herrSel(g)).forEach(function(it){
+      var h = HERR_CAT[it.cod];
+      if (h && h.fam === 'especial') v = Math.max(v, herrPrecio(it.cod));
+    });
+    return v;
+  }
   var p = 0;
   (m.herrajes||[]).forEach(function(h){
     if (typeof h.p === 'number' && h.p > p) p = h.p;
@@ -1895,10 +1992,7 @@ function calcBreakdown(nombre, calIdx, g) {
   if (pz.cant1 > 0 && pz.f1[calIdx] != null) f1 = pz.cant1 * pz.f1[calIdx] * (1+(p.inc_puerta||0));
   var f2 = 0;
   if (pz.cant2 > 0 && pz.f2[calIdx] != null) f2 = pz.cant2 * pz.f2[calIdx] * (1+(p.inc_puerta||0));
-  var herr = 0;
-  (m.herrajes||[]).forEach(function(h){
-    if (h.n && h.c > 0) herr += rr(h.p) * h.c * (1+(p.inc_herraje||0));
-  });
+  var herr = herrCoste(m, g).total;
   return {casco:casco, montaje:montaje, frentes:f1+f2, herrajes:herr,
           total: Math.round((casco+montaje+f1+f2+herr)*100)/100};
 }
@@ -1912,8 +2006,15 @@ function rawFromPvpE(p) {
 }
 
 // Extras de línea con ajuste según alcance
+// Extra con la resta del herraje incluido al día (gama actual del grupo). Extras anteriores a la v124: igual.
+function _exVivo(ex, g) {
+  if (!ex || ex.base == null || !ex.mod || (_congelado() && ex.fzP != null)) return ex;
+  var v = extraEffectivePrice({p: ex.base, m: ex.mex, rep: ex.rep, freefold: ex.freefold}, ex.mod, g);
+  return Object.assign({}, ex, {p: Math.round(v*100)/100});
+}
 function extraPVP(ex, g) {
   if (_congelado() && ex && ex.fzP != null) return ex.fzP;
+  ex = _exVivo(ex, g);
   var f = adjF(g) - 1;
   if (!f) return ex.p;
   var scope = g.adjScope || 'todo';
@@ -1949,8 +2050,12 @@ function herrVal(p) {
   return typeof p === 'string' ? (ST.params.herrajes_ref[p]||0) : (p||0);
 }
 
-function freespaceIncludedPrice(nombre) {
+function freespaceIncludedPrice(nombre, g) {
   var m = MODMAP[nombre]; if (!m) return 25;
+  if (m.receta && hayHerr() && m.receta.fs) {
+    var fs = herrResolver(m.receta, herrSel(g)).filter(function(it){ return /^FREESPACE/.test(it.cod); })[0];
+    if (fs) return herrPrecio(fs.cod) * fs.cant;
+  }
   var v = 25;
   (m.herrajes||[]).forEach(function(h){
     if (/freespace/i.test(h.n)) v = herrVal(h.p) * (h.c||1);
@@ -1991,6 +2096,7 @@ function pvpElectro(coste) {
 // puede quitarlas si el frente real es <281mm (lo decide él viendo el mueble)
 // ¿Este módulo puede llevar varillas? (tiene cajón 180 en su definición base)
 function moduloLlevaVarillas(m, mo, med) {
+  if (varillasBase(m, mo, med) > 0) return true;
   var nombre = (med && med !== '\u2014') ? (m+' '+mo+' '+med) : (m+' '+mo);
   var mod = MODMAP[nombre];
   if (!mod || !mod.herrajes) return false;
@@ -2001,17 +2107,29 @@ function moduloLlevaVarillas(m, mo, med) {
 function varillasBase(m, mo, med) {
   var nombre = (med && med !== '\u2014') ? (m+' '+mo+' '+med) : (m+' '+mo);
   var mod = MODMAP[nombre];
+  if (mod && mod.receta && hayHerr()) {
+    return (mod.receta.fijos||[]).reduce(function(s, f){ return s + (((HERR_CAT[f[0]]||{}).fam === 'varilla') ? f[1] : 0); }, 0);
+  }
   if (!mod || !mod.herrajes) return 0;
   var v = mod.herrajes.filter(function(h){ return h.p === 'ref_f'; });
   return v.reduce(function(s,h){ return s + (h.c||0); }, 0);
 }
 
 // Ajuste de precio por quitar varillas (se resta en el cálculo)
+// Precio de compra de una varilla del módulo: el del catálogo (v14) o el de referencia
+function varillaPrecio(m, mo, med) {
+  var mod = MODMAP[(med && med !== '\u2014') ? (m+' '+mo+' '+med) : (m+' '+mo)];
+  if (mod && mod.receta && hayHerr()) {
+    var f = (mod.receta.fijos||[]).filter(function(f){ return (HERR_CAT[f[0]]||{}).fam === 'varilla'; })[0];
+    if (f) return herrPrecio(f[0]);
+  }
+  return (ST.params.herrajes_ref && ST.params.herrajes_ref.ref_f) || 5;
+}
 function ajusteVarillas(l, g) {
   if (!l.sinVarillas) return 0;
   var n = varillasBase(l.m, l.mo, l.med);
   if (!n) return 0;
-  var ref_f = (ST.params.herrajes_ref && ST.params.herrajes_ref.ref_f) || 5;
+  var ref_f = varillaPrecio(l.m, l.mo, l.med);
   var inc = 1 + (ST.params.inc_herraje||0);
   return -(n * ref_f * inc);  // negativo: descuenta
 }
@@ -2123,10 +2241,13 @@ function confirmExtras() {
     for (var k = 0; k < q; k++) {
       sel.push({
         n: ex.n + (ex.med?' ('+ex.med+'cm)':''),
-        p: extraEffectivePrice(ex, _pendL.nombre),
+        p: extraEffectivePrice(ex, _pendL.nombre, ST.groups.find(function(x){return x.id===_pendL.gid;})),
         rep: !!(ex.rep || ex.m === 'ABATIBLE'),
         freefold: !!ex.freefold,
-        inst: inst || 0
+        inst: inst || 0,
+        herr: !!ex.herr, cod: ex.cod, cant: ex.cant,
+        // para recalcular la resta del herraje incluido si luego cambia la gama del grupo
+        base: (ex.rep || ex.m === 'ABATIBLE' || ex.freefold) ? ex.p : undefined, mex: ex.m, mod: _pendL.nombre
       });
     }
   });
@@ -2180,7 +2301,9 @@ function _addLineMueble(gid) {
   var und = parseInt(document.getElementById('au'+gid).value)||1;
   if (!m||!mo||!med){toast('Selecciona tipo, modelo y medida');return;}
 
-  var exs = applicableExtras(m, mo, med);
+  var exs = applicableExtras(m, mo, med).concat(extrasCajon(m+' '+mo+' '+med, g).map(function(x){
+    return {n:x.n, p:x.coste, herr:true, cod:x.cod, cant:x.cant};
+  }));
   if (!exs.length) {
     g.lines.push({id:nid(), m:m, mo:mo, med:med, und:und, extras:[]});
     _resetAddForm(gid); renderLines(gid); upBan(); toast('A\u00f1adido \u2713'); return;
@@ -2198,7 +2321,7 @@ function _addLineMueble(gid) {
     +'<th style="padding:6px 8px;background:#1a1a2e;color:#fff;text-align:center;font-size:.77rem;width:70px">Cant.</th>'
     +'</tr></thead><tbody>';
   exs.forEach(function(ex, i){
-    var eff = extraEffectivePrice(ex, _pendL.nombre);
+    var eff = extraEffectivePrice(ex, _pendL.nombre, ST.groups.find(function(x){return x.id===_pendL.gid;}));
     var label = ex.n + (ex.med ? ' ('+ex.med+'cm)' : '');
     var priceLabel;
     if (ex.freefold) {
@@ -2261,7 +2384,7 @@ function confirmGrp() {
     var name = document.getElementById('MNAME').value.trim() || TIPOS[tipo].label;
     closeMod();
     var ci = ST.groups.length % GCOLS.length;
-    ST.groups.push({id:nid(), name:name, tipo:tipo, cal:cal, ci:ci, lines:[], open:true, casco:cascoNuevo()});
+    ST.groups.push({id:nid(), name:name, tipo:tipo, cal:cal, ci:ci, lines:[], open:true, casco:cascoNuevo(), herr:herrNuevo()});
     renderGroups(); upBan();
   } else {
     _confirmGrpBase();
@@ -2271,7 +2394,7 @@ function _confirmGrpBase() {
   var name = document.getElementById('MNAME').value.trim() || TIPOS[_mtype].label;
   closeMod();
   var ci = ST.groups.length % GCOLS.length;
-  ST.groups.push({id:nid(), name:name, tipo:_mtype, cal:'ENTRADA', ci:ci, lines:[], open:true, casco:cascoNuevo()});
+  ST.groups.push({id:nid(), name:name, tipo:_mtype, cal:'ENTRADA', ci:ci, lines:[], open:true, casco:cascoNuevo(), herr:herrNuevo()});
   renderGroups(); upBan();
 }
 
@@ -2359,6 +2482,7 @@ function renderGroups() {
   _rgPasoOcultarCalidadExtras();
   _rgPasoAjuste();
   _rgPasoCasco();
+  _rgPasoHerrajes();
   _rgPasoFormularioElectroLibre();
   _rgPasoColorTipo();
   _rgPasoContadorYMover();
@@ -2507,6 +2631,66 @@ function _rgPasoCasco() {
     if (ref && ref.nextSibling) body.insertBefore(div, ref.nextSibling);
     else body.insertBefore(div, body.firstChild);
   });
+}
+// Fase 2b: gama de cajón, guía, color y abatible por grupo de muebles (plantilla v14)
+var HERR_NOMBRES = {uniset:'Uniset', atira:'Atira', avantech:'Avantech', normal:'normal', '50kg':'50 kg',
+  expulsion:'expulsi\u00f3n', quadro:'Quadro', actro:'Actro', plata:'plata', blanco:'blanco', antracita:'antracita',
+  push:'push to open'};
+function _rgPasoHerrajes() {
+  if (!hayHerr()) return;
+  ST.groups.forEach(function(g){
+    if ((g.tipo||'muebles') !== 'muebles') return;
+    var body = document.getElementById('gb'+g.id);
+    if (!body || document.getElementById('gherr'+g.id)) return;
+    var s = herrSel(g);
+    var sel = function(campo, ops){
+      return '<select id="gh'+campo+g.id+'" style="width:auto;padding:4px 6px;font-size:.78rem" onchange="setGroupHerr('+g.id+',\''+campo+'\',this.value)">'
+        + ops.map(function(o){ return '<option value="'+o+'"'+(o===s[campo]?' selected':'')+'>'+(HERR_NOMBRES[o]||o)+'</option>'; }).join('')
+        + '</select>';
+    };
+    var div = document.createElement('div');
+    div.id = 'gherr'+g.id;
+    div.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;padding:7px 10px;background:#f1f7ef;border:1px solid #c3dbb9;border-radius:7px';
+    div.innerHTML = '<span style="font-size:.76rem;color:#2f5a23;font-weight:600">Herrajes:</span>'
+      + '<span style="font-size:.74rem;color:#2f5a23">caj\u00f3n</span>' + sel('cajon', ['uniset','atira','avantech'])
+      + '<span style="font-size:.74rem;color:#2f5a23">gu\u00eda</span>' + sel('guia', HERR_GUIAS[s.cajon])
+      + '<span style="font-size:.74rem;color:#2f5a23">color</span>' + sel('color', HERR_COLORES)
+      + '<span style="font-size:.74rem;color:#2f5a23">abatible</span>' + sel('abatible', ['normal','push']);
+    var ref = document.getElementById('gcasco'+g.id) || (document.getElementById('gadj'+g.id)||{}).parentNode || body.querySelector('.mtabs');
+    if (ref && ref.nextSibling) body.insertBefore(div, ref.nextSibling);
+    else body.insertBefore(div, body.firstChild);
+  });
+}
+// Extras de cajón por mueble (fase 2b): LED (solo Avantech, 1 por cajón y cacerolero), cajón
+// interior (1 por cacerolero; Atira 60/90, Avantech H10 60/90/120) y esterilla (metros de fondo)
+function extrasCajon(nombre, g) {
+  var m = MODMAP[nombre]; if (!m || !m.receta || !hayHerr()) return [];
+  var r = m.receta, s = herrSel(g), ncaj = 0, ncac = 0, metros = 0, anchoCac = 0;
+  (r.cajones||[]).forEach(function(c){ ncaj += c[0]; metros += c[0] * (c[2]||0) / 100; });
+  (r.caceroleros||[]).forEach(function(c){ ncac += c[0]; metros += c[0] * (c[1]||0) / 100; anchoCac = Math.max(anchoCac, c[1]||0); });
+  if (!ncaj && !ncac) return [];
+  var out = [];
+  function add(cod, cant, ud) {
+    var h = HERR_CAT[cod]; if (!h || !cant) return;
+    cant = Math.round(cant*100)/100;
+    out.push({cod:cod, n:h.d+' \u00b7 '+cant+' '+ud, cant:cant, coste:Math.round(herrPrecio(cod)*cant*(1+(ST.params.inc_herraje||0))*100)/100});
+  }
+  if (s.cajon === 'avantech') add('9326927', ncaj + ncac, 'ud');
+  if (ncac) {
+    var w = [60,90,120].filter(function(x){ return x >= anchoCac; })[0];
+    if (s.cajon === 'atira' && w && w <= 90) add('CATIRAI' + ({plata:'',blanco:'B',antracita:'A'})[s.color] + w, ncac, 'ud');
+    if (s.cajon === 'avantech' && w) add('ICIAH10' + w, ncac, 'ud');
+  }
+  add(({plata:'EFCG', blanco:'EFCB', antracita:'EFCA'})[s.color], metros, 'm');
+  return out;
+}
+function setGroupHerr(gid, campo, val) {
+  var g = ST.groups.find(function(g){return g.id===gid;}); if(!g) return;
+  var s = herrSel(g); s[campo] = val;
+  g.herr = herrSel({herr: s});     // la guía se ajusta a la gama
+  var w = document.getElementById('gherr'+gid); if (w) w.remove();
+  _rgPasoHerrajes();
+  renderLines(gid); upBan(); save();
 }
 function setGroupCasco(gid, campo, val) {
   var g = ST.groups.find(function(g){return g.id===gid;}); if(!g) return;
@@ -2691,10 +2875,14 @@ function _renderLinesBase(gid) {
     var hasFF=(l.extras||[]).some(function(ex){return ex.freefold;});
     var ffExtra=hasFF?freefoldCascoFrenteExtra(l,g):0;
     var extHtml=''; var extSum=0;
+    var _clvH = function(c){ var h = HERR_CAT[c] || {}; return [h.fam, h.gama, h.guia, h.med].join('|'); };
+    var _exValidos = extrasCajon(l.m+' '+l.mo+' '+l.med, g).map(function(x){ return _clvH(x.cod); });
     (l.extras||[]).forEach(function(ex){
       var exAdj=extraPVP(ex,g);
       extSum+=exAdj||0;
-      extHtml+='<div style="font-size:.79rem;color:var(--muted);padding-left:8px">\u2514 '+eh(ex.n)
+      var _mal = ex.herr && ex.cod && _exValidos.indexOf(_clvH(ex.cod)) < 0;
+      extHtml+='<div style="font-size:.79rem;color:'+(_mal?'#c0392b;font-weight:600':'var(--muted)')+';padding-left:8px"'
+        +(_mal?' title="no existe en la gama del grupo: qu\u00edtalo o cambia la gama"':'')+'>\u2514 '+(_mal?'\u26a0 ':'')+eh(ex.n)
         +(ex.freefold?' <span style="color:#7B3FA0">(herraje+dif)</span>':'(incr.)')
         +' +'+exAdj.toFixed(2)+' \u20ac</div>';
     });
@@ -2977,7 +3165,7 @@ function _onMoPasoPrecioFrente(gid) { try{ _updFrentePrecio(gid); }catch(e){} }
 
 function addGroup(name, cal) {
   var ci=ST.groups.length%GCOLS.length;
-  ST.groups.push({id:nid(),name:name||'Nuevo grupo',cal:cal||'ENTRADA',ci:ci,lines:[],open:true,casco:cascoNuevo()});
+  ST.groups.push({id:nid(),name:name||'Nuevo grupo',cal:cal||'ENTRADA',ci:ci,lines:[],open:true,casco:cascoNuevo(), herr:herrNuevo()});
   renderGroups();upBan();
 }
 
@@ -3770,6 +3958,30 @@ function insertarPresentacion() {
 }
 
 // ── 7. Ficha de taller (PDF sin precios) ──
+// Resumen de herrajes con código de un grupo de muebles (sirve de pedido a Briforma)
+function _fichaHerrajesGrupo(g) {
+  if ((g.tipo||'muebles') !== 'muebles' || !hayHerr()) return '';
+  var tot = {}, orden = [];
+  function sum(cod, n) { if (!n) return; if (!(cod in tot)) { tot[cod] = 0; orden.push(cod); } tot[cod] += n; }
+  g.lines.forEach(function(l){
+    var m = MODMAP[l.m+' '+l.mo+' '+l.med];
+    if (m && m.receta) herrResolver(m.receta, herrSel(g)).forEach(function(it){
+      if (l.sinVarillas && (HERR_CAT[it.cod]||{}).fam === 'varilla') return;
+      sum(it.cod, it.cant * (l.und||1));
+    });
+    (l.extras||[]).forEach(function(ex){ if (ex.cod) sum(ex.cod, (ex.cant||1) * (l.und||1)); });
+  });
+  if (!orden.length) return '';
+  var s = herrSel(g);
+  return '<div style="margin:6px 0 0;font-size:.8rem"><strong>Herrajes</strong> \u00b7 caj\u00f3n '+(HERR_NOMBRES[s.cajon]||s.cajon)+' '+(HERR_NOMBRES[s.guia]||s.guia)+' \u00b7 color '+s.color+' \u00b7 abatible '+(HERR_NOMBRES[s.abatible]||s.abatible)+'</div>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:.78rem;margin-top:3px"><thead><tr style="background:#f4f4f4">'
+    + '<th style="padding:3px 6px;border:1px solid #ccc;text-align:left">C\u00f3digo</th><th style="padding:3px 6px;border:1px solid #ccc;text-align:left">Descripci\u00f3n</th>'
+    + '<th style="padding:3px 6px;border:1px solid #ccc">Color</th><th style="padding:3px 6px;border:1px solid #ccc">Cant.</th></tr></thead><tbody>'
+    + orden.map(function(cod){ var h = HERR_CAT[cod] || {d:'(no est\u00e1 en el cat\u00e1logo)'};
+        return '<tr><td style="padding:3px 6px;border:1px solid #ccc">'+eh(cod)+'</td><td style="padding:3px 6px;border:1px solid #ccc">'+eh(h.d)+'</td>'
+          + '<td style="padding:3px 6px;border:1px solid #ccc;text-align:center">'+eh(h.color||'')+'</td><td style="padding:3px 6px;border:1px solid #ccc;text-align:center">'+tot[cod]+'</td></tr>'; }).join('')
+    + '</tbody></table>';
+}
 function fichaTaller() {
   _pfTipo = 'taller';
   if (!totalL()) { toast('A\u00f1ade elementos primero'); return; }
@@ -3783,7 +3995,8 @@ function fichaTaller() {
       var herr = '';
       if (g.tipo === 'muebles') {
         var m = MODMAP[l.m+' '+l.mo+' '+l.med];
-        if (m && m.herrajes) herr = m.herrajes.filter(function(h){return !(l.sinVarillas && h.p==='ref_f');}).map(function(h){return h.n+'\u00d7'+(h.c*l.und);}).join(', ');
+        if (m && m.receta && hayHerr()) herr = herrResolver(m.receta, herrSel(g)).filter(function(it){ return !(l.sinVarillas && (HERR_CAT[it.cod]||{}).fam === 'varilla'); }).map(function(it){ return it.cod+'\u00d7'+(it.cant*l.und); }).join(', ');
+        else if (m && m.herrajes) herr = m.herrajes.filter(function(h){return !(l.sinVarillas && h.p==='ref_f');}).map(function(h){return h.n+'\u00d7'+(h.c*l.und);}).join(', ');
       }
       var ext = (l.extras||[]).map(function(e){return e.n;}).join(', ');
       return '<tr>'
@@ -3804,7 +4017,7 @@ function fichaTaller() {
       +'<th style="padding:5px 8px;border:1px solid #ccc">Medida</th>'
       +'<th style="padding:5px 8px;border:1px solid #ccc">Ud.</th>'
       +'<th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Herrajes</th>'
-      +'</tr></thead><tbody>'+rows+'</tbody></table>'+'</div>';
+      +'</tr></thead><tbody>'+rows+'</tbody></table>'+_fichaHerrajesGrupo(g)+'</div>';
   }).join('');
 
   var win = document.getElementById('PF');
@@ -4044,13 +4257,12 @@ function budgetCost() {
           coste += bd.total * l.und;
           // V41: si se han quitado las varillas en esta línea, descontar su coste (mismo cálculo que calcBreakdown)
           if (l.sinVarillas) {
-            var _refF = (ST.params.herrajes_ref && ST.params.herrajes_ref.ref_f) || 0;
-            coste -= varillasBase(l.m, l.mo, l.med) * _refF * (1 + (ST.params.inc_herraje||0)) * l.und;
+            coste -= varillasBase(l.m, l.mo, l.med) * varillaPrecio(l.m, l.mo, l.med) * (1 + (ST.params.inc_herraje||0)) * l.und;
           }
           minutos += ((MODMAP[nombre]||{}).montaje||0) * l.und;
         }
         (l.extras||[]).forEach(function(ex){
-          coste += rawFromPvpE(ex.p) * l.und;
+          coste += rawFromPvpE(_exVivo(ex, g).p) * l.und;
           if (ex.freefold && bd) coste += (bd.casco + bd.frentes) * l.und;
         });
       } else {
@@ -4120,6 +4332,31 @@ function openRentabilidad() {
 }
 
 // ── 6. Lista de herrajes para pedir al proveedor ──
+// Herrajes de una línea de muebles: {nombre: cantidad}. Con receta (v14), «código · descripción».
+function _herrajesLinea(l, g) {
+  var out = {}, und = l.und || 1, m = MODMAP[l.m+' '+l.mo+' '+l.med];
+  if (!m) return out;
+  if (m.receta && hayHerr()) {
+    herrResolver(m.receta, herrSel(g)).forEach(function(it){
+      var h = HERR_CAT[it.cod] || {d:''};
+      if (l.sinVarillas && h.fam === 'varilla') return;
+      var k = it.cod + ' \u00b7 ' + h.d;
+      out[k] = (out[k]||0) + it.cant * und;
+    });
+    (l.extras||[]).forEach(function(ex){
+      if (!ex.cod) return;
+      var k = ex.cod + ' \u00b7 ' + ((HERR_CAT[ex.cod]||{}).d || ex.n);
+      out[k] = (out[k]||0) + (ex.cant||1) * und;
+    });
+    return out;
+  }
+  (m.herrajes||[]).forEach(function(h){
+    if (!(h.n && h.c > 0)) return;
+    if (l.sinVarillas && h.p === 'ref_f') return;
+    out[h.n] = (out[h.n]||0) + h.c * und;
+  });
+  return out;
+}
 function openHerrajesList() {
   var conteo = {};
   ST.groups.forEach(function(g){
@@ -4127,11 +4364,8 @@ function openHerrajesList() {
     g.lines.forEach(function(l){
       var m = MODMAP[l.m+' '+l.mo+' '+l.med];
       if (!m) return;
-      (m.herrajes||[]).forEach(function(h){
-        if (!h.n) return;
-        if (l.sinVarillas && h.p === 'ref_f') return;  // varillas quitadas en esta línea: no contarlas
-        conteo[h.n] = (conteo[h.n]||0) + (h.c||0)*l.und;
-      });
+      var hl = _herrajesLinea(l, g);   // varillas quitadas en esta línea: no se cuentan
+      Object.keys(hl).forEach(function(k){ conteo[k] = (conteo[k]||0) + hl[k]; });
       // Freefold duplica
       (l.extras||[]).forEach(function(ex){
         if (ex.freefold) conteo['(FREEFOLD: revisar herraje)'] = (conteo['(FREEFOLD: revisar herraje)']||0)+l.und;
@@ -4189,13 +4423,9 @@ function desgloseComponentes() {
           var pz = puertasDe(m, g);
           if (pz.cant1 > 0 && pz.f1[ci] != null) d.frentes += pz.cant1 * pz.f1[ci] * (1+(p.inc_puerta||0)) * und;
           if (pz.cant2 > 0 && pz.f2[ci] != null) d.frentes += pz.cant2 * pz.f2[ci] * (1+(p.inc_puerta||0)) * und;
-          (m.herrajes||[]).forEach(function(h){
-            if (h.n && h.c > 0) {
-              if (l.sinVarillas && h.p === 'ref_f') return;  // varillas quitadas en esta línea: no contarlas
-              var coste = rr(h.p) * h.c * (1+(p.inc_herraje||0)) * und;
-              d[tipoHerraje(h.n)] += coste;
-            }
-          });
+          var hc = herrCoste(m, g, l);   // l.sinVarillas: varillas quitadas en esta línea
+          d.bisagras += hc.bisagras * und; d.cajones += hc.cajones * und; d.patas += hc.patas * und;
+          d.varillas += hc.varillas * und; d.otros += hc.otros * und;
         }
       } else if (g.tipo === 'electro') {
         var raw = rawCost(l, g);
@@ -4211,7 +4441,7 @@ function desgloseComponentes() {
       }
       // Extras de la línea (todos los tipos de grupo), a coste — en paridad con budgetCost
       (l.extras||[]).forEach(function(ex){
-        d.extras += rawFromPvpE(ex.p) * (l.und||1);
+        d.extras += rawFromPvpE(_exVivo(ex, g).p) * (l.und||1);
         if (ex.freefold && g.tipo === 'muebles') {
           var bdf = calcBreakdown(l.m+' '+l.mo+' '+l.med, CALS.indexOf(g.cal), g);
           if (bdf) { d.casco += bdf.casco * (l.und||1); d.frentes += bdf.frentes * (l.und||1); }
@@ -4248,12 +4478,10 @@ function contarMateriales() {
         var nf = (m.cant1||0) + (m.cant2||0);
         totalFrentes += nf * und;
         // Herrajes
-        (m.herrajes||[]).forEach(function(h){
-          if (h.n && h.c > 0) {
-            if (l.sinVarillas && h.p === 'ref_f') return;  // varillas quitadas en esta línea: no contarlas
-            herrajes[h.n] = (herrajes[h.n]||0) + h.c * und;
-          }
-        });
+        if (g.tipo === 'muebles') {
+          var hl = _herrajesLinea(l, g);   // varillas quitadas en esta línea: no se cuentan
+          Object.keys(hl).forEach(function(k){ herrajes[k] = (herrajes[k]||0) + hl[k]; });
+        }
       }
     });
   });
@@ -5462,6 +5690,9 @@ function _saveCfgParametros() {
   var _ca = document.getElementById('p-casco-acab'), _cl = document.getElementById('p-casco-alto');
   if (_ca) ST.params.casco_acab_def = _ca.value;
   if (_cl) ST.params.casco_alto_def = _cl.value;
+  var _hd = {};
+  ['cajon','guia','color','abatible'].forEach(function(k){ var e = document.getElementById('p-herr-'+k); if (e) _hd[k] = e.value; });
+  if (_hd.cajon) { if (_hd.cajon === 'avantech' && _hd.guia === 'normal') _hd.guia = 'quadro'; ST.params.herr_def = herrSel({herr: _hd}); }
   ST.params.herrajes_ref.ref_b = gv('hr-b',2.5);
   ST.params.herrajes_ref.ref_c = gv('hr-c',20);
   ST.params.herrajes_ref.ref_d = gv('hr-d',25);
@@ -5606,6 +5837,24 @@ async function _importExcelBase(e) {
         newModmap[cm].cascos = mapa; nCascos++;
       }
     }
+    var newHerr = {}, nRec = 0;
+    if (sheetMap['HERRAJES']) {
+      var hRows = parseSheetXML(files[sheetMap['HERRAJES']], shared);
+      for (var r = 2; r < hRows.length; r++) {
+        var hc = cell(hRows[r],'A').v, hp = cell(hRows[r],'H').v;
+        if (hc == null || typeof hp !== 'number') continue;
+        var sv = function(c){ var v = cell(hRows[r],c).v; return v == null ? '' : String(v); };
+        newHerr[String(hc)] = {d:sv('B'), fam:sv('C'), gama:sv('D'), guia:sv('E'), med:sv('F'), color:sv('G'), p:Math.round(hp*10000)/10000};
+      }
+    }
+    if (sheetMap['RECETAS']) {
+      var rRows = parseSheetXML(files[sheetMap['RECETAS']], shared);
+      for (var r = 2; r < rRows.length; r++) {
+        var rn = cell(rRows[r],'A').v, rj = cell(rRows[r],'B').v;
+        if (!rn || !newModmap[rn] || typeof rj !== 'string') continue;
+        try { newModmap[rn].receta = JSON.parse(rj); nRec++; } catch(err) {}
+      }
+    }
     if (sheetMap['BAJOS_80']) {
       var bRows = parseSheetXML(files[sheetMap['BAJOS_80']], shared);
       var L1 = ['C','D','E','F','G','H','I','J'], L2 = ['L','M','N','O','P','Q','R','S'];
@@ -5691,12 +5940,13 @@ async function _importExcelBase(e) {
       return n ? mapa : null;
     }
     var newCost = leerMedidas('COSTADOS'), newRegl = leerMedidas('REGLETAS');
-    if (!confirm('Importar '+nMod+' m\u00f3dulos'+(extSheetName?(', '+newExm.length+' extras de mueble y '+Object.keys(newExg).length+' categor\u00edas generales'):'')+(newCost?', '+Object.keys(newCost).length+' medidas de costado':'')+(newRegl?', '+Object.keys(newRegl).length+' de regleta':'')+(nCascos?', cascos por acabado de '+nCascos+' m\u00f3dulos y '+nB80+' bajos de 80':'')+'?\\nSe reemplazar\u00e1n los datos actuales.')) {
+    if (!confirm('Importar '+nMod+' m\u00f3dulos'+(extSheetName?(', '+newExm.length+' extras de mueble y '+Object.keys(newExg).length+' categor\u00edas generales'):'')+(newCost?', '+Object.keys(newCost).length+' medidas de costado':'')+(newRegl?', '+Object.keys(newRegl).length+' de regleta':'')+(nRec?', herrajes con c\u00f3digo ('+Object.keys(newHerr).length+') y recetas de '+nRec+' m\u00f3dulos':'')+(nCascos?', cascos por acabado de '+nCascos+' m\u00f3dulos y '+nB80+' bajos de 80':'')+'?\\nSe reemplazar\u00e1n los datos actuales.')) {
       status.textContent = 'Importaci\u00f3n cancelada';
       e.target.value = '';
       return;
     }
     MODMAP = newModmap;
+    HERR_CAT = newHerr;
     if (extSheetName) { ST.exm = newExm; ST.exg = newExg; rebuildExtrasCatalog(); }
     [['costados', newCost, MAP_COSTADOS], ['regletas', newRegl, MAP_REGLETAS]].forEach(function(t){
       var tipo = t[0], nuevo = t[1], mapa = t[2];
@@ -5801,6 +6051,13 @@ function _renderParamsPanelBase() {
     +'<div><lbl>Acabado</lbl><select id="p-casco-acab">'+CASCO_ACABADOS.map(function(a){return '<option value="'+a+'">'+a+' mm</option>';}).join('')+'</select></div>'
     +'<div><lbl>Altura de bajos</lbl><select id="p-casco-alto">'+CASCO_ALTOS.map(function(a){return '<option value="'+a+'">'+a+' cm</option>';}).join('')+'</select></div>'
     +'</div></div>'
+    +'<div style="margin-top:14px"><lbl>Herrajes por defecto (grupos nuevos)</lbl>'
+    +'<div class="g2" style="margin-top:8px">'
+    +'<div><lbl>Caj\u00f3n</lbl><select id="p-herr-cajon"><option value="uniset">Uniset</option><option value="atira">Atira</option><option value="avantech">Avantech</option></select></div>'
+    +'<div><lbl>Gu\u00eda</lbl><select id="p-herr-guia"><option value="normal">normal / Quadro</option><option value="50kg">50 kg</option><option value="expulsion">expulsi\u00f3n</option><option value="actro">Actro (Avantech)</option></select></div>'
+    +'<div><lbl>Color</lbl><select id="p-herr-color"><option value="plata">plata</option><option value="blanco">blanco</option><option value="antracita">antracita</option></select></div>'
+    +'<div><lbl>Abatible</lbl><select id="p-herr-abatible"><option value="normal">normal</option><option value="push">push to open</option></select></div>'
+    +'</div><div id="p-herr-cat" style="margin-top:10px"></div></div>'
     +'<div style="margin-top:14px"><lbl>Precios herrajes de referencia (\u20ac/ud)</lbl>'
     +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px">'
     +'<div><lbl>Bisagra std</lbl><input type="number" id="hr-b" step="0.1" min="0"></div>'
@@ -6003,12 +6260,35 @@ function _logoOptimizado(dataUrl, tipo, cb) {
   } catch(e){ cb(dataUrl, null); }
 }
 
+// Catálogo de herrajes (v14) en Configuración: el precio de cada código se cambia aquí
+function _pintarCatalogoHerrajes() {
+  var c = document.getElementById('p-herr-cat'); if (!c) return;
+  var cods = Object.keys(HERR_CAT);
+  if (!cods.length) { c.innerHTML = '<span style="font-size:.78rem;color:var(--muted)">Importa la plantilla v14 para tener el cat\u00e1logo de herrajes con c\u00f3digo.</span>'; return; }
+  c.innerHTML = '<details><summary style="cursor:pointer;font-size:.82rem">Cat\u00e1logo de herrajes ('+cods.length+' c\u00f3digos, precio de compra)</summary>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:.76rem;margin-top:6px"><tbody>'
+    + cods.map(function(k){ var h = HERR_CAT[k];
+        return '<tr><td style="padding:2px 6px;border-bottom:1px solid #eee;white-space:nowrap">'+eh(k)+'</td>'
+          + '<td style="padding:2px 6px;border-bottom:1px solid #eee">'+eh(h.d)+'</td>'
+          + '<td style="padding:2px 6px;border-bottom:1px solid #eee;text-align:right"><input type="number" step="0.01" min="0" value="'+h.p+'" style="width:80px;text-align:right" data-cod="'+eh(k)+'" onchange="setPrecioHerraje(this)"></td></tr>'; }).join('')
+    + '</tbody></table></details>';
+}
+function setPrecioHerraje(inp) {
+  var h = HERR_CAT[inp.getAttribute('data-cod')]; if (!h) return;
+  var v = parseFloat(inp.value); if (isNaN(v) || v < 0) { inp.value = h.p; return; }
+  h.p = Math.round(v*10000)/10000;
+  save(); renderGroups(); upBan(); toast('Precio de herraje guardado \u2713');
+}
 function _fillParams() {
   var P = ST.params;
   var f = function(id,v){ var el=document.getElementById(id); if(el) el.value=v; };
   f('p-taller', P.tarifa_taller); f('p-casco', P.inc_casco);
   f('p-puerta', P.inc_puerta); f('p-herraje', P.inc_herraje);
   f('p-casco-acab', cascoSel(null).acab); f('p-casco-alto', cascoSel(null).alto);
+  var _hs = herrNuevo();
+  f('p-herr-cajon', _hs.cajon); f('p-herr-guia', _hs.guia === 'quadro' ? 'normal' : _hs.guia);
+  f('p-herr-color', _hs.color); f('p-herr-abatible', _hs.abatible);
+  _pintarCatalogoHerrajes();
   f('hr-b',P.herrajes_ref.ref_b); f('hr-c',P.herrajes_ref.ref_c);
   f('hr-d',P.herrajes_ref.ref_d); f('hr-e',P.herrajes_ref.ref_e);
   f('hr-f',P.herrajes_ref.ref_f); f('hr-g',P.herrajes_ref.ref_g);
@@ -6169,6 +6449,7 @@ function applyIncrement() {
     Object.keys(ST.params.herrajes_ref).forEach(function(k){
       ST.params.herrajes_ref[k] = r2(ST.params.herrajes_ref[k]*f);
     });
+    Object.keys(HERR_CAT).forEach(function(k){ HERR_CAT[k].p = r2(HERR_CAT[k].p*f); });
     Object.keys(MODMAP).forEach(function(n){
       (MODMAP[n].herrajes||[]).forEach(function(h){
         if (typeof h.p === 'number') h.p = r2(h.p*f);
@@ -7123,7 +7404,7 @@ function descargarCopiaSeguridad() {
     'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1','historial_v1',
     'modelos_grupos_v1',
     'logo','map_costados','map_regletas','modmap_v15','params','pnum','prices',
-    'texto_base_v1','presentacion_base_v1'];
+    'texto_base_v1','presentacion_base_v1','herr_cat_v1'];
   claves.forEach(function(k){
     var v = localStorage.getItem(k);
     if (v !== null) backup.datos[k] = v;
@@ -7810,7 +8091,7 @@ function arrancar() {
   // Fecha de hoy y grupo inicial
   var d = new Date();
   document.getElementById('FF').value = String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
-  if (!ST.groups.length) ST.groups.push({id:nid(), name:'Bajos', cal:'ENTRADA', ci:0, lines:[], open:true, casco:cascoNuevo()});
+  if (!ST.groups.length) ST.groups.push({id:nid(), name:'Bajos', cal:'ENTRADA', ci:0, lines:[], open:true, casco:cascoNuevo(), herr:herrNuevo()});
 
   // Catálogos, precios y migraciones de datos (mismo orden que siempre)
 if (!ST.cats) {
