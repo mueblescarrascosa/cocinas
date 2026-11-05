@@ -270,6 +270,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 /* v125: cajón Würth Evobox, bisagra Würth Softline, especiero/panero Briforma, Menage Confort o DB K-Line por grupo */
 /* v126: extras con código y precio de compra, margen por categoría, cajón interior por gama (plantilla v15);
    tirador por grupo: tramo, gola (barras J/C/superior/vertical + tapas) o uñero por frente */
+/* v136: margen único, coste real y taller fijo por pieza (motor 2, plantilla v16); los presupuestos anteriores siguen con su cálculo */
 /* v135: suplemento de cajón automático por modelo (frentes de cajón por encima del percentil 90 de su grupo) */
 /* v134: tipo «Placa con extractor» (Johnson XPER y 10 de otras marcas, Cata AS 600/750 incluidas) */
 /* v133: electrodomésticos con colores para elegir (un aparato por modelo) y catálogo completo de Johnson (124) */
@@ -316,7 +317,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v135</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v136</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -589,7 +590,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </div>
 
 <script type="text/x-presupuestador" id="APP-SRC">
-// Muebles Carrascosa · Presupuestador · v135
+// Muebles Carrascosa · Presupuestador · v136
 // Estructura: datos y estado → funciones por área → arranque (al final del archivo).
 // Cada función está definida UNA sola vez. Para cambiar algo, edítalo en su sitio.
 
@@ -618,7 +619,8 @@ var SUPA_REFRESH = null;
 var CLAVES_SYNC = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
   'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1',
   'logo','map_costados','map_regletas','modmap_v15','modelos_grupos_v1','params','pnum','prices',
-  'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1'];
+  'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
+  'modmap_v16','params_m2','tiradores_m2','map_costados_m2','map_regletas_m2'];
 // (historial_v1 se sincroniza aparte; ultimo_backup y pnum quedan locales)
 var _syncCache = {};
 // hasta haber descargado la nube NO se sube nada. Antes, al abrir la app se subían
@@ -1431,6 +1433,239 @@ async function supaGuardarHistorial(h) {
 // ESTADO Y GUARDADO
 // ══════════════════════════════════════════════════════════════════════
 // Guarda todo el estado persistente en el navegador (y, vía sincronización, en la nube)
+// ── Dos sistemas de cálculo: motor 1 (el de siempre) y motor 2 (coste real, taller fijo y margen único).
+// Cada presupuesto guarda el suyo; al abrirlo se cambian los datos activos y el cálculo sigue igual.
+var MOTOR = 1, _M_INACTIVO = null;
+var _M_CLAVES = {params:'params_m2', modmap_v15:'modmap_v16', tiradores_v1:'tiradores_m2', map_costados:'map_costados_m2', map_regletas:'map_regletas_m2'};
+var CATS_MARGEN_PROPIO = {encimeras:0.19, fregaderos:0.23, campanas:0.28, tiradores:0.15};
+function motorActual() { return MOTOR; }
+function _mK(clave) { return MOTOR === 2 ? _M_CLAVES[clave] : clave; }
+function hayMotor2() { return Object.keys(_M_CLAVES).every(function(k){ return !!localStorage.getItem(_M_CLAVES[k]); }); }
+function _mLeerM2() {
+  return {params: JSON.parse(localStorage.getItem('params_m2')), modmap: JSON.parse(localStorage.getItem('modmap_v16')),
+    tir: JSON.parse(localStorage.getItem('tiradores_m2')||'null') || {filas:{}, uneros:[]},
+    mc: JSON.parse(localStorage.getItem('map_costados_m2')||'null') || JSON.parse(JSON.stringify(MAP_COSTADOS)),
+    mr: JSON.parse(localStorage.getItem('map_regletas_m2')||'null') || JSON.parse(JSON.stringify(MAP_REGLETAS))};
+}
+function activarMotor(n) {
+  if (n === MOTOR) return;
+  var otro = _M_INACTIVO || _mLeerM2();
+  _M_INACTIVO = {params:ST.params, modmap:MODMAP, tir:TIR, mc:MAP_COSTADOS, mr:MAP_REGLETAS};
+  ST.params = otro.params; MODMAP = otro.modmap; TIR = otro.tir; MAP_COSTADOS = otro.mc; MAP_REGLETAS = otro.mr;
+  MOTOR = n;
+  ML_CATS = ML_CATS.filter(function(c){ return c.key !== 'ml_puente'; });
+  if (n === 2) ML_CATS = ML_CATS.concat([{key:'ml_puente', label:'Puentes'}]);
+}
+// Escribe el margen único en todo lo que lo usa (las categorías con margen propio no se tocan).
+function margenUnico(v, p) {
+  p = p || ST.params;
+  p.margen_unico = v; p.margen_muebles = v; p.margen_extras = v; p.margen = v;
+  if (!p.margen_ext_cat) p.margen_ext_cat = {};
+  ['interior','cubos','iluminacion','enchufes','abatibles','otros'].forEach(function(c){ p.margen_ext_cat[c] = v / 100; });
+}
+function _mSembrarM2() {
+  var p = JSON.parse(JSON.stringify(ST.params));
+  p.inc_casco = 0; p.inc_puerta = 0; p.inc_herraje = 0; p.margen_modo = 'coste';
+  p.ml_bajos = 85; p.ml_altos = 125; p.ml_col = 110; p.ml_sobre = 35; p.ml_puente = 150;
+  p.plus_rincon_ciego = 15; p.plus_rincon_otros = 30; p.coste_inst_ml = 60; p.margen_electro = 10; p.inst_min_campana = 60;
+  margenUnico(25, p);
+  Object.keys(CATS_MARGEN_PROPIO).forEach(function(c){ p.margen_ext_cat[c] = CATS_MARGEN_PROPIO[c]; });
+  _M_INACTIVO = {params:p, modmap:{}, tir:JSON.parse(JSON.stringify(TIR)),
+    mc:JSON.parse(JSON.stringify(MAP_COSTADOS)), mr:JSON.parse(JSON.stringify(MAP_REGLETAS))};
+}
+// Una plantilla con hoja TALLER va a los datos del motor 2; cualquier otra, a los del motor 1.
+function _motorParaImportar(esMotor2) {
+  var prev = MOTOR;
+  if (esMotor2 && MOTOR !== 2 && !hayMotor2()) _mSembrarM2();
+  activarMotor(esMotor2 ? 2 : 1);
+  return prev;
+}
+
+// Taller fijo por pieza. Un módulo sin piezas de taller (creado a mano) sigue con sus minutos.
+function tallerModulo(m) {
+  var t = (ST.params && ST.params.taller) || {}, z = m.taller;
+  if (!z) return 0;
+  return (t['casco_'+z.casco]||0) + (z.puertas||0)*(t.puerta||0) + (z.frentes||0)*(t.frente||0) + (z.bisagras||0)*(t.bisagra||0)
+    + (z.cajones||0)*(t.cajon||0) + (z.abatibles||0)*(t.abatible||0) + (z.extraibles||0)*(t.extraible||0);
+}
+function tallerDe(m, p) {
+  if (MOTOR === 2 && m.taller) return tallerModulo(m);
+  return ((m.montaje||0)/60) * (p.tarifa_taller||21);
+}
+function _tallerPieza(tipo) {
+  if (MOTOR !== 2) return 0;
+  return ((ST.params.taller||{})[tipo === 'costados' ? 'costado' : 'regleta']) || 0;
+}
+function _tirCompra(f, tipo) {
+  return f.compra + (MOTOR === 2 ? ((ST.params.taller||{})[tipo] || 0) : 0);
+}
+// Plus de instalación de los muebles de rincón, fijo por mueble (motor 2)
+function plusRincon() {
+  if (MOTOR !== 2) return 0;
+  var t = 0, p = ST.params;
+  ST.groups.forEach(function(g){
+    if (g.tipo !== 'muebles' || g.opcional) return;
+    g.lines.forEach(function(l){
+      var n = _sinAcentos(l.m+' '+l.mo).toUpperCase();
+      if (n.indexOf('RINCON') < 0) return;
+      t += (n.indexOf('CIEGO') >= 0 ? (p.plus_rincon_ciego||0) : (p.plus_rincon_otros||0)) * (l.und||1);
+    });
+  });
+  return t;
+}
+// Margen de un extra general sin precio de compra, según su categoría (motor 2)
+function _margenGeneralM2(cat) {
+  var n = _sinAcentos(String(cat)).toUpperCase(), c = ST.params.margen_ext_cat || {};
+  if (/ENCIMERA|COPETE|ZOCALO/.test(n)) return c.encimeras;
+  if (/FREGADERO|GRIFO/.test(n)) return c.fregaderos;
+  if (/CAMPANA/.test(n)) return c.campanas;
+  if (/TIRADOR/.test(n)) return c.tiradores;
+  return null;
+}
+
+// ── Configuración del motor 2 ──
+var M2_TALLER = [['casco_bajo','Casco bajo'],['casco_alto','Casco alto'],['casco_columna','Casco columna'],['casco_sobre','Casco sobre encimera/frigo'],
+  ['casco_puente','Casco puente'],['casco_rincon','Casco rincón'],['casco_integrable','Casco para integrable'],['puerta','Puerta (con bisagras)'],
+  ['frente','Frente suelto'],['bisagra','Bisagra suelta'],['cajon','Cajón (con su frente)'],['abatible','Abatible'],['extraible','Extraíble'],
+  ['costado','Costado'],['regleta','Regleta'],['tirador','Tirador (colocar)'],['gola','Barra de gola (colocar)']];
+var M2_OCULTOS = ['p-casco','p-puerta','p-herraje','p-taller','mg-pct','mg-pct-ex','mg-modo','p-mext-interior','p-mext-cubos','p-mext-iluminacion','p-mext-enchufes','p-mext-abatibles','p-mext-otros'];
+function _rmpMotor() {
+  var cont = document.querySelector('#ps .card'), mp = document.getElementById('MARGEN-PANEL');
+  if (!cont || !mp) return;
+  var pn = document.getElementById('M2-PANEL');
+  if (!pn) {
+    pn = document.createElement('div');
+    pn.id = 'M2-PANEL'; pn.className = 'ss';
+    pn.innerHTML = '<h3>&#x1F4B5; Margen único y taller</h3>'
+      +'<p style="color:var(--muted);font-size:.81rem;margin-bottom:12px">Precio = (material a coste real + taller) × (1 + margen único). Electrodomésticos, encimeras, fregaderos, campanas y tiradores llevan su propio margen.</p>'
+      +'<div style="display:flex;gap:14px;flex-wrap:wrap">'
+      +'<div style="width:140px"><lbl>Margen único (%)</lbl><input type="number" id="m2-margen" step="1" min="0"></div>'
+      +'<div style="width:150px"><lbl>Instalación puente (€/ml)</lbl><input type="number" id="m2-ml-puente" step="5" min="0"></div>'
+      +'<div style="width:150px"><lbl>Plus rincón ciego (€)</lbl><input type="number" id="m2-plus-ciego" step="1" min="0"></div>'
+      +'<div style="width:150px"><lbl>Plus otros rincones (€)</lbl><input type="number" id="m2-plus-otros" step="1" min="0"></div>'
+      +'<div style="width:170px"><lbl>Coste de instalar (€/m, rentabilidad)</lbl><input type="number" id="m2-coste-inst" step="5" min="0"></div>'
+      +'<div style="width:170px"><lbl>Instalar campana, mínimo (€)</lbl><input type="number" id="m2-inst-campana" step="5" min="0"></div>'
+      +'</div><div style="margin-top:12px"><lbl>Taller por pieza (€)</lbl><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:8px">'
+      + M2_TALLER.map(function(t){ return '<div><lbl>'+t[1]+'</lbl><input type="number" id="m2-t-'+t[0]+'" step="0.05" min="0"></div>'; }).join('')
+      +'</div></div>';
+    cont.insertBefore(pn, mp);
+  }
+  var nota = document.getElementById('M1-NOTA');
+  if (!nota) {
+    nota = document.createElement('p');
+    nota.id = 'M1-NOTA'; nota.style.cssText = 'font-size:.8rem;color:#8a5a00;background:#fff6dd;padding:7px 10px;border-radius:6px;margin-bottom:10px';
+    nota.textContent = 'Tienes abierto un presupuesto del sistema antiguo: estos son sus márgenes. Abre uno nuevo para ver los del margen único.';
+    cont.insertBefore(nota, pn);
+  }
+  var es2 = MOTOR === 2;
+  pn.style.display = es2 ? '' : 'none';
+  var rb = document.getElementById('RESET-BTN');
+  if (rb) rb.style.display = es2 ? 'none' : '';
+  nota.style.display = (!es2 && hayMotor2()) ? '' : 'none';
+  M2_OCULTOS.forEach(function(id){
+    var e = document.getElementById(id), d = e && e.closest('div');
+    if (d) d.style.display = es2 ? 'none' : '';
+  });
+  if (!es2) return;
+  var P = ST.params, tl = P.taller || {}, pon = function(id, v){ var e = document.getElementById(id); if (e) e.value = (v == null ? '' : v); };
+  pon('m2-margen', P.margen_unico); pon('m2-ml-puente', P.ml_puente); pon('m2-plus-ciego', P.plus_rincon_ciego);
+  pon('m2-plus-otros', P.plus_rincon_otros); pon('m2-coste-inst', P.coste_inst_ml); pon('m2-inst-campana', P.inst_min_campana);
+  M2_TALLER.forEach(function(t){ pon('m2-t-'+t[0], tl[t[0]]); });
+}
+function _saveCfgM2() {
+  if (!document.getElementById('M2-PANEL')) return;
+  var P = ST.params, lee = function(id, k, obj){ var e = document.getElementById(id), v = e ? parseFloat(e.value) : NaN; if (!isNaN(v)) (obj||P)[k] = v; };
+  var m = parseFloat((document.getElementById('m2-margen')||{}).value);
+  margenUnico(isNaN(m) ? P.margen_unico : m);
+  lee('m2-ml-puente','ml_puente'); lee('m2-plus-ciego','plus_rincon_ciego'); lee('m2-plus-otros','plus_rincon_otros'); lee('m2-coste-inst','coste_inst_ml'); lee('m2-inst-campana','inst_min_campana');
+  if (!P.taller) P.taller = {};
+  M2_TALLER.forEach(function(t){ lee('m2-t-'+t[0], t[0], P.taller); });
+}
+// ── Rentabilidad: en el motor 2 cuenta también lo que cuesta instalar ──
+function rentabilidadDatos() {
+  var bc = budgetCost(), pvp = grandT(), inst = getInstalacion(), costeInst = 0, base = pvp;
+  if (MOTOR === 2) {
+    var ml = computeML();
+    costeInst = Math.round(Object.keys(ml).reduce(function(s, k){ return s + ml[k]; }, 0) * (ST.params.coste_inst_ml||0) * 100) / 100;
+    base = pvp + inst;
+  }
+  var coste = Math.round((bc.coste + costeInst) * 100) / 100, margen = Math.round((base - coste) * 100) / 100;
+  return {coste: coste, costeInst: costeInst, pvp: pvp, inst: inst, base: base, margen: margen, pct: base > 0 ? Math.round(margen/base*1000)/10 : 0, horas: bc.horas};
+}
+// ── Pasar un presupuesto antiguo al sistema nuevo ──
+function _lineasConModulo() {
+  var out = [];
+  ST.groups.forEach(function(g){
+    if (g.tipo !== 'muebles' && g.tipo !== 'frentes') return;
+    g.lines.forEach(function(l){ out.push(l.m+' '+l.mo+' '+l.med); });
+  });
+  return out;
+}
+function pasarAMotor2() {
+  if (MOTOR !== 1 || ST.bloqueado || !hayMotor2()) return;
+  var antes = JSON.stringify(ST.groups), t1 = grandT() + getInstalacion(), mgExt = (ST.params.margen_extras||0) / 100;
+  activarMotor(2);
+  var faltan = _lineasConModulo().filter(function(n, i, a){ return !MODMAP[n] && a.indexOf(n) === i; });
+  ST.groups.forEach(function(g){
+    if (g.tipo !== 'costados' && g.tipo !== 'regletas') return;
+    g.lines.forEach(function(l){
+      var txt = (g.tipo === 'costados' ? 'Costado ' : 'Regleta ') + String(l.m).replace('mm','') + 'x' + String(l.mo).replace('mm','');
+      if (gp(l.m, l.mo, l.med, g.cal, g.tipo, g) === null && faltan.indexOf(txt) < 0) faltan.push(txt);
+    });
+  });
+  if (faltan.length) {
+    activarMotor(1);
+    toast('No se puede pasar: estos muebles no están en el sistema nuevo: ' + faltan.join(', '));
+    return;
+  }
+  // Los extras antiguos guardan su precio hecho: se recalcula con el margen nuevo
+  var mg = (ST.params.margen_unico||0) / 100;
+  ST.groups.forEach(function(g){ g.lines.forEach(function(l){ (l.extras||[]).forEach(function(ex){
+    if (ex.compra == null && (ex.base == null || !ex.mod) && typeof ex.p === 'number') ex.p = Math.round(ex.p / (1 + mgExt) * (1 + mg) * 100) / 100;
+  }); }); });
+  var t2 = grandT() + getInstalacion(), dif = t2 - t1;
+  if (!confirm('Pasar este presupuesto al sistema nuevo:\nPrecio antiguo: '+t1.toFixed(2)+' €\nPrecio nuevo: '+t2.toFixed(2)+' €\nDiferencia: '+(dif >= 0 ? '+' : '')+dif.toFixed(2)+' €\n\nPuedes deshacerlo hasta que guardes.')) {
+    ST.groups = JSON.parse(antes);
+    activarMotor(1);
+    return;
+  }
+  ST._motorDeshacer = antes;
+  renderGroups(); upBan(); _updProyectoBadge();
+  toast('Presupuesto en el sistema nuevo');
+}
+function deshacerPasoMotor2() {
+  if (!ST._motorDeshacer) return;
+  ST.groups = JSON.parse(ST._motorDeshacer);
+  ST._motorDeshacer = null;
+  activarMotor(1);
+  renderGroups(); upBan(); _updProyectoBadge();
+  toast('Vuelve al sistema antiguo');
+}
+function _nmuCampoTaller() {
+  var base = document.getElementById('nmu-montaje');
+  if (!base) return;
+  var sel = document.getElementById('nmu-taller-casco');
+  if (!sel) {
+    var d = document.createElement('div');
+    d.id = 'NMU-TALLER';
+    d.innerHTML = '<span style="display:block;font-size:.64rem;color:var(--muted);margin-bottom:2px;text-transform:uppercase">Familia de taller</span>'
+      +'<select id="nmu-taller-casco" style="width:100%;padding:6px 7px;font-size:.84rem;border:1px solid var(--line);border-radius:6px"><option value="">Elige…</option>'
+      +[['bajo','Bajo'],['alto','Alto'],['columna','Columna'],['sobre','Sobre encimera/frigo'],['puente','Puente'],['rincon','Rincón'],['integrable','Para integrable']].map(function(o){ return '<option value="'+o[0]+'">'+o[1]+'</option>'; }).join('')
+      +'</select>';
+    base.parentNode.parentNode.insertBefore(d, base.parentNode.nextSibling);
+    sel = document.getElementById('nmu-taller-casco');
+  }
+  document.getElementById('NMU-TALLER').style.display = MOTOR === 2 ? '' : 'none';
+  var key = (document.getElementById('nmu-tipo').value+' '+document.getElementById('nmu-modelo').value+' '+document.getElementById('nmu-med').value).trim().replace(/\s+/g,' ');
+  sel.value = (MODMAP[key] && MODMAP[key].taller && MODMAP[key].taller.casco) || '';
+}
+function _nmuPiezas(fam, cant1, cant2, herr) {
+  var cuenta = function(re){ return herr.reduce(function(s, h){ return s + (re.test(String(h.n).toUpperCase()) ? (h.c||0) : 0); }, 0); };
+  var cajones = cuenta(/CAJ|CACEROL/);
+  return {casco: fam, puertas: Math.max(0, cant1 + cant2 - cajones), frentes: Math.min(cajones, cant1 + cant2), bisagras: cuenta(/BISAGRA/),
+    cajones: cajones, abatibles: cuenta(/ABATIBLE|FREESPACE/), extraibles: cuenta(/ESPECIERO|PANERO|RINCO/)};
+}
+
 function save() {
   if (_arrancando) return;   // durante el arranque se guarda una sola vez al final
   localStorage.setItem('cat', JSON.stringify(ST.cat));
@@ -1438,13 +1673,13 @@ function save() {
   localStorage.setItem('cfg', JSON.stringify(ST.cfg));
   localStorage.setItem('pnum', ST.pnum);
   if (ST.logo) localStorage.setItem('logo', ST.logo);
-  localStorage.setItem('params', JSON.stringify(ST.params));
-  localStorage.setItem('modmap_v15', JSON.stringify(MODMAP));
+  localStorage.setItem(_mK('params'), JSON.stringify(ST.params));
+  localStorage.setItem(_mK('modmap_v15'), JSON.stringify(MODMAP));
   try { localStorage.setItem('herr_cat_v1', JSON.stringify(HERR_CAT)); } catch(e){}
-  try { localStorage.setItem('tiradores_v1', JSON.stringify(TIR)); } catch(e){}
+  try { localStorage.setItem(_mK('tiradores_v1'), JSON.stringify(TIR)); } catch(e){}
   localStorage.setItem('extras_v1', JSON.stringify({exm:ST.exm, exg:ST.exg, exgInfo:ST.exgInfo||{}}));
-  localStorage.setItem('map_costados', JSON.stringify(MAP_COSTADOS));
-  localStorage.setItem('map_regletas', JSON.stringify(MAP_REGLETAS));
+  localStorage.setItem(_mK('map_costados'), JSON.stringify(MAP_COSTADOS));
+  localStorage.setItem(_mK('map_regletas'), JSON.stringify(MAP_REGLETAS));
   try { localStorage.setItem('modelos_grupos_v1', JSON.stringify(MODELOS_GRUPOS)); } catch(e){}
   try { localStorage.setItem('electro_lista_v1', JSON.stringify(ST.electro||[])); } catch(e){}
 }
@@ -1459,7 +1694,7 @@ function gp(m, mo, med, cal, tipo, g) {
     // m = nombre del electrodoméstico; buscar en ST.electro
     var e = (ST.electro||[]).find(function(x){ return x.n === m; });
     if (!e) return null;
-    return Math.round((pvpElectro(e.coste) + (e.inst||0)) * 100)/100;
+    return Math.round((pvpElectro(e.coste) + instElectro(e)) * 100)/100;
   }
   if (tipo === 'libre') return null;   // el precio va en la línea (lineTotal)
   if (tipo === 'costados' || tipo === 'regletas') {
@@ -1470,18 +1705,22 @@ function gp(m, mo, med, cal, tipo, g) {
     var ci = cals.indexOf(cal);
     if (ci < 0) return null;
     var p = entry.prices[ci];
-    return p != null ? pvpM(p) : null;
+    return p != null ? pvpM(p + _tallerPieza(tipo)) : null;
   }
   if (tipo === 'extras') { var pc = extraCompraP(extraInfoGeneral(m, mo)); if (pc != null) return pc; }
   var c = costeBase(m, mo, med, cal, tipo, g);
   if (c === null) return null;
+  if (tipo === 'extras' && MOTOR === 2) {
+    var mg = _margenGeneralM2(m);
+    if (mg != null) return _aplicaMargen(c, mg * 100);
+  }
   return (tipo === 'extras') ? pvpE(c) : pvpM(c);
 }
 // Coste (sin margen) de muebles y extras generales
 function costeBase(m, mo, med, cal, tipo, g) {
   if (tipo === 'extras') {
     var xinf = extraInfoGeneral(m, mo);
-    if (xinf && xinf.compra != null) return xinf.compra;
+    if (xinf && xinf.compra != null) return _compraGeneral(xinf);
     var c = ST.exg[m];
     return c && c[mo] !== undefined ? c[mo] : null;
   }
@@ -1534,7 +1773,7 @@ function lineTotal(l, g) {
   if (g.tipo === 'electro') {
     var e = _findElectro(l);
     if (!e) return 0;
-    base = Math.round((pvpElectro(e.coste) + (e.inst||0)) * l.und * 100)/100;
+    base = Math.round((pvpElectro(e.coste) + instElectro(e)) * l.und * 100)/100;
     if (l.dif) base = Math.round(base * (1+l.dif/100)*100)/100;
     return base;
   }
@@ -1597,7 +1836,7 @@ function rawCost(l, g) {
   if (g.tipo === 'libre') return parseFloat(l.precio)||0;  // precio cerrado = su propio coste asumido
   if (g.tipo === 'electro') {
     var e = _findElectro(l);
-    return e ? (e.coste + (e.inst||0)) : 0;  // coste aparato + instalación (cerrada, sin margen)
+    return e ? (e.coste + instElectro(e)) : 0;  // coste aparato + instalación (cerrada, sin margen)
   }
   var base = _rawCostBase(l, g);
   if (g && g.tipo === 'extras') {
@@ -1620,11 +1859,11 @@ function _rawCostBase(l, g) {
     var k = l.m.replace('mm','') + 'x' + l.mo.replace('mm','');
     var e = mm[k]; if (!e) return null;
     var ci = cals.indexOf(g.cal); if (ci < 0) return null;
-    return e.prices[ci];
+    return e.prices[ci] != null ? e.prices[ci] + _tallerPieza(g.tipo) : e.prices[ci];
   }
   if (g.tipo === 'extras') {
     var xinf = extraInfoGeneral(l.m, l.mo);
-    if (xinf && xinf.compra != null) return xinf.compra;
+    if (xinf && xinf.compra != null) return _compraGeneral(xinf);
     var c = ST.exg[l.m];
     return c && c[l.mo] !== undefined ? c[l.mo] : null;
   }
@@ -1652,7 +1891,7 @@ function unitPVP(l, g) {
   if (_congelado() && l && l.fzU !== undefined) return l.fzU;
   if (g && g.tipo === 'electro') {
     var e = _findElectro(l);
-    return e ? Math.round((pvpElectro(e.coste) + (e.inst||0)) * 100) / 100 : null;
+    return e ? Math.round((pvpElectro(e.coste) + instElectro(e)) * 100) / 100 : null;
   }
   if (l && l.pmanual != null && l.pmanual !== '' && !isNaN(parseFloat(l.pmanual))) {
     return parseFloat(l.pmanual);
@@ -1738,11 +1977,18 @@ function margenExtCat(cat) {
   var m = ((ST.params && ST.params.margen_ext_cat) || {})[cat];
   return typeof m === 'number' ? m : 0;
 }
+function _compraGeneral(info) {
+  if (MOTOR === 2 && info.catm === 'tiradores' && /GOLA/.test(String(info.n || info._nombre || ''))) return info.compra + ((ST.params.taller||{}).gola || 0);
+  return info.compra;
+}
 function extraCompraP(info) {
   if (!info || info.compra == null || info.compra === '') return null;
-  return Math.round(info.compra * (1 + margenExtCat(info.catm)) * 100) / 100;
+  return Math.round(_compraGeneral(info) * (1 + margenExtCat(info.catm)) * 100) / 100;
 }
-function extraInfoGeneral(cat, nombre) { return ((ST.exgInfo || {})[cat] || {})[nombre] || null; }
+function extraInfoGeneral(cat, nombre) {
+  var i = ((ST.exgInfo || {})[cat] || {})[nombre] || null;
+  return i ? Object.assign({_nombre: nombre}, i) : null;
+}
 // Cajón interior según la gama de cajón del grupo (columnas, semicolumnas, bajos de 1 puerta)
 function cajonInteriorGama(ex, nombre, g) {
   if (!hayHerr()) return ex;
@@ -1789,13 +2035,14 @@ function getInstalacion() {
   ML_CATS.forEach(function(c){ base += ml[c.key] * (ST.params[c.key]||0); });
   base += countUnits('costados') * (ST.params.ml_costados||0);
   base += countUnits('regletas') * (ST.params.ml_regletas||0);
+  base += plusRincon();
   var dif = document.getElementById('F-DIFICULTAD');
   if (dif && dif.checked) base *= (1 + (ST.params.plus_dif||0)/100);
   return Math.round(base*100)/100;
 }
 
 function computeML() {
-  var ml = {ml_bajos:0, ml_altos:0, ml_col:0, ml_sobre:0};
+  var ml = {ml_bajos:0, ml_altos:0, ml_col:0, ml_sobre:0, ml_puente:0};
   ST.groups.forEach(function(g){
     if (g.tipo !== 'muebles' || g.opcional) return;
     g.lines.forEach(function(l){
@@ -1988,7 +2235,7 @@ function calcPrice(nombre, calIdx, g) {
   var refs = p.herrajes_ref;
   function rr(v) { if (typeof v !== 'string') return v||0; var val = refs[v]; if (val == null) { var _d={ref_h:25,ref_i:25,ref_j:25,ref_k:25}; val=_d[v]||0; } return val||0; }
   var casco = cascoCoste(m, g, calIdx);
-  var montaje = ((m.montaje||0)/60) * (p.tarifa_taller||21);
+  var montaje = tallerDe(m, p);
   var pz = puertasDe(m, g), sc = _factSupCajon(m, g, calIdx);
   var f1 = 0;
   if (pz.cant1 > 0 && pz.f1[calIdx] != null) f1 = pz.cant1 * pz.f1[calIdx] * (1+(p.inc_puerta||0)) * sc[0];
@@ -2070,6 +2317,7 @@ function getTransporte() {
 }
 
 function mlCategory(mueble) {
+  if (MOTOR === 2 && mueble.indexOf('ALTO PUENTE') === 0) return 'ml_puente';
   if (/S-FRIGO/.test(mueble) || mueble.indexOf('SOBRE ENCIMERA') === 0) return 'ml_sobre';
   if (mueble.indexOf('COLUMNA') === 0 || mueble.indexOf('SEMICOLUMNA') === 0) return 'ml_col';
   if (mueble.indexOf('ALTO') === 0) return 'ml_altos';
@@ -2122,7 +2370,7 @@ function calcBreakdown(nombre, calIdx, g) {
   var refs = p.herrajes_ref;
   function rr(v) { return typeof v==='string' ? (refs[v]||0) : (v||0); }
   var casco = cascoCoste(m, g, calIdx);
-  var montaje = ((m.montaje||0)/60) * (p.tarifa_taller||21);
+  var montaje = tallerDe(m, p);
   var pz = puertasDe(m, g), sc = _factSupCajon(m, g, calIdx);
   var f1 = 0;
   if (pz.cant1 > 0 && pz.f1[calIdx] != null) f1 = pz.cant1 * pz.f1[calIdx] * (1+(p.inc_puerta||0)) * sc[0];
@@ -2214,6 +2462,12 @@ function getIVA() {
 // localizar el electrodoméstico de una línea. Hay varios con el MISMO nombre
 // (p.ej. 3 "Lavavajillas 60": negro 301, inox 287, blanco 267) y antes se cogía
 // siempre el primero → el inox y el blanco salían al precio del negro.
+// Instalación de un aparato. Sistema nuevo: campanas y placas con extractor, con un mínimo (usuario 5/11/2026: 60 €).
+function instElectro(e) {
+  var v = e.inst || 0;
+  if (MOTOR === 2 && /CAMPANA|EXTRACTOR|EXTRACCION/.test(_sinAcentos(String(e.tipo||'')+' '+String(e.n)).toUpperCase())) return Math.max(v, ST.params.inst_min_campana || 0);
+  return v;
+}
 function _findElectro(l) {
   var L = ST.electro || [];
   var e = null;
@@ -2616,6 +2870,7 @@ function _upBanInstalacion() {
   var nReg  = countUnits('regletas');
   if (nCost > 0) parts.push('Costados: '+nCost+' ud \u00d7 '+(ST.params.ml_costados||0).toFixed(2)+' \u20ac = '+(nCost*(ST.params.ml_costados||0)).toFixed(2)+' \u20ac');
   if (nReg > 0)  parts.push('Regletas: '+nReg+' ud \u00d7 '+(ST.params.ml_regletas||0).toFixed(2)+' \u20ac = '+(nReg*(ST.params.ml_regletas||0)).toFixed(2)+' \u20ac');
+  if (plusRincon() > 0) parts.push('Plus de rincón: ' + plusRincon().toFixed(2) + ' \u20ac');
   var dif = document.getElementById('F-DIFICULTAD');
   var difOn = dif && dif.checked;
   var total = getInstalacion();
@@ -2638,6 +2893,9 @@ function newBudget() {
     renderImages();
   }
   if (!totalL()) {   // presupuesto nuevo → número nuevo, borrador y sin precios congelados
+    activarMotor(hayMotor2() ? 2 : 1);
+    ST._motorDeshacer = null;
+    try { _updProyectoBadge(); } catch(e){}
     ST.curNum = null;
     ST.estado = 'borrador'; ST.fechaEnvio = null; ST.fechaAceptado = null; ST.opcionDe = null;
     ST.bloqueado = false; ST.fzInst = null;
@@ -2789,7 +3047,7 @@ function _rgPasoAjuste() {
       +'<select id="gadjs'+g.id+'" style="width:auto;padding:4px 6px;font-size:.76rem" onchange="setGroupAdjScope('+g.id+',this.value)">'
       +'<option value="todo"'+((g.adjScope||'todo')==='todo'?' selected':'')+'>todo el precio</option>'
       +'<option value="frentes"'+((g.adjScope)==='frentes'?' selected':'')+'>solo frentes/puertas</option>'
-      +'<option value="montmar"'+((g.adjScope)==='montmar'?' selected':'')+'>solo montaje + margen</option>'
+      +'<option value="montmar"'+((g.adjScope)==='montmar'?' selected':'')+'>'+(MOTOR === 2 ? 'solo taller + margen' : 'solo montaje + margen')+'</option>'
       +'</select> '
       +'<span style="font-size:.79rem;color:#7a6520">(no modifica la configuraci\u00f3n; se guarda con el presupuesto)</span>';
     var mtabs = body.querySelector('.mtabs');
@@ -2949,7 +3207,7 @@ function tiradorGrupo(g) {
     var nud = 0;
     lines.forEach(function(l){
       var n = _tirFrentes(l).reduce(function(a, x){ return a + x[0]; }, 0) * (l.und||1);
-      nud += n; suma(l.id, n * f.compra);
+      nud += n; suma(l.id, n * _tirCompra(f, 'tirador'));
     });
     if (nud) out.items.push({cod: f.cod, n: f.n, cant: nud, ud: 'ud'});
   } else if (s.tipo === 'unero') {
@@ -2994,7 +3252,7 @@ function tiradorGrupo(g) {
       var tot = 0; Object.keys(m[pf]).forEach(function(k){ tot += m[pf][k]; });
       var f = _tirFila('gola_' + pf + '_' + color); if (!tot || !f) return;
       var barras = pf === 'vert' ? tot : Math.ceil(tot / (f.largo || 3) - 1e-9);
-      var tapa = _tirFila('tapa_' + pf + '_' + color), cb = barras * (f.compra + (tapa ? tapa.compra : 0));
+      var tapa = _tirFila('tapa_' + pf + '_' + color), cb = barras * (_tirCompra(f, 'gola') + (tapa ? tapa.compra : 0));
       out.items.push({cod: f.cod, n: f.n, cant: barras, ud: 'barras'});
       if (tapa) out.items.push({cod: tapa.cod, n: tapa.n, cant: barras, ud: 'juegos'});
       Object.keys(m[pf]).forEach(function(k){ suma(+k, cb * m[pf][k] / tot); });
@@ -4620,12 +4878,15 @@ function budgetCost() {
           if (l.sinVarillas) {
             coste -= varillasBase(l.m, l.mo, l.med) * varillaPrecio(l.m, l.mo, l.med) * (1 + (ST.params.inc_herraje||0)) * l.und;
           }
-          minutos += ((MODMAP[nombre]||{}).montaje||0) * l.und;
+          var _mo = MODMAP[nombre]||{};
+          minutos += (MOTOR === 2 && _mo.taller ? tallerModulo(_mo) / (ST.params.tarifa_taller||21) * 60 : (_mo.montaje||0)) * l.und;
         }
         (l.extras||[]).forEach(function(ex){
           coste += _exCoste(ex, g) * l.und;
           if (ex.freefold && bd) coste += (bd.casco + bd.frentes) * l.und;
+          if (MOTOR === 2 && ex.inst) coste += ex.inst * l.und;
         });
+        if (MOTOR === 2) coste += tiradorLineaCoste(l, g);
       } else {
         var raw = rawCost(l, g);
         if (raw != null) coste += raw * l.und;
@@ -4640,8 +4901,7 @@ function openRentabilidad() {
   if (!totalL()) { toast('A\u00f1ade muebles primero'); return; }
   var bc = budgetCost();
   var pvp = grandT();
-  var margen = Math.round((pvp - bc.coste)*100)/100;
-  var pct = pvp > 0 ? Math.round(margen/pvp*1000)/10 : 0;
+  var _rd = rentabilidadDatos(), margen = _rd.margen, pct = _rd.pct;
   var inst = getInstalacion();
   var trans = getTransporte();
   var totalCliente = pvp + inst + trans;
@@ -4652,15 +4912,16 @@ function openRentabilidad() {
       +'<td style="padding:8px 10px;text-align:right'+(opts.color?';color:'+opts.color:'')+(opts.strong?';font-weight:700':'')+'">'+val+'</td></tr>';
   }
   var html = '<table style="width:100%;border-collapse:collapse;font-size:.87rem"><tbody>'
-    +row('Coste real (material + taller + herrajes + extras)', bc.coste.toFixed(2)+' \u20ac')
-    +row('PVP muebles y extras (con margen'+(ST.groups.some(function(g){return (g.adj||0)!==0;})?' y ajustes':'')+')', pvp.toFixed(2)+' \u20ac')
+    +row(MOTOR === 2 ? 'Coste real (material + taller + herrajes + extras + instalar)' : 'Coste real (material + taller + herrajes + extras)', _rd.coste.toFixed(2)+' \u20ac')
+    +(MOTOR === 2 ? row('de ellos, instalar', _rd.costeInst.toFixed(2)+' \u20ac', {indent:true}) : '')
+    +row(MOTOR === 2 ? 'Venta de muebles, extras e instalaci\u00f3n' : 'PVP muebles y extras (con margen'+(ST.groups.some(function(g){return (g.adj||0)!==0;})?' y ajustes':'')+')', _rd.base.toFixed(2)+' \u20ac')
     +row('Margen bruto', margen.toFixed(2)+' \u20ac \u00b7 '+pct+'% s/venta', {strong:true, color: margen>=0?'#2d6a4f':'#c0392b'})
     +row('Horas de taller estimadas (montaje)', bc.horas+' h', {indent:true})
     +row('Instalaci\u00f3n cobrada', inst.toFixed(2)+' \u20ac', {indent:true})
     +row('Transporte cobrado', trans.toFixed(2)+' \u20ac', {indent:true})
     +row('TOTAL presupuesto cliente (sin IVA)', totalCliente.toFixed(2)+' \u20ac', {strong:true})
     +'</tbody></table>'
-    +'<p class="mut" style="margin-top:10px;font-size:.76rem">El margen no incluye el coste de tu tiempo de instalaci\u00f3n ni transporte real \u2014 lo cobrado por esos conceptos se muestra aparte.</p>'
+    +'<p class="mut" style="margin-top:10px;font-size:.76rem">'+(MOTOR === 2 ? 'El margen ya descuenta el taller y lo que cuesta instalar; no incluye transporte ni gastos generales.' : 'El margen no incluye el coste de tu tiempo de instalaci\u00f3n ni transporte real \u2014 lo cobrado por esos conceptos se muestra aparte.')+'</p>'
     + (function(){
         var d = desgloseComponentes();
         function fila(lbl, val, color){
@@ -4674,7 +4935,7 @@ function openRentabilidad() {
           +'<table style="width:100%;border-collapse:collapse;font-size:.85rem"><tbody>'
           +fila('\ud83e\udeb5 Cascos (estructura)', d.casco)
           +fila('\ud83d\udeaa Frentes (puertas y cajones vista)', d.frentes)
-          +fila('\ud83d\udd27 Montaje en taller', d.montaje)
+          +fila(MOTOR === 2 ? '\ud83d\udd27 Taller' : '\ud83d\udd27 Montaje en taller', d.montaje)
           +fila('\u2699\ufe0f Bisagras', d.bisagras)
           +fila('\ud83d\udce6 Cajones / guías', d.cajones)
           +fila('\ud83e\uddb5 Patas', d.patas)
@@ -4782,7 +5043,7 @@ function desgloseComponentes() {
         if (m) {
           var und = l.und || 1;
           d.casco += cascoCoste(m, g, ci) * und;
-          d.montaje += ((m.montaje||0)/60) * (p.tarifa_taller||21) * und;
+          d.montaje += tallerDe(m, p) * und;
           var pz = puertasDe(m, g);
           if (pz.cant1 > 0 && pz.f1[ci] != null) d.frentes += pz.cant1 * pz.f1[ci] * (1+(p.inc_puerta||0)) * und;
           if (pz.cant2 > 0 && pz.f2[ci] != null) d.frentes += pz.cant2 * pz.f2[ci] * (1+(p.inc_puerta||0)) * und;
@@ -5051,7 +5312,7 @@ function renderCatElectro(el) {
     return;
   }
   el.innerHTML = head + lista.map(function(e){
-    var pvp = Math.round((pvpElectro(e.coste)+(e.inst||0))*100)/100;
+    var pvp = Math.round((pvpElectro(e.coste)+instElectro(e))*100)/100;
     var sub = [e.marca, e.modelo].filter(Boolean).join(' ');
     return '<div class="cr"><span class="cmod">'+eh(e.n)
       +(sub?' <span style="color:var(--muted);font-weight:400">'+eh(sub)+'</span>':'')
@@ -5417,7 +5678,7 @@ function guardarNuevaMedida(tipo) {
     if (!arbol[a+'mm'][al+'mm']) arbol[a+'mm'][al+'mm'] = ['\u2014'];
   }
   save();
-  try { localStorage.setItem('map_costados', JSON.stringify(MAP_COSTADOS)); localStorage.setItem('map_regletas', JSON.stringify(MAP_REGLETAS)); } catch(e){}
+  try { localStorage.setItem(_mK('map_costados'), JSON.stringify(MAP_COSTADOS)); localStorage.setItem(_mK('map_regletas'), JSON.stringify(MAP_REGLETAS)); } catch(e){}
   document.getElementById('NM-MODAL').style.display='none';
   renderGroups();
   try { if (document.getElementById('pc').classList.contains('on')) renderCatContent(); } catch(e){}
@@ -5468,6 +5729,10 @@ function nmuAddHerraje() {
 }
 
 function abrirNuevoMueble() {
+  _abrirNuevoMuebleBase.apply(this, arguments);
+  _nmuCampoTaller();
+}
+function _abrirNuevoMuebleBase() {
   _nmuListaHerrajes();
   var est = 'width:100%;padding:6px 7px;font-size:.84rem;border:1px solid var(--line);border-radius:6px;box-sizing:border-box';
   var lb = 'display:block;font-size:.64rem;color:var(--muted);margin-bottom:2px;text-transform:uppercase';
@@ -5559,6 +5824,8 @@ function guardarNuevoMueble() {
   var modelo = document.getElementById('nmu-modelo').value.trim().toUpperCase();
   var med = document.getElementById('nmu-med').value.trim();
   if (!tipo || !modelo || !med) { toast('Rellena tipo, modelo y medida'); return; }
+  var _famT = MOTOR === 2 ? (document.getElementById('nmu-taller-casco')||{}).value : null;
+  if (MOTOR === 2 && !_famT) { toast('Elige la familia de taller del mueble'); return; }
   var key = (tipo+' '+modelo+' '+med).replace(/\s+/g,' ');
   if (MODMAP[key] && !confirm('"'+key+'" ya existe. \u00bfSobrescribir su ficha?')) return;
   function leerGrid(pref){
@@ -5591,6 +5858,7 @@ function guardarNuevoMueble() {
     f2: leerGrid('nmu-f2-'),
     herrajes: herr
   };
+  if (_famT) MODMAP[key].taller = _nmuPiezas(_famT, MODMAP[key].cant1, MODMAP[key].cant2, herr);
   try { repararCatalogoMuebles(); } catch(e){}
   save();
   document.getElementById('NMU-MODAL').style.display='none';
@@ -6026,6 +6294,7 @@ function saveCfg() {
     _saveCfgEmpresa();
   _saveCfgParametros();
 
+  if (MOTOR === 2) _saveCfgM2();
   ST.params.margen = ST.params.margen_muebles;  // legado coherente
   save();
 
@@ -6088,6 +6357,7 @@ async function importExcel(e) {
   renderGroups();
 }
 async function _importExcelBase(e) {
+  var _mPrev = null;
   var file = e.target.files[0];
   if (!file) return;
   var status = document.getElementById('IMP-STATUS');
@@ -6328,8 +6598,26 @@ async function _importExcelBase(e) {
       e.target.value = '';
       return;
     }
+    _mPrev = _motorParaImportar(!!sheetMap['TALLER']);
+    if (sheetMap['TALLER']) {
+      var tlRows = parseSheetXML(files[sheetMap['TALLER']], shared), tlT = {};
+      for (var r = 2; r < tlRows.length; r++) {
+        var tlK = cell(tlRows[r],'A').v, tlV = cell(tlRows[r],'B').v;
+        if (tlK && typeof tlV === 'number') tlT[tlK] = tlV;
+      }
+      ST.params.taller = tlT;
+      var pzRows = parseSheetXML(files[sheetMap['PIEZAS_TALLER']], shared);
+      for (var r = 2; r < pzRows.length; r++) {
+        var pzN = normModulo(cell(pzRows[r],'A').v);
+        if (!pzN || !newModmap[pzN]) continue;
+        var pzV = {casco: String(cell(pzRows[r],'B').v||'')};
+        [['puertas','C'],['frentes','D'],['bisagras','E'],['cajones','F'],['abatibles','G'],['extraibles','H']].forEach(function(c){ pzV[c[0]] = cell(pzRows[r],c[1]).v || 0; });
+        newModmap[pzN].taller = pzV;
+      }
+    }
     MODMAP = newModmap;
-    HERR_CAT = newHerr;
+    var _mDatosComunes = !sheetMap['TALLER'];   // la plantilla del motor 2 no toca extras, herrajes ni catálogo
+    if (_mDatosComunes) HERR_CAT = newHerr;
     if (sheetMap['TIRADORES']) {
       var tRows = parseSheetXML(files[sheetMap['TIRADORES']], shared), tf = {};
       for (var r = 2; r < tRows.length; r++) {
@@ -6356,7 +6644,7 @@ async function _importExcelBase(e) {
       }
       TIR.integrados = itf;
     }
-    if (extSheetName) { ST.exm = newExm; ST.exg = newExg; ST.exgInfo = newExgInfo; rebuildExtrasCatalog(); }
+    if (extSheetName && _mDatosComunes) { ST.exm = newExm; ST.exg = newExg; ST.exgInfo = newExgInfo; rebuildExtrasCatalog(); }
     if (sheetMap['MARGENES_EXTRAS']) {   // márgenes por categoría (v15); los que ya tengas no se pisan
       var mRows = parseSheetXML(files[sheetMap['MARGENES_EXTRAS']], shared);
       if (!ST.params.margen_ext_cat) ST.params.margen_ext_cat = {};
@@ -6379,7 +6667,7 @@ async function _importExcelBase(e) {
         }
       });
     });
-    try { localStorage.setItem('map_costados', JSON.stringify(MAP_COSTADOS)); localStorage.setItem('map_regletas', JSON.stringify(MAP_REGLETAS)); } catch(err){}
+    try { localStorage.setItem(_mK('map_costados'), JSON.stringify(MAP_COSTADOS)); localStorage.setItem(_mK('map_regletas'), JSON.stringify(MAP_REGLETAS)); } catch(err){}
     // Reconstruir catálogo de muebles
     var TYPES = ['BAJO','ALTO 35-40','ALTO 45','ALTO 60','ALTO 70-80','ALTO 90-100','ALTO MO 130','ALTO S-FRIGO 30-40','ALTO S-FRIGO 50-60','ALTO PUENTE 30-40','ALTO PUENTE 50-60','SOBRE ENCIMERA','SEMICOLUMNA 135-145','COLUMNA 200-215','COLUMNA 220-240'];
     var newCat = {};
@@ -6399,14 +6687,17 @@ async function _importExcelBase(e) {
       if (!newCat[mtype][modelo]) newCat[mtype][modelo] = [];
       if (newCat[mtype][modelo].indexOf(medida) < 0) newCat[mtype][modelo].push(medida);
     });
-    ST.cats.muebles = newCat;
+    if (_mDatosComunes) ST.cats.muebles = newCat;
     save();
+    activarMotor(_mPrev); _mPrev = null;
+    if (document.getElementById('MARGEN-PANEL')) { renderMargenPanel(); renderParamsPanel(); }
     renderGroups(); upBan();
     if (document.getElementById('PE-LIST')) renderPEList('');
     if (document.getElementById('EXED-LIST')) renderExtrasEditor();
     status.textContent = '\u2713 Importado: '+nMod+' m\u00f3dulos'+(extSheetName?', '+newExm.length+' extras':'');
     toast('Plantilla importada \u2713');
   } catch(err) {
+    if (_mPrev !== null) { activarMotor(_mPrev); _mPrev = null; }
     status.textContent = '\u2717 Error: '+err.message;
     toast('Error al importar');
   }
@@ -6446,6 +6737,7 @@ function guardarNuevoExtra() {
 function renderParamsPanel() {
   _renderParamsPanelBase();
   _rppPasoBotonReset();
+  _rmpMotor();
 }
 function _renderParamsPanelBase() {
   var existing = document.getElementById('PARAMS-PANEL');
@@ -6526,6 +6818,7 @@ function renderMargenPanel() {
   _rmpPasoEtiquetasUnidad();
   _rmpPasoMargenElectro();
   _rmpPasoManoObraFrentes();
+  _rmpMotor();
 }
 function _renderMargenPanelBase() {
   if (document.getElementById('MARGEN-PANEL')) { _fillMargen(); return; }
@@ -6836,6 +7129,7 @@ function updModComp(inp) {
 
 // ── Botón restaurar precios originales ────────────────────
 function resetModmap() {
+  if (MOTOR === 2) { toast('En el sistema nuevo no se restaura: importa de nuevo la plantilla v16'); return; }
   if (!confirm('Restaurar TODOS los precios y componentes a los valores originales del Excel?')) return;
   MODMAP = JSON.parse(JSON.stringify(MODMAP_DEFAULT));
   ST.params = JSON.parse(JSON.stringify(PARAMS_DEFAULT));
@@ -7209,7 +7503,7 @@ function renderElectroEditor() {
   var est = 'width:100%;padding:6px 7px;font-size:.84rem;border:1px solid var(--line);border-radius:6px;box-sizing:border-box';
   var lb = 'display:block;font-size:.66rem;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.02em';
   var cards = (ST.electro||[]).map(function(e, i){
-    var pvp = Math.round((pvpElectro(e.coste)+(e.inst||0))*100)/100;
+    var pvp = Math.round((pvpElectro(e.coste)+instElectro(e))*100)/100;
     return '<div style="border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:8px;background:#fff">'
       +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:7px">'
       +'<input type="text" value="'+eh(e.n)+'" placeholder="Tipo (Horno, Lavavajillas...)" onchange="updElectro('+i+',\'n\',this.value)" style="flex:1;font-weight:600;padding:6px 8px;font-size:.86rem;border:1px solid var(--line);border-radius:6px;min-width:0">'
@@ -7330,7 +7624,7 @@ function _opcionesElectro(tipo) {
     .filter(function(x){ return !tipo || tipoElectro(x.e) === tipo; })
     .sort(function(a, b){ return (a.e.coste||0) - (b.e.coste||0); })
     .map(function(x){
-      var pvp = Math.round((pvpElectro(x.e.coste)+(x.e.inst||0))*100)/100;
+      var pvp = Math.round((pvpElectro(x.e.coste)+instElectro(x.e))*100)/100;
       var marca = x.e.marca ? x.e.marca.charAt(0) + x.e.marca.slice(1).toLowerCase() + ' \u00b7 ' : '';
       var nc = (x.e.variantes || []).length;
       return '<option value="'+x.i+'">'+eh(marca + x.e.n)+(nc > 1 ? ' \u00b7 '+nc+' colores' : '')+(x.e.notas?' \u00b7 '+eh(x.e.notas):'')+' \u2014 '+(nc > 1 ? 'desde ' : '')+pvp.toFixed(2)+'\u20ac</option>';
@@ -7342,7 +7636,7 @@ function coloresElectro(gid) {
   if (!sel || !w || !c) return;
   var e = ST.electro[parseInt(sel.value)], vs = (e && e.variantes) || [];
   w.style.display = vs.length > 1 ? '' : 'none';
-  c.innerHTML = vs.map(function(v){ var pvp = Math.round((pvpElectro(v[2])+(e.inst||0))*100)/100; return '<option value="'+eh(v[1])+'">'+eh(v[0])+' \u2014 '+pvp.toFixed(2)+'\u20ac</option>'; }).join('');
+  c.innerHTML = vs.map(function(v){ var pvp = Math.round((pvpElectro(v[2])+instElectro(e))*100)/100; return '<option value="'+eh(v[1])+'">'+eh(v[0])+' \u2014 '+pvp.toFixed(2)+'\u20ac</option>'; }).join('');
 }
 function filtrarElectro(gid) {
   var t = document.getElementById('al-etipo'+gid), s = document.getElementById('al-esel'+gid);
@@ -7646,6 +7940,7 @@ function numFormatted() {
 // Presupuesto actual → objeto para guardar (historial, archivo, nube)
 function serializeBudget() {
   var d = _serializeBudgetBase();
+  d.motor = MOTOR;
   d.numero = ST.curNum || null;
 
   d.iva = getIVA();
@@ -7695,7 +7990,7 @@ function duplicarDesdeHistorial(i) {
   var h = getHistory();
   var d = h[i]; if (!d) return;
   // Cargar ese presupuesto como NUEVO (sin tocar el guardado)
-  applyBudget(d);
+  if (applyBudget(d) === false) return;
   // Cambiar el número para que sea uno nuevo, y avisar
   ST.curNum = null;  // número nuevo al guardar o sacar el PDF
   ST.opcionDe = d.opcionDe || _budgetId(d);   // queda agrupado con el original
@@ -7711,6 +8006,7 @@ function duplicarDesdeHistorial(i) {
 }
 
 function _guardarProyectoComun(d) {
+  ST._motorDeshacer = null;
   if (!d.numero) { _asignarNumero(); d.numero = ST.curNum; }
 
   var id = _budgetId(d);
@@ -7752,6 +8048,12 @@ function _guardarComoNuevoBase() {
 // Cargar un presupuesto guardado en pantalla
 function applyBudget(d) {
   d = JSON.parse(JSON.stringify(d));   // copia: editar no toca el guardado hasta pulsar Guardar
+  if ((d.motor || 1) === 2 && !hayMotor2()) {
+    toast('Faltan los datos del sistema nuevo en este dispositivo: espera a que sincronice o importa la plantilla');
+    return false;
+  }
+  activarMotor(d.motor || 1);
+  ST._motorDeshacer = null;
   _abPasoEstado(d);
   _applyBudgetBase(d);
   _abPasoNumero(d);
@@ -7927,7 +8229,7 @@ function loadFromHistory(i) {
   var h = getHistory();
   var d = h[i]; if (!d) return;
   if (totalL() > 0 && !confirm('Cargar "'+(d.nombre||'')+'"? Se perder\u00e1 el presupuesto actual si no lo has guardado.')) return;
-  applyBudget(d);
+  if (applyBudget(d) === false) return;
   ST.proyectoActual = { id: _budgetId(d), nombre: d.nombre || d.cliente || '' };
   document.getElementById('HISTMOD').style.display = 'none';
   toast('Proyecto cargado \u2713');
@@ -7958,7 +8260,8 @@ function descargarCopiaSeguridad() {
     'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1','historial_v1',
     'modelos_grupos_v1',
     'logo','map_costados','map_regletas','modmap_v15','params','pnum','prices',
-    'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1'];
+    'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
+    'modmap_v16','params_m2','tiradores_m2','map_costados_m2','map_regletas_m2'];
   claves.forEach(function(k){
     var v = localStorage.getItem(k);
     if (v !== null) backup.datos[k] = v;
@@ -8080,6 +8383,8 @@ function _updProyectoBadge() {
   } else {
     cont.innerHTML = '<span style="color:var(--muted)">Proyecto sin guardar \u00b7 \u201cGuardar\u201d pedir\u00e1 un nombre</span>';
   }
+  if (MOTOR === 1 && !ST.bloqueado && totalL() && hayMotor2()) cont.innerHTML += ' <a href="#" onclick="pasarAMotor2();return false" style="margin-left:6px">Pasar al sistema nuevo</a>';
+  if (ST._motorDeshacer) cont.innerHTML += ' <a href="#" onclick="deshacerPasoMotor2();return false" style="margin-left:6px">Deshacer el paso al sistema nuevo</a>';
 }
 
 function _asignarNumero() {
@@ -8991,6 +9296,7 @@ setTimeout(function(){ try{ _updProyectoBadge(); }catch(e){} }, 400);
 }
 
 arrancar();
+if (!totalL() && hayMotor2()) activarMotor(2);
 
 
 </script>
