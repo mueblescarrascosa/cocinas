@@ -156,9 +156,64 @@
 
   // ── Dentro de la app ──
   // Tabla: la guardada en el dispositivo/nube (armarios_v1) o, si no hay, la inicial de este archivo.
+  // Se combina con la inicial para que los productos nuevos de una versión posterior aparezcan aunque el usuario
+  // ya tenga su tabla guardada; sus ajustes y precios mandan, y los historiales se unen (10 más recientes).
+  var CATS_P = ['materiales', 'cantos', 'kits', 'perfiles', 'hojas', 'paneles', 'herrajes', 'interior'];
+  function fusionar(ini, g) {
+    var t = JSON.parse(JSON.stringify(ini));
+    Object.keys(g).forEach(function (k) {
+      if (CATS_P.indexOf(k) >= 0) {
+        t[k] = t[k] || {};
+        Object.keys(g[k] || {}).forEach(function (cod) {
+          var a = t[k][cod], b = g[k][cod];
+          if (!a) { t[k][cod] = b; return; }
+          var h = (b.historial || []).slice(), ver = {};
+          h.forEach(function (x) { ver[x.fecha + '|' + x.eur + '|' + x.prov] = 1; });
+          (a.historial || []).forEach(function (x) { if (!ver[x.fecha + '|' + x.eur + '|' + x.prov]) h.push(x); });
+          h.sort(function (x, y) { return x.fecha < y.fecha ? 1 : x.fecha > y.fecha ? -1 : 0; });
+          t[k][cod] = Object.assign({}, a, b, { historial: h.slice(0, 10) });
+        });
+      } else if (g[k] && typeof g[k] === 'object' && !Array.isArray(g[k])) t[k] = Object.assign({}, t[k] || {}, g[k]);
+      else t[k] = g[k];
+    });
+    return t;
+  }
+  var _cacheTabla = { txt: null, t: null };
   ARM.tabla = function () {
-    try { var t = JSON.parse(root.localStorage.getItem('armarios_v1') || 'null'); if (t && t.materiales) return t; } catch (e) {}
-    return ARM.TABLA_INICIAL;
+    var txt = null;
+    try { txt = root.localStorage.getItem('armarios_v1'); } catch (e) {}
+    if (!txt) return ARM.TABLA_INICIAL;
+    if (_cacheTabla.txt === txt) return _cacheTabla.t;
+    var g = null; try { g = JSON.parse(txt); } catch (e) {}
+    var t = g && g.materiales ? fusionar(ARM.TABLA_INICIAL, g) : ARM.TABLA_INICIAL;
+    _cacheTabla = { txt: txt, t: t };
+    return t;
+  };
+  ARM.guardarTabla = async function (t) {
+    var txt = JSON.stringify(t);
+    try { root.localStorage.setItem('armarios_v1', txt); } catch (e) {}
+    if (typeof root.supaGuardarClave === 'function') return root.supaGuardarClave('armarios_v1', txt);
+    return true;
+  };
+  function repintarArmarios() {
+    ((root.ST && root.ST.groups) || []).forEach(function (g) { if (g.tipo === 'armario' && typeof root.renderLines === 'function') root.renderLines(g.id); });
+    if (typeof root.upBan === 'function') root.upBan();
+  }
+  ARM.ponerAjuste = function (seccion, k, v) {
+    var t = JSON.parse(JSON.stringify(ARM.tabla()));
+    if (seccion === 'desperdicio') t.desperdicio = num(v); else { t[seccion] = t[seccion] || {}; t[seccion][k] = num(v); }
+    var p = ARM.guardarTabla(t); repintarArmarios(); return p;
+  };
+  ARM.nuevoPrecio = function (cod, eur) {
+    var t = JSON.parse(JSON.stringify(ARM.tabla()));
+    for (var i = 0; i < CATS_P.length; i++) {
+      var p = (t[CATS_P[i]] || {})[cod];
+      if (!p) continue;
+      if (!(num(eur) > 0)) return null;
+      p.historial = [{ eur: num(eur), fecha: new Date().toISOString().slice(0, 10), prov: p.prov || '', origen: 'manual' }].concat(p.historial || []).slice(0, 10);
+      var r = ARM.guardarTabla(t); repintarArmarios(); return r;
+    }
+    return null;
   };
   ARM.margenApp = function () {
     var p = root.ST && root.ST.params, v = p && p.margen_unico;
@@ -363,12 +418,49 @@
       + ' · taller ' + eur(r.taller) + ' · colocación ' + eur(r.colocacion) + ' · coste ' + eur(r.coste) + '</div></div>';
   };
 
+  // Panel de precios (solo en el modo interno): horas, colocación, referencia y precios de compra.
+  var panelAbierto = {};
+  ARM.abrirPrecios = function (gid) { panelAbierto[gid] = !panelAbierto[gid]; repintarArmarios(); };
+  function htmlPanel() {
+    var T = ARM.tabla(), tt = T.taller || {}, co = T.colocacion || {}, re = T.referencia || {};
+    var aj = function (lbl, sec, k, v) {
+      return campo(lbl, '<input type="number" inputmode="decimal" step="0.05" value="' + eh(v) + '" style="width:100%;box-sizing:border-box" onchange="ARM.ponerAjuste(\'' + sec + '\',\'' + k + '\',this.value)">', '1 1 90px');
+    };
+    var h = '<div class="arm-panel" style="border:1px dashed #999;border-radius:8px;padding:10px;margin:8px 0;background:#fafafa;font-size:.8rem">'
+      + '<b>Taller (21 €/h salvo que lo cambies)</b><div style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px">'
+      + aj('€/hora', 'taller', 'eur_h', tt.eur_h) + aj('Horas por tramo', 'taller', 'tramo', tt.tramo) + aj('Horas por cuerpo', 'taller', 'cuerpo', tt.cuerpo)
+      + aj('Horas por estante', 'taller', 'estante', tt.estante) + aj('Horas por cajón', 'taller', 'cajon', tt.cajon)
+      + aj('Horas por abatible', 'taller', 'abatible', tt.abatible) + aj('Horas por hoja corredera', 'taller', 'corredera', tt.corredera)
+      + aj('Desperdicio %', 'desperdicio', '', T.desperdicio) + '</div>'
+      + '<b>Colocación (sin margen)</b><div style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px">'
+      + aj('Armario €/ml', 'colocacion', 'armario', co.armario) + aj('Vestidor €/ml', 'colocacion', 'vestidor', co.vestidor) + aj('Solo puertas €/hueco', 'colocacion', 'solo_puertas', co.solo_puertas) + '</div>'
+      + '<b>Referencia (solo orienta)</b><div style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px">'
+      + aj('€ por metro', 'referencia', 'eur_m', re.eur_m) + aj('€ por cajón', 'referencia', 'eur_cajon', re.eur_cajon) + '</div>'
+      + '<b>Precios de compra</b> <span style="color:#777">(sin IVA; se usa la media de los 10 últimos; un precio nuevo se añade, no borra)</span>';
+    var NOM = { materiales: 'Tableros', cantos: 'Cantos', kits: 'Kits de corredera', hojas: 'Hojas compradas', paneles: 'Paneles', herrajes: 'Herrajes por gama', interior: 'Interiores' };
+    Object.keys(NOM).forEach(function (cat) {
+      var c = T[cat] || {}, ks = Object.keys(c);
+      if (!ks.length) return;
+      h += '<details style="margin:4px 0"><summary>' + NOM[cat] + ' (' + ks.length + ')</summary><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">';
+      ks.forEach(function (cod) {
+        var p = c[cod], e = ARM.costeProducto(p), hh = p.historial || [];
+        h += '<tr style="border-top:1px solid #eee"><td>' + eh(p.nombre) + (p.medida ? ' · ' + eh(p.medida) : '') + ' <span style="color:#888">' + eh(p.prov || '') + ' ' + eh(p.ref || '') + '</span></td>'
+          + '<td style="white-space:nowrap">' + (e === null ? '<span style="color:#b00020">sin precio</span>' : r2(e).toFixed(2).replace('.', ',') + ' €') + ' <span style="color:#888">(' + hh.length + (hh.some(function (x) { return x.origen === 'estimado'; }) ? ', estimado' : '') + ')</span></td>'
+          + '<td><input type="number" inputmode="decimal" step="0.01" placeholder="nuevo" style="width:76px" onchange="ARM.nuevoPrecio(\'' + eh(cod) + '\',this.value)"></td></tr>';
+      });
+      h += '</table></div></details>';
+    });
+    return h + '</div>';
+  }
+
   ARM.render = function (g) {
     var h = (g.lines || []).map(function (l, i) { return l.arm ? htmlTramo(g, l, i) : ''; }).join('');
     return h + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0">'
       + '<button class="btn bp bsm" onclick="ARM.accion(' + g.id + ',0,\'addTramo\',\'armario\')">+ Tramo de armario</button>'
       + '<button class="btn bgh bsm" onclick="ARM.accion(' + g.id + ',0,\'addTramo\',\'vestidor\')">+ Tramo de vestidor</button>'
-      + '<button class="btn bgh bsm" onclick="ARM.accion(' + g.id + ',0,\'addTramo\',\'solo_puertas\')">+ Solo puertas</button></div>';
+      + '<button class="btn bgh bsm" onclick="ARM.accion(' + g.id + ',0,\'addTramo\',\'solo_puertas\')">+ Solo puertas</button>'
+      + (cliente() ? '' : '<button class="btn bgh bsm" data-arm="precios" onclick="ARM.abrirPrecios(' + g.id + ')">⚙ Precios de armarios</button>')
+      + '</div>' + (!cliente() && panelAbierto[g.id] ? htmlPanel() : '');
   };
 
   // ── Cambios desde la pantalla ──
