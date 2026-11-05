@@ -322,7 +322,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v141</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v142</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -622,7 +622,7 @@ var SUPA_REFRESH = null;
 // Usa la misma tabla 'presupuestos', cada dato con su clave
 // Claves que SÍ se sincronizan (contenido de trabajo compartido)
 var CLAVES_SYNC = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
-  'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_sync_v29','extras_v1',
+  'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_sync_v29','extras_sync_v30','extras_v1',
   'logo','map_costados','map_regletas','modmap_v15','modelos_grupos_v1','params','pnum','prices',
   'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
   'modmap_v16','params_m2','tiradores_m2','map_costados_m2','map_regletas_m2'];
@@ -1964,6 +1964,11 @@ function _applicableExtrasBase(mueble, modelo, medida) {
     // reglas cond (tienen prioridad sobre m/mo/med)
     // la medida manda siempre: un cubertero de 60 solo en muebles de 60
     var okMed = ex.med == null || ex.med === '' || String(ex.med) === String(medida);
+    // v142: ancho mínimo y máximo del mueble (cubos e interiores que caben en varios anchos)
+    var w = parseFloat(medida);
+    if ((ex.min != null && !(w >= ex.min)) || (ex.max != null && !(w <= ex.max))) return false;
+    if (ex.cond === 'frontal') return okMed && /^BAJO/i.test(mueble) && /^(1 PUERTA|PANERO|ESPECIERO)$/i.test(modelo);
+    if (ex.cond === 'columna') return okMed && /^(COLUMNA|SEMICOLUMNA)/i.test(mueble) && /^1 PUERTA$/i.test(modelo);
     // el cubertero extensible (Versatile 600-900) solo cabe en cajones de 60 a 90
     if (/CUBERTERO EXTENSIBLE/i.test(ex.n || '') && !(parseFloat(medida) >= 60 && parseFloat(medida) <= 90)) return false;
     if (ex.cond === 'alto') return okMed && /^ALTO/i.test(mueble);
@@ -2271,11 +2276,15 @@ function includedHerrajePrice(nombre, g) {
 
 // Menú de extras generales (v137): orden de montaje, de más barato a más caro. Lo oculto sigue en la lista
 // para que los presupuestos que ya lo usan cobren igual; solo deja de ofrecerse al añadir.
-var EX_ORDEN = ['ENCIMERA','TRABAJOS ENCIMERA','COPETE','ZÓCALO','FREGADEROS','GRIFOS','ILUMINACIÓN LED','ENCHUFES','CUBOS DE BASURA','INTERIOR DE ARMARIOS','INTERIOR DE CAJONES','EXTRACCIÓN DE HUMOS','PIES Y PATAS','SOPORTES','ACCESORIOS GENERALES'];
+var EX_PEQ = 'EXTRACCIÓN PEQUEÑA · Ø100 / 110×55', EX_MED = 'EXTRACCIÓN MEDIANA · Ø120-125 / 150×75 / 220×55', EX_GRA = 'EXTRACCIÓN GRANDE · Ø150 / 180×90 / 220×90';
+var EX_ORDEN = ['ENCIMERA','TRABAJOS ENCIMERA','COPETE','ZÓCALO','FREGADEROS','GRIFOS','ILUMINACIÓN LED','ENCHUFES','CUBOS DE BASURA','INTERIOR DE ARMARIOS','INTERIOR DE CAJONES',EX_PEQ,EX_MED,EX_GRA,'EXTRACCIÓN DE HUMOS','PIES Y PATAS','SOPORTES','ACCESORIOS GENERALES'];
+// v142: cubos e interiores pasan a los muebles (se ofrecen al añadir el mueble, por su ancho);
+// la extracción antigua queda sustituida por las tres categorías por tamaño
 var EX_OCULTOS = {TIRADORES: '*', FREGADEROS: ['GRIFO BÁSICO'],
-  ENCIMERA: ['+ COLOCACIÓN ENCIMERA','+ AGUJERO PLACA/FREGADERO','CANTONERA','JUNTA DE UNION','JUNTA DE EMPALME']};
+  ENCIMERA: ['+ COLOCACIÓN ENCIMERA','+ AGUJERO PLACA/FREGADERO','CANTONERA','JUNTA DE UNION','JUNTA DE EMPALME'],
+  'CUBOS DE BASURA': {excepto: ['CUBO ENCASTRE - PARA ENCIMERA']}, 'INTERIOR DE ARMARIOS': '*', 'INTERIOR DE CAJONES': '*', 'EXTRACCIÓN DE HUMOS': '*'};
 // Siglas de la tienda donde se compra (nunca en modo cliente)
-var SIGLAS_TIENDA = {mengual:'MEN', briforma:'BRI', bysanchez:'BYS', wurth:'WÜR'};
+var SIGLAS_TIENDA = {mengual:'MEN', briforma:'BRI', bysanchez:'BYS', wurth:'WÜR', ventigo:'VEN', fermagina:'FER'};
 function _siglaTienda(prov) {
   if (!prov) return '';
   return SIGLAS_TIENDA[String(prov).toLowerCase()] || String(prov).slice(0,3).toUpperCase();
@@ -2290,14 +2299,41 @@ function _precioExtraMenu(cat, name, g) {
   if (v === null || v === undefined) return null;
   return Math.round((v + getExtraInst(cat, name)) * 100) / 100;
 }
+// v142: un producto con varias medidas es un grupo; cada medida es un extra con su nombre propio
+function _miembrosGrupo(cat, grupo) {
+  var inf = (ST.exgInfo || {})[cat] || {};
+  return Object.keys((ST.exg || {})[cat] || {}).filter(function(n){ return inf[n] && inf[n].grupo === grupo; });
+}
+function _exReal(cat, mo, med) {
+  if (!med || med === '—') return mo;
+  var inf = (ST.exgInfo || {})[cat] || {}, r = null;
+  _miembrosGrupo(cat, mo).forEach(function(n){ if (!r && inf[n].medida === med) r = n; });
+  return r || mo;
+}
 function _opSigla(cat, name, g) {
   if (g.tipo !== 'extras' || _clienteMode) return '';
   var i = extraInfoGeneral(cat, name), s = i ? _siglaTienda(i.prov) : '';
+  if (!i) {
+    var ss = [];
+    _miembrosGrupo(cat, name).forEach(function(n){ var x = _siglaTienda((extraInfoGeneral(cat, n)||{}).prov); if (x && ss.indexOf(x) < 0) ss.push(x); });
+    s = ss.join('/');
+  }
   return s ? ' · ' + s : '';
+}
+// Texto del precio en el menú: el del extra o, si es un grupo, «desde» el más barato
+function _textoPrecioMenu(cat, mo, g) {
+  var p = _precioExtraMenu(cat, mo, g);
+  if (p != null) return ' — ' + p.toFixed(2).replace('.', ',') + ' €';
+  var min = null;
+  _miembrosGrupo(cat, mo).forEach(function(n){ var v = _precioExtraMenu(cat, n, g); if (v != null && (min === null || v < min)) min = v; });
+  return min === null ? '' : ' — desde ' + min.toFixed(2).replace('.', ',') + ' €';
 }
 function _extraOculto(cat, name) {
   var o = EX_OCULTOS[cat];
-  return o === '*' || (!!o && o.indexOf(name) >= 0);
+  if (!o) return false;
+  if (o === '*') return true;
+  if (o.excepto) return o.excepto.indexOf(name) < 0;
+  return o.indexOf(name) >= 0;
 }
 function rebuildExtrasCatalog() {
   ST.cats.extras = {};
@@ -2306,9 +2342,16 @@ function rebuildExtrasCatalog() {
   cats.forEach(function(cat){
     var nombres = Object.keys(ST.exg[cat]).filter(function(n){ return !_extraOculto(cat, n); });
     if (!nombres.length) return;
-    nombres.sort(function(a, b){ return (ST.exg[cat][a]||0) - (ST.exg[cat][b]||0); });
+    var inf = (ST.exgInfo || {})[cat] || {}, items = {}, orden = [];
+    nombres.forEach(function(n){
+      var i = inf[n], k = (i && i.grupo) ? i.grupo : n, p = ST.exg[cat][n] || 0;
+      if (!items[k]) { items[k] = {p: p, meds: []}; orden.push(k); }
+      items[k].meds.push((i && i.grupo) ? i.medida : '\u2014');
+      if (p < items[k].p) items[k].p = p;
+    });
+    orden.sort(function(a, b){ return items[a].p - items[b].p; });
     ST.cats.extras[cat] = {};
-    nombres.forEach(function(name){ ST.cats.extras[cat][name] = ['\u2014']; });
+    orden.forEach(function(k){ ST.cats.extras[cat][k] = items[k].meds; });
   });
 }
 // Añade productos nuevos sin tocar lo que ya hay (compra de bysanchez 5/11/2026 y Briforma nov. 2026).
@@ -2400,6 +2443,172 @@ function _migrarExtrasAmpliacion() {
   pon('SOPORTES', 'interior', 'briforma', [
     ['SOPORTE OCULTO TRIADE SLIM','TRIADESLIM',3.74],['SOPORTE OCULTO TRIADE','TRIADE',3.98],['SOPORTE PELICANO (JUEGO)','JSP',8.29],['SOPORTE CUBE NEGRO','CUBEN',8.33],['SOPORTE CUBE PLATA','CUBE',10.22]]);
   _guardarMigracionExtras('extras_sync_v29');
+}
+// v142 (5/11/2026): extracción por tamaños con sus complementos (Briforma, Ventigo y Fermagina), productos de las
+// facturas de Fermagina, y cubos e interiores como extras de mueble (se ofrecen al añadir el mueble, según su ancho).
+// Solo añade: lo que ya existe no cambia de precio y sigue sirviendo a los presupuestos hechos.
+function _migrarExtrasV142() {
+  if (localStorage.getItem('extras_sync_v30') === '1') return;
+  if (!ST.exg || !ST.exm) return;
+  if (!ST.exgInfo) ST.exgInfo = {};
+  if (!ST.exgInst) ST.exgInst = {};
+  // Extras generales; con grupo, cada fila es una medida del producto: [grupo, medida, cod, prov, compra]
+  function ponG(cat, catm, filas) {
+    filas.forEach(function(f){
+      var n = f[0] + ' · ' + f[1];
+      if (!ST.exg[cat]) ST.exg[cat] = {};
+      if (!ST.exgInfo[cat]) ST.exgInfo[cat] = {};
+      if (!ST.exgInst[cat]) ST.exgInst[cat] = {};
+      if (ST.exg[cat][n] !== undefined) return;
+      ST.exg[cat][n] = f[4];
+      ST.exgInfo[cat][n] = {cod: f[2], catm: catm, prov: f[3], tipo: 'compra', compra: f[4], grupo: f[0], medida: f[1]};
+      ST.exgInst[cat][n] = 0;
+    });
+  }
+  // Extras sueltos: [nombre, cod, prov, compra]
+  function pon(cat, catm, filas) {
+    filas.forEach(function(f){
+      if (!ST.exg[cat]) ST.exg[cat] = {};
+      if (!ST.exgInfo[cat]) ST.exgInfo[cat] = {};
+      if (!ST.exgInst[cat]) ST.exgInst[cat] = {};
+      if (ST.exg[cat][f[0]] !== undefined) return;
+      ST.exg[cat][f[0]] = f[3];
+      ST.exgInfo[cat][f[0]] = {cod: f[1], catm: catm, prov: f[2], tipo: 'compra', compra: f[3]};
+      ST.exgInst[cat][f[0]] = 0;
+    });
+  }
+  var B = 'briforma', V = 'ventigo', F = 'fermagina';
+  ponG(EX_PEQ, 'interior', [
+    ['TUBO','REDONDO Ø100 · 0,5 M','A100-0,5',V,4.78],['TUBO','REDONDO Ø100 · 1 M','A100-1',V,7.68],['TUBO','REDONDO Ø100 · 1,5 M','TRED',B,8.03],
+    ['TUBO','RECTANGULAR 110×55 · 0,5 M','K-0.5',V,5.17],['TUBO','RECTANGULAR 110×55 · 1 M','K-1',V,7.12],['TUBO','RECTANGULAR 110×55 · 1,5 M','TRECT',B,8.03],
+    ['CODO','REDONDO Ø100 90º','CRED',B,2.63],['CODO','REDONDO Ø100 45º','AL100-45',V,3.21],
+    ['CODO','RECTANGULAR 110×55 VERTICAL 90º','CRECTV',B,1.56],['CODO','RECTANGULAR 110×55 HORIZONTAL 90º','CRECTH',B,2.15],
+    ['CODO','RECTANGULAR 110×55 HORIZONTAL 15-60º','KLH15-60',V,3.03],['CODO','MIXTO 110×55 A Ø100','CMIXTO',B,1.99],
+    ['EMPALME','REDONDO Ø100','ERED',B,1.01],['EMPALME','RECTANGULAR 110×55','ERECT',B,1.14],['EMPALME','MIXTO 110×55 A Ø100','KSD1',V,1.83],
+    ['PIEZA EN T','REDONDA Ø100','AT100',V,3.79],['PIEZA EN T','RECTANGULAR 110×55','KT',V,3.14],
+    ['VENTANILLA DE SALIDA','REDONDA Ø100','VRED',B,2.33],['VENTANILLA DE SALIDA','RECTANGULAR 110×55','VRECT',B,2.33],
+    ['VÁLVULA ANTIRRETORNO','REDONDA Ø100','AV100',V,2.21],['VÁLVULA ANTIRRETORNO','RECTANGULAR 110×55','KV',V,2.08],
+    ['SOPORTE','ABRAZADERA Ø100 (2 UD.)','AZ100',V,2.34],['SOPORTE','RECTANGULAR 110×55 (2 UD.)','KZ',V,1.96],
+    ['REDUCCIÓN','SALIDA Ø100 CON ARO','RS100ARO',B,1.54]]);
+  ponG(EX_MED, 'interior', [
+    ['TUBO','REDONDO Ø120 · 1,5 M','TREDG',B,14.32],['TUBO','REDONDO Ø125 · 0,5 M','A125-0.5',V,5.86],['TUBO','REDONDO Ø125 · 1 M','A125-1',V,10.58],
+    ['TUBO','RECTANGULAR 150×75 · 1,5 M','TRECTG',B,14.99],['TUBO','RECTANGULAR 220×55 · 0,5 M','K25-0.5',V,9.21],['TUBO','RECTANGULAR 220×55 · 1 M','K25-1',V,14.73],
+    ['CODO','REDONDO Ø120 90º','CREDG',B,3.98],['CODO','REDONDO Ø125 90º','AL125-90',V,5.23],['CODO','REDONDO Ø125 45º','AL125-45',V,5.73],
+    ['CODO','RECTANGULAR 150×75 HORIZONTAL-VERTICAL 90º','04041029',F,2.71],['CODO','RECTANGULAR 150×75 VERTICAL 90º','CRECTVG',B,3.78],['CODO','RECTANGULAR 150×75 HORIZONTAL 90º','CRECTHG',B,4.14],
+    ['CODO','RECTANGULAR 220×55 VERTICAL 90º','KLV25-90',V,4.62],['CODO','RECTANGULAR 220×55 HORIZONTAL 90º','KLH25-90',V,7.12],
+    ['CODO','MIXTO 150×75 A Ø120','CMIXTOG',B,3.78],['CODO','MIXTO 220×55 A Ø125','KLD25-125',V,5.41],
+    ['EMPALME','REDONDO Ø120','EREDG',B,1.68],['EMPALME','REDONDO Ø125','AS125',V,2.12],['EMPALME','RECTANGULAR 150×75','ERECTG',B,1.87],
+    ['EMPALME','RECTANGULAR 220×55','KS25',V,3.22],['EMPALME','MIXTO 150×75 A Ø120','EMIXTOG',B,4.39],['EMPALME','MIXTO 220×55 A Ø125','KSD25-125',V,5],
+    ['PIEZA EN T','REDONDA Ø125','AT125',V,6.81],['PIEZA EN T','RECTANGULAR 220×55','KT25',V,8.4],
+    ['VENTANILLA DE SALIDA','REDONDA Ø120','VREDG',B,3.96],['VENTANILLA DE SALIDA','RECTANGULAR 150×75','VRECTG',B,4.19],
+    ['VÁLVULA ANTIRRETORNO','REDONDA Ø125','AV125',V,2.79],
+    ['SOPORTE','ABRAZADERA Ø125 (2 UD.)','AZ125',V,3.06],['SOPORTE','RECTANGULAR 220×55 (2 UD.)','KZ25',V,2.76],
+    ['REDUCCIÓN','150 A 120','R150120',B,1.82],['REDUCCIÓN','Ø125 A Ø100','AP125-100',V,3.48],['REDUCCIÓN','220×55 A 110×55','KSD25-15',V,3.5]]);
+  ponG(EX_GRA, 'interior', [
+    ['TUBO','REDONDO Ø150 · 0,5 M','A150-0,5',V,9.41],['TUBO','REDONDO Ø150 · 1 M','A150-1',V,17.71],['TUBO','REDONDO Ø150 · 1,5 M','04040484',F,22.72],
+    ['TUBO','RECTANGULAR 180×90 · 1,5 M','04040506',F,32.79],
+    ['TUBO','RECTANGULAR 220×90 · 0,5 M','K29-0.5',V,12.31],['TUBO','RECTANGULAR 220×90 · 1 M','K29-1',V,23.84],['TUBO','RECTANGULAR 220×90 · 1,5 M','K29-1.5',V,35.64],
+    ['CODO','REDONDO Ø150 90º','AL150-90',V,10.49],['CODO','REDONDO Ø150 45º','AL150-45',V,8.22],
+    ['CODO','RECTANGULAR 180×90 VERTICAL 90º','04040525',F,10.61],['CODO','RECTANGULAR 180×90 HORIZONTAL 90º','04041257',F,12.69],
+    ['CODO','RECTANGULAR 220×90 VERTICAL 90º','KLV29-90',V,6.94],['CODO','RECTANGULAR 220×90 HORIZONTAL 90º','KLH29-90',V,7.88],
+    ['CODO','MIXTO 180×90 A Ø150','04040509',F,9.98],['CODO','MIXTO 220×90 A Ø150','KLD29-150',V,6.86],
+    ['EMPALME','REDONDO Ø150','AS150',V,3.6],['EMPALME','RECTANGULAR 180×90','04040507',F,8.83],['EMPALME','RECTANGULAR 220×90','KS29',V,2.91],
+    ['EMPALME','MIXTO 180×90 A Ø150','04040508',F,13.47],['EMPALME','MIXTO 220×90 A Ø150','KSD29-150',V,7.15],
+    ['PIEZA EN T','REDONDA Ø150','AT150',V,14.41],['PIEZA EN T','RECTANGULAR 220×90','KT29',V,17.36],
+    ['VENTANILLA DE SALIDA','REDONDA Ø150 CON ANTIRRETORNO','AFV150',V,5.63],['VENTANILLA DE SALIDA','RECTANGULAR 180×90','04040570',F,12.23],
+    ['VENTANILLA DE SALIDA','RECTANGULAR 220×90 CON ANTIRRETORNO','KFV29',V,8.57],
+    ['VÁLVULA ANTIRRETORNO','REDONDA Ø150','AV150',V,4.59],['VÁLVULA ANTIRRETORNO','RECTANGULAR 220×90','KV29',V,3.78],
+    ['SOPORTE','ABRAZADERA Ø150 (2 UD.)','AZ150',V,3.39],['SOPORTE','RECTANGULAR 220×90 (2 UD.)','KZ29',V,3.18],
+    ['REDUCCIÓN','Ø150 A Ø125','AP150-125',V,5.54],['REDUCCIÓN','Ø150 A Ø100','AP150-100',V,5.54],['REDUCCIÓN','220×90 A 220×55','KS29-25',V,3.56]]);
+  pon('FREGADEROS', 'fregaderos', [
+    ['ZURICH 38X38 1 SENO','04041243',F,24.31],['VIENA 80X48 1 SENO + ESCURRIDOR','04041213',F,40.09],['ROMA 50X40 1 SENO','04041182',F,50.94],
+    ['DUBLÍN 80X48 2 SENOS','04041156',F,53.59],['ATENAS 74,5X41 1 SENO','04041410',F,76.75]]);
+  pon('ZÓCALO', 'interior', [['ABS NEGRO/BLANCO MATE ALTO 14,4 - POR METRO','04041275',F,4.78]]);
+  pon('PIES Y PATAS', 'interior', [['NIVELADOR SANDY 65-100 NEGRO','05050857',F,0.93]]);
+
+  // Extras de mueble. Los que estaban en generales se copian con su compra; los generales siguen para lo ya hecho.
+  var claves = {};
+  ST.exm.forEach(function(x){ claves[[x.m, x.mo, x.n, x.med, x.cond].join('|')] = 1; });
+  function mueble(ex) {
+    var k = [ex.m, ex.mo, ex.n, ex.med, ex.cond].join('|');
+    if (claves[k]) return; claves[k] = 1;
+    ex.p = ex.compra; ex.rep = false; ex.tipo = 'compra';
+    ST.exm.push(ex);
+  }
+  function desde(cat, nombre, ex) {
+    var i = ((ST.exgInfo || {})[cat] || {})[nombre], v = (ST.exg[cat] || {})[nombre];
+    if (v === undefined) return;
+    ex.n = nombre; ex.cod = i && i.cod || undefined; ex.prov = i && i.prov || undefined;
+    ex.catm = i && i.catm || 'interior';
+    ex.compra = (i && i.compra != null) ? i.compra : v;
+    mueble(ex);
+  }
+  function base(o) { return Object.assign({m: null, mo: null, med: null}, o); }
+  // Cubos: de puerta (bajos con puerta, desde su ancho mínimo) o de cajón (cajoneras, por ancho)
+  [['ELIO GRIS 16 L APERTURA AUTOMÁTICA - M30',30],['LÍNEA 245 2 CUBETAS 14+14 L - EXTRAÍBLE',30],['JERKO 15+15 L CON PEDAL INOX',40],
+   ['LÍNEA 245 1 CUBETA 30 L - EXTRAÍBLE',30],['LÍNEA 245 3 CUBETAS 10+10+10 L - EXTRAÍBLE',30],['LOMBARDO 2X16 L EXTRACCIÓN TOTAL - M40',40],
+   ['ALDO 2 COMPARTIMENTOS TAPA AUTOMÁTICA - M45',45],['580 PLUS 2X29 L AMORTIGUADO - M40',40],['580 PLUS 2X40 L AMORTIGUADO - M60',60],
+   ['REDONDO INOX - PARA PUERTA',30],['TEKA ECO EASY 60 - PARA PUERTA',60],['ECOLÓGICO D - EXTRAÍBLE',40],['RECTANGULAR 30+30 L - EXTRAÍBLE',40],
+   ['CUBO PUERTA - 2X30L',40]].forEach(function(c){
+    desde('CUBOS DE BASURA', c[0], base({m: 'BAJO', cond: 'puerta', min: c[1]}));
+  });
+  [['AXISPACE 600 - PARA CAJÓN','60'],['AXISPACE 800 - PARA CAJÓN','80'],['AXISPACE 900 - PARA CAJÓN','90'],
+   ['METROPOLIS 600 H220 - PARA CAJÓN','60'],['METROPOLIS 800 H280 - PARA CAJÓN','80'],['METROPOLIS 900 H280 - PARA CAJÓN','90'],
+   ['METROPOLIS 1200 H280 - PARA CAJÓN','120'],['METROPOLIS - PARA CAJÓN 28',null]].forEach(function(c){
+    desde('CUBOS DE BASURA', c[0], base({m: 'BAJO', cond: 'cajones', med: c[1]}));
+  });
+  // Interior de cajones: todo a las cajoneras; el cubertero Murano, a las de 60
+  Object.keys(ST.exg['INTERIOR DE CAJONES'] || {}).forEach(function(n){
+    desde('INTERIOR DE CAJONES', n, base({m: 'BAJO', cond: 'cajones', med: /M60$/.test(n) ? '60' : null}));
+  });
+  // Interior de armarios
+  var IA = 'INTERIOR DE ARMARIOS';
+  desde(IA, 'SOPORTE COPAS SENCILLO', base({cond: 'alto'}));
+  desde(IA, 'SOPORTE COPAS DOBLE', base({cond: 'alto'}));
+  desde(IA, 'SOPORTE PLATOS GRIS', base({m: 'BAJO', cond: 'cajones'}));
+  desde(IA, 'SOPORTE PAÑOS EXTRAÍBLE', base({m: 'BAJO', cond: 'puerta'}));
+  desde(IA, 'PLATAFORMA BOMBONA BUTANO', base({m: 'BAJO', cond: 'puerta', min: 40}));
+  desde(IA, 'ACCESORIO DE LIMPIEZA EXTRAÍBLE', base({m: 'BAJO', cond: 'puerta', min: 30}));
+  [['BOTELLERO FRONTAL CLASSIC M15','15'],['BOTELLERO FRONTAL CLASSIC M20','20'],['BOTELLERO FLAT ANTRACITA M30','30'],['BOTELLERO FLAT ANTRACITA M40','40'],
+   ['PANERO FRONTAL CLASSIC M30','30'],['PANERO FRONTAL CLASSIC M40','40'],['BANDEJA MULTIUSOS VARILLAS M30','30'],
+   ['CESTO MULTIUSOS COMPACT M40','40'],['CESTO MULTIUSOS FLAT M40','40']].forEach(function(c){
+    desde(IA, c[0], base({m: 'BAJO', cond: 'frontal', med: c[1]}));
+  });
+  desde(IA, 'BANDEJA MULTIUSOS VARILLAS M45', base({m: 'BAJO', cond: 'frontal', min: 45, max: 50}));
+  [['CESTO BAJO FREGADERO M60','60'],['CESTO BAJO FREGADERO M80','80'],['CESTO BAJO FREGADERO M90','90']].forEach(function(c){
+    desde(IA, c[0], base({m: 'BAJO', cond: 'puerta', med: c[1]}));
+  });
+  desde(IA, 'BANDEJA GIRATORIA VARILLAS 270º', base({m: 'BAJO', mo: 'RINCÓN EN L'}));
+  desde(IA, 'BANDEJA SEMICIRCULAR VARILLAS M45', base({m: 'BAJO', mo: 'RINCÓN CIEGO'}));
+  [['COLUMNA DESPENSERO VARILLAS M30 ALTO 120-160','30'],['COLUMNA DESPENSERO VARILLAS M40 ALTO 120-160','40'],
+   ['COLUMNA DESPENSERO COMPACT M30 ALTO 120-160','30'],['COLUMNA DESPENSERO COMPACT M40 ALTO 120-160','40']].forEach(function(c){
+    desde(IA, c[0], base({cond: 'columna', med: c[1]}));
+  });
+  // Fermagina (facturas de 2025 y 2026)
+  function fer(n, cod, compra, o) { mueble(base(Object.assign({n: n, cod: cod, prov: F, compra: compra, catm: 'interior'}, o))); }
+  fer('CUBERTERO STYLE/SLIM', '04800488', 4.53, {m: 'BAJO', cond: 'cajones', med: '60'});
+  fer('CUBERTERO STYLE/SLIM', '04800493', 9.82, {m: 'BAJO', cond: 'cajones', med: '70'});
+  fer('CUBERTERO GRIS', '04040540', 5.04, {m: 'BAJO', cond: 'cajones', med: '60'});
+  fer('CUBERTERO GRIS', '04040548', 7.54, {m: 'BAJO', cond: 'cajones', med: '70'});
+  fer('CUBERTERO GRIS', '04040549', 10.14, {m: 'BAJO', cond: 'cajones', med: '80'});
+  fer('CUBERTERO VANTAGE', '04040821', 4.16, {m: 'BAJO', cond: 'cajones', med: '40'});
+  fer('CUBERTERO VANTAGE', '04040822', 4.19, {m: 'BAJO', cond: 'cajones', med: '50'});
+  fer('CUBERTERO VANTAGE', '04040823', 4.73, {m: 'BAJO', cond: 'cajones', med: '60'});
+  fer('CUBERTERO VANTAGE', '04040829', 10.09, {m: 'BAJO', cond: 'cajones', med: '90'});
+  fer('CUBERTERO BLANCO 35', '04040536', 2.93, {m: 'BAJO', cond: 'cajones', min: 40});
+  [['40','04500237',3.32],['50','04500214',3.84],['60','04500215',4.58],['80','04500217',5.41],['90','04500218',5.94]].forEach(function(c){
+    fer('BANDEJA FONDO FREGADERO CUADRAT', c[1], c[2], {m: 'BAJO', cond: 'puerta', med: c[0]});
+  });
+  fer('ESCURREPLATOS BLANCO', '04500086', 10.11, {cond: 'alto', med: '80'});
+  fer('BANDEJA ESCURREAGUAS BLANCA', '04500098', 3.84, {cond: 'alto', med: '80'});
+  fer('ESCURREPLATOS GRIS REGLETA', '04500199', 11.02, {cond: 'alto', med: '80'});
+  fer('BANDEJA ESCURREAGUAS GRIS', '04500209', 4.54, {cond: 'alto', med: '80'});
+  fer('PLATERO GRIS REGLETA', '04500199P', 5.51, {cond: 'alto', med: '80'});
+  fer('ESCURREPLATOS INOX', '04500256', 9.75, {cond: 'alto', med: '40'});
+  fer('BOTELLERO CROMO UNIVERSAL', '04041100', 27.37, {m: 'BAJO', cond: 'frontal', med: '15'});
+  fer('BOTELLERO OVAL DELUXE', '04041316', 47.22, {m: 'BAJO', cond: 'frontal', med: '15'});
+  fer('BOTELLERO OVAL DELUXE', '04041248', 50.03, {m: 'BAJO', cond: 'frontal', med: '20'});
+  _guardarMigracionExtras('extras_sync_v30');
 }
 function _migrarExtras() {
   if (localStorage.getItem('extras_sync_v28') === '1') return;
@@ -2972,6 +3181,7 @@ function _addLineBase(gid) {
   var und=parseInt(document.getElementById('au'+gid).value)||1;
   if(!m||!mo||!med){toast('Selecciona mueble, modelo y medida');return;}
   var g=ST.groups.find(function(g){return g.id===gid;});if(!g)return;
+  if (g.tipo === 'extras') { var _rn = _exReal(m, mo, med); if (_rn !== mo) { mo = _rn; med = '—'; } }
   g.lines.push({id:nid(),m:m,mo:mo,med:med,und:und});
   renderLines(gid);upBan();
   document.getElementById('am'+gid).value='';
@@ -3886,8 +4096,8 @@ function _onMBase(gid) {
   if(!m) return;
   var cat=getCat(g);
   Object.keys((cat[m])||{}).forEach(function(mo){
-    var _pm = g.tipo === 'extras' ? _precioExtraMenu(m, mo, g) : null;
-    ms.insertAdjacentHTML('beforeend','<option value="'+eh(mo)+'">'+eh(mo)+(_pm != null ? ' — '+_pm.toFixed(2).replace('.',',')+' €' : '')+_opSigla(m, mo, g)+'</option>');
+    var _pm = g.tipo === 'extras' ? _textoPrecioMenu(m, mo, g) : '';
+    ms.insertAdjacentHTML('beforeend','<option value="'+eh(mo)+'">'+eh(mo)+_pm+_opSigla(m, mo, g)+'</option>');
   });
 }
 function _onMPasoMostrarMedida(gid) {
@@ -3915,6 +4125,11 @@ function _onMoBase(gid) {
   if(!m||!mo) return;
   var cat=getCat(g);
   (((cat[m])||{})[mo]||[]).forEach(function(med){
+    if (g.tipo === 'extras') {   // v142: medida de un extra con su precio y su tienda
+      var rn = _exReal(m, mo, med);
+      mds.insertAdjacentHTML('beforeend','<option value="'+eh(med)+'">'+eh(med)+(rn !== mo ? _textoPrecioMenu(m, rn, g)+_opSigla(m, rn, g) : '')+'</option>');
+      return;
+    }
     mds.insertAdjacentHTML('beforeend','<option value="'+med+'">'+med+' cm</option>');
   });
 }
@@ -3989,6 +4204,8 @@ function getCat(g) {
     (g.lines||[]).forEach(function(l){
       if (_base[l.m] && _base[l.m][l.mo]) return;
       if (!ST.exg[l.m] || ST.exg[l.m][l.mo] === undefined) return;
+      var _gi = ((ST.exgInfo || {})[l.m] || {})[l.mo];   // v142: una medida de un grupo ya está en su grupo
+      if (_gi && _gi.grupo && _base[l.m] && _base[l.m][_gi.grupo]) return;
       if (!_out) { _out = {}; Object.keys(_base).forEach(function(k){ _out[k] = Object.assign({}, _base[k]); }); }
       if (!_out[l.m]) _out[l.m] = {};
       _out[l.m][l.mo] = ['\u2014'];
@@ -4469,6 +4686,7 @@ function avAplicar() {
   document.querySelectorAll('#AV-LIST input[type=number]').forEach(function(i){
     var q = parseInt(i.value)||0; if (q<=0) return;
     var mo = i.getAttribute('data-mo'), med = i.getAttribute('data-med');
+    if (g.tipo === 'extras') { var _rn = _exReal(_avTipo, mo, med); if (_rn !== mo) { mo = _rn; med = '—'; } }
     g.lines.push({id:nid(), m:_avTipo, mo:mo, med:med, und:q, extras:[]});
     añadidos++;
   });
@@ -8448,7 +8666,7 @@ function descargarCopiaSeguridad() {
     datos: {}
   };
   var claves = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
-    'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_sync_v29','extras_v1','historial_v1',
+    'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_sync_v29','extras_sync_v30','extras_v1','historial_v1',
     'modelos_grupos_v1',
     'logo','map_costados','map_regletas','modmap_v15','params','pnum','prices',
     'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
@@ -9269,7 +9487,7 @@ applyExtrasRules();
 rebuildExtrasCatalog();
 if (!ST.exgInst) {
   ST.exgInst = JSON.parse(localStorage.getItem('exg_inst_v1') || 'null') || {};
-  _migrarExtras(); _migrarExtrasAmpliacion(); rebuildExtrasCatalog();
+  _migrarExtras(); _migrarExtrasAmpliacion(); _migrarExtrasV142(); rebuildExtrasCatalog();
 }
 ensureInstStructure();
 if (!ST.exmInst) {
