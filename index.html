@@ -270,6 +270,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 /* v125: cajón Würth Evobox, bisagra Würth Softline, especiero/panero Briforma, Menage Confort o DB K-Line por grupo */
 /* v126: extras con código y precio de compra, margen por categoría, cajón interior por gama (plantilla v15);
    tirador por grupo: tramo, gola (barras J/C/superior/vertical + tapas) o uñero por frente */
+/* v137: extras reordenados, tiradores fuera del menú, más grifos, tira LED y cubos */
 /* v136: margen único, coste real y taller fijo por pieza (motor 2, plantilla v16); los presupuestos anteriores siguen con su cálculo */
 /* v135: suplemento de cajón automático por modelo (frentes de cajón por encima del percentil 90 de su grupo) */
 /* v134: tipo «Placa con extractor» (Johnson XPER y 10 de otras marcas, Cata AS 600/750 incluidas) */
@@ -317,7 +318,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v136</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v137</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -590,7 +591,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </div>
 
 <script type="text/x-presupuestador" id="APP-SRC">
-// Muebles Carrascosa · Presupuestador · v136
+// Muebles Carrascosa · Presupuestador · v137
 // Estructura: datos y estado → funciones por área → arranque (al final del archivo).
 // Cada función está definida UNA sola vez. Para cambiar algo, edítalo en su sitio.
 
@@ -617,7 +618,7 @@ var SUPA_REFRESH = null;
 // Usa la misma tabla 'presupuestos', cada dato con su clave
 // Claves que SÍ se sincronizan (contenido de trabajo compartido)
 var CLAVES_SYNC = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
-  'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1',
+  'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v27','extras_v1',
   'logo','map_costados','map_regletas','modmap_v15','modelos_grupos_v1','params','pnum','prices',
   'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
   'modmap_v16','params_m2','tiradores_m2','map_costados_m2','map_regletas_m2'];
@@ -2263,14 +2264,76 @@ function includedHerrajePrice(nombre, g) {
   return p;
 }
 
+// Menú de extras generales (v137): orden de montaje, de más barato a más caro. Lo oculto sigue en la lista
+// para que los presupuestos que ya lo usan cobren igual; solo deja de ofrecerse al añadir.
+var EX_ORDEN = ['ENCIMERA','TRABAJOS ENCIMERA','COPETE','ZÓCALO','FREGADEROS','GRIFOS','ILUMINACIÓN LED','ENCHUFES','CUBOS DE BASURA','ACCESORIOS GENERALES'];
+var EX_OCULTOS = {TIRADORES: '*', FREGADEROS: ['GRIFO BÁSICO'],
+  ENCIMERA: ['+ COLOCACIÓN ENCIMERA','+ AGUJERO PLACA/FREGADERO','CANTONERA','JUNTA DE UNION','JUNTA DE EMPALME']};
+function _extraOculto(cat, name) {
+  var o = EX_OCULTOS[cat];
+  return o === '*' || (!!o && o.indexOf(name) >= 0);
+}
 function rebuildExtrasCatalog() {
   ST.cats.extras = {};
-  Object.keys(ST.exg).forEach(function(cat){
+  var cats = Object.keys(ST.exg), pos = function(c){ var i = EX_ORDEN.indexOf(c); return i < 0 ? 999 : i; };
+  cats.sort(function(a, b){ return pos(a) - pos(b); });
+  cats.forEach(function(cat){
+    var nombres = Object.keys(ST.exg[cat]).filter(function(n){ return !_extraOculto(cat, n); });
+    if (!nombres.length) return;
+    nombres.sort(function(a, b){ return (ST.exg[cat][a]||0) - (ST.exg[cat][b]||0); });
     ST.cats.extras[cat] = {};
-    Object.keys(ST.exg[cat]).forEach(function(name){
-      ST.cats.extras[cat][name] = ['\u2014'];
-    });
+    nombres.forEach(function(name){ ST.cats.extras[cat][name] = ['\u2014']; });
   });
+}
+// Añade productos nuevos una sola vez y sin tocar lo que ya hay (compra de bysanchez 5/11/2026 y Briforma nov. 2026).
+function _migrarExtrasV27() {
+  if (localStorage.getItem('extras_sync_v27') === '1') return;
+  if (!ST.exg) return;
+  if (!ST.exgInfo) ST.exgInfo = {};
+  if (!ST.exgInst) ST.exgInst = {};
+  function pon(cat, catm, prov, filas) {
+    filas.forEach(function(f){
+      if (!ST.exg[cat]) ST.exg[cat] = {};
+      if (!ST.exgInfo[cat]) ST.exgInfo[cat] = {};
+      if (!ST.exgInst[cat]) ST.exgInst[cat] = {};
+      if (ST.exg[cat][f[0]] !== undefined) return;
+      ST.exg[cat][f[0]] = f[2];
+      ST.exgInfo[cat][f[0]] = {cod: f[1], catm: catm, prov: prov, tipo: 'compra', compra: f[2]};
+      ST.exgInst[cat][f[0]] = f[3] || 0;
+    });
+  }
+  pon('GRIFOS', 'fregaderos', 'bysanchez', [
+    ['TEKA ML CAÑO BAJO','8191362',22.25],['TEKA IN 024 DE PARED','5302412',29],['TEKA IN 912 CAÑO ALTO','5391212',36.24],
+    ['IBERGRIF M22136 EXTRAÍBLE','M22136',40],['IBERGRIF M22109 ÓSMOSIS INOX','M22109A',40],['TEKA UNI 9310 INOX','116030070',41.68],
+    ['IBERGRIF M22106 ABATIBLE','M22106',49.6],['TEKA IN 915 NEGRO','53915620N',50.74],['TEKA OVAL 915 NEGRO','116030064',58.19],
+    ['IMEX MALTA EXTRAÍBLE CROMO','GCE006CR',83.3],['TEKA MTP 984 ABATIBLE','116030000',90.71],['TEKA OVAL 938 EXTRAÍBLE NEGRO','116020019',97.86]]);
+  pon('ILUMINACIÓN LED', 'iluminacion', 'bysanchez', [
+    ['TIRA LED CON PERFIL - POR METRO','LDCOB24V20+PAGLAXMNKAL',4.46,25],
+    ['KIT TIRA LED HASTA 3 M','LDZAS30WEC2430+AEWBBUNI10DIM',20.49],['KIT TIRA LED HASTA 6 M','LDZAS60WEC2430+AEWBBUNI10DIM',27.52]]);
+  pon('ILUMINACIÓN LED', 'iluminacion', 'briforma', [
+    ['FOCO CORNER 60','CORNER60',84.92],['FOCO CORNER 90','CORNER90',97.16],['FOCO CORNER 120','CORNER120',112.46],
+    ['FOCO CORNER 180','CORNER180',140],['FOCO POLAR 2 FOCOS','POLAR2',97.63]]);
+  pon('CUBOS DE BASURA', 'cubos', 'bysanchez', [
+    ['AXISPACE 600 - PARA CAJÓN','PBAS6001X15L2X7L45',22.54],['AXISPACE 800 - PARA CAJÓN','PBAS8002X15L2X7L45',31.21],['AXISPACE 900 - PARA CAJÓN','PBAS9004X15L',34.46],
+    ['REDONDO INOX - PARA PUERTA','38050314',30.59],['TEKA ECO EASY 60 - PARA PUERTA','40197920',64.84],
+    ['ECOLÓGICO D - EXTRAÍBLE','35322300',81.91],['RECTANGULAR 30+30 L - EXTRAÍBLE','38794314',163.5]]);
+  pon('CUBOS DE BASURA', 'cubos', 'briforma', [
+    ['METROPOLIS 600 H220 - PARA CAJÓN','0417820',39],['METROPOLIS 800 H280 - PARA CAJÓN','0417620',56.92],
+    ['METROPOLIS 900 H280 - PARA CAJÓN','0417720',63.63],['METROPOLIS 1200 H280 - PARA CAJÓN','0310707',76.49]]);
+  // Trabajos de encimera: mismos precios, en su propio apartado; los antiguos siguen para los presupuestos ya hechos
+  [['+ COLOCACIÓN ENCIMERA','COLOCACIÓN ENCIMERA'],['+ AGUJERO PLACA/FREGADERO','AGUJERO PLACA/FREGADERO'],['CANTONERA','CANTONERA'],['JUNTA DE UNION','JUNTA DE UNIÓN'],['JUNTA DE EMPALME','JUNTA DE EMPALME']].forEach(function(t){
+    var v = (ST.exg.ENCIMERA||{})[t[0]], cat = 'TRABAJOS ENCIMERA';
+    if (v === undefined) return;
+    if (!ST.exg[cat]) ST.exg[cat] = {};
+    if (!ST.exgInfo[cat]) ST.exgInfo[cat] = {};
+    if (!ST.exgInst[cat]) ST.exgInst[cat] = {};
+    ST.exg[cat][t[1]] = v;
+    if ((ST.exgInfo.ENCIMERA||{})[t[0]]) ST.exgInfo[cat][t[1]] = JSON.parse(JSON.stringify(ST.exgInfo.ENCIMERA[t[0]]));
+    ST.exgInst[cat][t[1]] = (ST.exgInst.ENCIMERA||{})[t[0]] || 0;
+  });
+  localStorage.setItem('extras_v1', JSON.stringify({exm:ST.exm, exg:ST.exg, exgInfo:ST.exgInfo}));
+  localStorage.setItem('exg_inst_v1', JSON.stringify(ST.exgInst));
+  localStorage.setItem('extras_sync_v27', '1');
 }
 
 // ── PANEL: Incrementos rápidos ────────────────────────────
@@ -3805,6 +3868,18 @@ function chUnd(gid, lid, val) {
 // Override getCatalog for a group
 function getCat(g) { 
   if (g.tipo === 'frentes') return (ST.cats && ST.cats.muebles) || ST.cat || {};
+  if (g.tipo === 'extras' && ST.cats && ST.cats.extras) {
+    // Una línea ya hecha con un extra oculto sigue viéndose en su selector
+    var _base = ST.cats.extras, _out = null;
+    (g.lines||[]).forEach(function(l){
+      if (_base[l.m] && _base[l.m][l.mo]) return;
+      if (!ST.exg[l.m] || ST.exg[l.m][l.mo] === undefined) return;
+      if (!_out) { _out = {}; Object.keys(_base).forEach(function(k){ _out[k] = Object.assign({}, _base[k]); }); }
+      if (!_out[l.m]) _out[l.m] = {};
+      _out[l.m][l.mo] = ['\u2014'];
+    });
+    return _out || _base;
+  }
   return (ST.cats && ST.cats[g.tipo]) || ST.cat || {}; 
 }
 
@@ -4099,6 +4174,7 @@ function buscarArticuloExtra(gid, q) {
   var hits = [];
   Object.keys(ST.exg||{}).forEach(function(cat){
     Object.keys(ST.exg[cat]).forEach(function(art){
+      if (_extraOculto(cat, art)) return;
       if ((cat+' '+art).toLowerCase().indexOf(q) >= 0) {
         hits.push({cat:cat, art:art, precio:ST.exg[cat][art]});
       }
@@ -8257,7 +8333,7 @@ function descargarCopiaSeguridad() {
     datos: {}
   };
   var claves = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
-    'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_v1','historial_v1',
+    'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v27','extras_v1','historial_v1',
     'modelos_grupos_v1',
     'logo','map_costados','map_regletas','modmap_v15','params','pnum','prices',
     'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
@@ -9078,6 +9154,7 @@ applyExtrasRules();
 rebuildExtrasCatalog();
 if (!ST.exgInst) {
   ST.exgInst = JSON.parse(localStorage.getItem('exg_inst_v1') || 'null') || {};
+  _migrarExtrasV27(); rebuildExtrasCatalog();
 }
 ensureInstStructure();
 if (!ST.exmInst) {
