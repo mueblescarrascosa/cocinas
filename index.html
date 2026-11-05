@@ -3437,6 +3437,7 @@ function _rgPasoOcultarCalidadExtras() {
 }
 function _rgPasoAjuste() {
   ST.groups.forEach(function(g){
+    if (g.tipo === 'armario') return;   // el armario calcula su precio aparte
     var body = document.getElementById('gb'+g.id);
     if (!body || document.getElementById('gadj'+g.id)) return;
     var div = document.createElement('div');
