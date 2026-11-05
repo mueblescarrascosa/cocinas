@@ -270,6 +270,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 /* v125: cajón Würth Evobox, bisagra Würth Softline, especiero/panero Briforma, Menage Confort o DB K-Line por grupo */
 /* v126: extras con código y precio de compra, margen por categoría, cajón interior por gama (plantilla v15);
    tirador por grupo: tramo, gola (barras J/C/superior/vertical + tapas) o uñero por frente */
+/* v141: más extras (Mengual, bysanchez, Briforma) y categorías nuevas */
 /* v140: siglas de la tienda en los extras */
 /* v139: precio de venta al lado de cada extra */
 /* v138: los extras nuevos se suben a la nube */
@@ -321,7 +322,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v140</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v141</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -594,7 +595,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </div>
 
 <script type="text/x-presupuestador" id="APP-SRC">
-// Muebles Carrascosa · Presupuestador · v140
+// Muebles Carrascosa · Presupuestador · v141
 // Estructura: datos y estado → funciones por área → arranque (al final del archivo).
 // Cada función está definida UNA sola vez. Para cambiar algo, edítalo en su sitio.
 
@@ -621,7 +622,7 @@ var SUPA_REFRESH = null;
 // Usa la misma tabla 'presupuestos', cada dato con su clave
 // Claves que SÍ se sincronizan (contenido de trabajo compartido)
 var CLAVES_SYNC = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
-  'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_v1',
+  'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_sync_v29','extras_v1',
   'logo','map_costados','map_regletas','modmap_v15','modelos_grupos_v1','params','pnum','prices',
   'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
   'modmap_v16','params_m2','tiradores_m2','map_costados_m2','map_regletas_m2'];
@@ -2270,11 +2271,11 @@ function includedHerrajePrice(nombre, g) {
 
 // Menú de extras generales (v137): orden de montaje, de más barato a más caro. Lo oculto sigue en la lista
 // para que los presupuestos que ya lo usan cobren igual; solo deja de ofrecerse al añadir.
-var EX_ORDEN = ['ENCIMERA','TRABAJOS ENCIMERA','COPETE','ZÓCALO','FREGADEROS','GRIFOS','ILUMINACIÓN LED','ENCHUFES','CUBOS DE BASURA','ACCESORIOS GENERALES'];
+var EX_ORDEN = ['ENCIMERA','TRABAJOS ENCIMERA','COPETE','ZÓCALO','FREGADEROS','GRIFOS','ILUMINACIÓN LED','ENCHUFES','CUBOS DE BASURA','INTERIOR DE ARMARIOS','INTERIOR DE CAJONES','EXTRACCIÓN DE HUMOS','PIES Y PATAS','SOPORTES','ACCESORIOS GENERALES'];
 var EX_OCULTOS = {TIRADORES: '*', FREGADEROS: ['GRIFO BÁSICO'],
   ENCIMERA: ['+ COLOCACIÓN ENCIMERA','+ AGUJERO PLACA/FREGADERO','CANTONERA','JUNTA DE UNION','JUNTA DE EMPALME']};
 // Siglas de la tienda donde se compra (nunca en modo cliente)
-var SIGLAS_TIENDA = {briforma:'BRI', bysanchez:'BYS', wurth:'WÜR'};
+var SIGLAS_TIENDA = {mengual:'MEN', briforma:'BRI', bysanchez:'BYS', wurth:'WÜR'};
 function _siglaTienda(prov) {
   if (!prov) return '';
   return SIGLAS_TIENDA[String(prov).toLowerCase()] || String(prov).slice(0,3).toUpperCase();
@@ -2313,13 +2314,92 @@ function rebuildExtrasCatalog() {
 // Añade productos nuevos sin tocar lo que ya hay (compra de bysanchez 5/11/2026 y Briforma nov. 2026).
 // Corre en el arranque, cuando aún no se puede subir nada: la marca solo se pone cuando la nube ya lo tiene;
 // hasta entonces se repite en cada arranque (si el producto ya está, no se toca).
-var _migrExtrasPendiente = false;
+var _migrExtrasPendiente = false, _migrMarcas = [];
 async function _subirMigracionExtras() {
   _migrExtrasPendiente = false;
   if (!haySesion()) return;
+  var marcas = _migrMarcas; _migrMarcas = [];
   var a = await supaGuardarClave('extras_v1', localStorage.getItem('extras_v1'));
   var b = await supaGuardarClave('exg_inst_v1', localStorage.getItem('exg_inst_v1'));
-  if (a && b) localStorage.setItem('extras_sync_v28', '1');
+  if (a && b) marcas.forEach(function(m){ localStorage.setItem(m, '1'); });
+}
+function _guardarMigracionExtras(marca) {
+  localStorage.setItem('extras_v1', JSON.stringify({exm:ST.exm, exg:ST.exg, exgInfo:ST.exgInfo}));
+  localStorage.setItem('exg_inst_v1', JSON.stringify(ST.exgInst));
+  _migrMarcas.push(marca);
+  _migrExtrasPendiente = true;
+  if (_syncListo) _subirMigracionExtras();
+}
+// Ampliación del 5/11/2026: categorías nuevas y productos de Mengual, bysanchez y Briforma. Solo añade.
+function _migrarExtrasAmpliacion() {
+  if (localStorage.getItem('extras_sync_v29') === '1') return;
+  if (!ST.exg) return;
+  if (!ST.exgInfo) ST.exgInfo = {};
+  if (!ST.exgInst) ST.exgInst = {};
+  function pon(cat, catm, prov, filas) {
+    filas.forEach(function(f){
+      if (!ST.exg[cat]) ST.exg[cat] = {};
+      if (!ST.exgInfo[cat]) ST.exgInfo[cat] = {};
+      if (!ST.exgInst[cat]) ST.exgInst[cat] = {};
+      if (ST.exg[cat][f[0]] !== undefined) return;
+      ST.exg[cat][f[0]] = f[2];
+      ST.exgInfo[cat][f[0]] = {cod: f[1], catm: catm, prov: prov, tipo: 'compra', compra: f[2]};
+      ST.exgInst[cat][f[0]] = 0;
+    });
+  }
+  pon('FREGADEROS', 'fregaderos', 'bysanchez', [
+    ['TEKA STYLO 1 SENO','10107007',30.2],['TEKA BE 40.40 BAJO ENCIMERA','10125005',35.89],['TEKA E/50 1 SENO','10103001',40.42],
+    ['TEKA STYLO 1 SENO + ESCURRIDOR','10107017',45.31],['TEKA BE 50.40 PLUS BAJO ENCIMERA','10125122',48.33],['TEKA STYLO 2 SENOS','10107028',49.84],
+    ['RODI OKIO LINE 80 1 SENO + ESCURRIDOR','OKIO80FLAT',57.16],['IBERGRIF M85043 INOX 50X43','M85043',68],['IBERGRIF M85043 GRAFITO 50X43','M85043B',68],
+    ['TEKA UNIVERSE 50 1 SENO + ESCURRIDOR','115110017',68.87],['TEKA FORLINE RS15 50.40','115000082',160.69],
+    ['TEKA TEGRANITE SQUARE 50.40 NEGRO','115230020',173.17],['TEKA TEGRANITE SQUARE 50.40 BLANCO','115230024',173.17]]);
+  pon('ILUMINACIÓN LED', 'iluminacion', 'mengual', [
+    ['REGLETA ECOLITE 300 BAJO MUEBLE','8700968',21.8],['REGLETA ECOLITE 600 BAJO MUEBLE','8700979',25.39],['REGLETA ECOLITE 900 BAJO MUEBLE','8700990',32.68],
+    ['SET 2 REGLETAS NOA CON SENSOR 300','8700385',25.54],['REGLETA CAJÓN DRAWER 360 CON SENSOR','8700407',30.84],['REGLETA CAJÓN DRAWER 560 CON SENSOR','8700418',34.06],
+    ['REGLETA CAJÓN DRAWER 760 CON SENSOR','8700429',41.28],['FOCO HIRO A BATERÍA','8317440',30.61],['REGLETA KRAUS 600 A BATERÍA','8318313',46.98]]);
+  pon('ILUMINACIÓN LED', 'iluminacion', 'briforma', [
+    ['REGLETA INTERIOR MUEBLE 60','REGINT60',62.73],['REGLETA INTERIOR MUEBLE 120','REGINT120',85.68],['FOCO CORNER 45','CORNER45',79.56],['FOCO POLAR 1 FOCO','POLAR1',72.05]]);
+  pon('ENCHUFES', 'enchufes', 'mengual', [
+    ['TWIST 2 ENCHUFES INOX','8314706',67.48],['TWIST ENCHUFE + USB INOX','8300011',105.95],['TWIST 2 ENCHUFES BLANCO','8316014',106.15],['TWIST 2 ENCHUFES NEGRO','8316025',106.15],
+    ['TWIST ENCHUFE + USB BLANCO','8300033',136.46],['TWIST ENCHUFE + USB NEGRO','8300022',136.46],['DUE BASE DOBLE NEGRA','8316596+8316611',58.29]]);
+  pon('ENCHUFES', 'enchufes', 'bysanchez', [
+    ['SLIDE 1 TOMA + USB INOX','AEBPW1S1UCH51',22.23],['EXTRAÍBLE 3 TOMAS + 2 USB Ø60','AEBPW3S60U20',25.23],['SOFT RECTANGULAR 2 TOMAS + 2 USB','AEPBSUC2GS20N',29.49],
+    ['BASCO SUPERFICIE 3 TOMAS + USB','AEGMBAS3S2U10',34.43],['EXTRAÍBLE CONFORT 3 TOMAS + 2 USB','AEBPW3S100U53',37.46],['CAMINO EXTRAÍBLE 2 TOMAS + CARGA INALÁMBRICA','AEBPW2SCAM20',67.44]]);
+  pon('CUBOS DE BASURA', 'cubos', 'mengual', [
+    ['ELIO GRIS 16 L APERTURA AUTOMÁTICA - M30','0136364',33.55],['LÍNEA 245 2 CUBETAS 14+14 L - EXTRAÍBLE','0140557',60.28],['JERKO 15+15 L CON PEDAL INOX','0134813',60.79],
+    ['LÍNEA 245 1 CUBETA 30 L - EXTRAÍBLE','0140546',61.6],['LÍNEA 245 3 CUBETAS 10+10+10 L - EXTRAÍBLE','0140568',66.93],['LOMBARDO 2X16 L EXTRACCIÓN TOTAL - M40','0136342',71.36],
+    ['ALDO 2 COMPARTIMENTOS TAPA AUTOMÁTICA - M45','0136305',85.33],['580 PLUS 2X29 L AMORTIGUADO - M40','0138965',176.51],['580 PLUS 2X40 L AMORTIGUADO - M60','0101936',196.35]]);
+  pon('INTERIOR DE ARMARIOS', 'interior', 'bysanchez', [
+    ['SOPORTE COPAS SENCILLO','SP01CR',3.8],['SOPORTE COPAS DOBLE','SP02CR',6.42],['SOPORTE PLATOS GRIS','32658314',8.82],['SOPORTE PAÑOS EXTRAÍBLE','38177214',24.07],
+    ['PLATAFORMA BOMBONA BUTANO','35458007',52.51],['BOTELLERO FRONTAL CLASSIC M15','38733014',53.45],['BANDEJA MULTIUSOS VARILLAS M30','38721014',53.94],
+    ['BOTELLERO FRONTAL CLASSIC M20','38735014',63.49],['BANDEJA MULTIUSOS VARILLAS M45','38726014',63.59],['ACCESORIO DE LIMPIEZA EXTRAÍBLE','38750014',72.36],
+    ['CESTO MULTIUSOS COMPACT M40','48305014',80.12],['CESTO MULTIUSOS FLAT M40','49082007',85.78],['PANERO FRONTAL CLASSIC M30','38709014',93.7],
+    ['BANDEJA SEMICIRCULAR VARILLAS M45','38061014',101.27],['PANERO FRONTAL CLASSIC M40','38710014',108.49],['BANDEJA GIRATORIA VARILLAS 270º','38063014',114.46],
+    ['CESTO BAJO FREGADERO M80','52064014',118.31],['BOTELLERO FLAT ANTRACITA M30','49078007A',119.55],['BOTELLERO FLAT ANTRACITA M40','49080007A',130.83]]);
+  pon('INTERIOR DE ARMARIOS', 'interior', 'mengual', [
+    ['CESTO BAJO FREGADERO M60','0126693',114.5],['CESTO BAJO FREGADERO M90','0126715',128.66],
+    ['COLUMNA DESPENSERO VARILLAS M30 ALTO 120-160','0133973',360.96],['COLUMNA DESPENSERO VARILLAS M40 ALTO 120-160','0134006',381.13],
+    ['COLUMNA DESPENSERO COMPACT M30 ALTO 120-160','0136036',407.08],['COLUMNA DESPENSERO COMPACT M40 ALTO 120-160','0136040',442.41]]);
+  pon('INTERIOR DE CAJONES', 'interior', 'bysanchez', [
+    ['BANDEJA CAJÓN MULTIUSO PEQUEÑA','32761314',4.9],['CUBERTERO MURANO M60','T5CA02060',5.56],['SOPORTE ESPECIAS','32745014',16.67],['SOPORTE ROLLOS','32747014',22.01]]);
+  pon('INTERIOR DE CAJONES', 'interior', 'mengual', [
+    ['GAVETA DORA 150X220','3811811',4.9],['GAVETA DORA 300X220','3811822',8.1],['SOPORTE PLATOS BLANCO','0127942',9.57],
+    ['CUBERTERO HAYA COLOMBO 175 SIN DIVISIONES','6037561',18.51],['CUBERTERO HAYA COLOMBO 325 SIN DIVISIONES','6037594',22.35],
+    ['CUBERTERO HAYA COLOMBO 175 CON DIVISIONES','6037410',27],['PORTACUCHILLOS HAYA COLOMBO','6037465',28.97],['ESPECIERO HAYA COLOMBO','6037476',30.91],
+    ['CUBERTERO HAYA COLOMBO 325 CON DIVISIONES','6037443',33.84],['PORTARROLLOS HAYA COLOMBO','6037491',50.08]]);
+  pon('EXTRACCIÓN DE HUMOS', 'interior', 'briforma', [
+    ['TUBO RECTANGULAR 110X55 - 1,5 M','TRECT',8.03],['TUBO REDONDO 100 - 1,5 M','TRED',8.03],['EMPALME REDONDO 100','ERED',1.01],['EMPALME MIXTO 100','EMIXTO',2.37],
+    ['EMPALME RECTANGULAR 110','ERECT',1.14],['CODO MIXTO 100','CMIXTO',1.99],['CODO RECTANGULAR HORIZONTAL 110','CRECTH',2.15],['CODO RECTANGULAR VERTICAL 110','CRECTV',1.56],
+    ['CODO REDONDO 100','CRED',2.63],['VENTANILLA RECTANGULAR 110','VRECT',2.33],['VENTANILLA REDONDA 100','VRED',2.33],['REDUCCIÓN SALIDA 100 ARO','RS100ARO',1.54],
+    ['TUBO RECTANGULAR 150X75 - 1,5 M','TRECTG',14.99],['TUBO REDONDO 120 - 1,5 M','TREDG',14.32],['EMPALME REDONDO 120','EREDG',1.68],['EMPALME MIXTO 120','EMIXTOG',4.39],
+    ['EMPALME RECTANGULAR 150','ERECTG',1.87],['CODO MIXTO 120','CMIXTOG',3.78],['CODO RECTANGULAR HORIZONTAL 150','CRECTHG',4.14],['CODO RECTANGULAR VERTICAL 150','CRECTVG',3.78],
+    ['CODO REDONDO 120','CREDG',3.98],['VENTANILLA RECTANGULAR 150','VRECTG',4.19],['VENTANILLA REDONDA 120','VREDG',3.96],['REDUCCIÓN 150-120','R150120',1.82]]);
+  pon('PIES Y PATAS', 'interior', 'briforma', [
+    ['PIE DE BARRA 820 BLANCO','PBARRA82B',7.89],['PIE DE BARRA 820 NEGRO','PBARRA82N',7.89],['PIE DE BARRA 820 GRIS','PBARRA82G',8.74],['PIE DE BARRA 820 CROMO','PBARRA82CB',10.97],
+    ['PIE DE BARRA 820 INOX','PBARRA82I',12.77],['PATA AITANA PLATA','PAITANA',4.4]]);
+  pon('SOPORTES', 'interior', 'briforma', [
+    ['SOPORTE OCULTO TRIADE SLIM','TRIADESLIM',3.74],['SOPORTE OCULTO TRIADE','TRIADE',3.98],['SOPORTE PELICANO (JUEGO)','JSP',8.29],['SOPORTE CUBE NEGRO','CUBEN',8.33],['SOPORTE CUBE PLATA','CUBE',10.22]]);
+  _guardarMigracionExtras('extras_sync_v29');
 }
 function _migrarExtras() {
   if (localStorage.getItem('extras_sync_v28') === '1') return;
@@ -2367,10 +2447,7 @@ function _migrarExtras() {
     if ((ST.exgInfo.ENCIMERA||{})[t[0]]) ST.exgInfo[cat][t[1]] = JSON.parse(JSON.stringify(ST.exgInfo.ENCIMERA[t[0]]));
     ST.exgInst[cat][t[1]] = (ST.exgInst.ENCIMERA||{})[t[0]] || 0;
   });
-  localStorage.setItem('extras_v1', JSON.stringify({exm:ST.exm, exg:ST.exg, exgInfo:ST.exgInfo}));
-  localStorage.setItem('exg_inst_v1', JSON.stringify(ST.exgInst));
-  _migrExtrasPendiente = true;
-  if (_syncListo) _subirMigracionExtras();
+  _guardarMigracionExtras('extras_sync_v28');
 }
 
 // ── PANEL: Incrementos rápidos ────────────────────────────
@@ -8371,7 +8448,7 @@ function descargarCopiaSeguridad() {
     datos: {}
   };
   var claves = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
-    'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_v1','historial_v1',
+    'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_sync_v29','extras_v1','historial_v1',
     'modelos_grupos_v1',
     'logo','map_costados','map_regletas','modmap_v15','params','pnum','prices',
     'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
@@ -9192,7 +9269,7 @@ applyExtrasRules();
 rebuildExtrasCatalog();
 if (!ST.exgInst) {
   ST.exgInst = JSON.parse(localStorage.getItem('exg_inst_v1') || 'null') || {};
-  _migrarExtras(); rebuildExtrasCatalog();
+  _migrarExtras(); _migrarExtrasAmpliacion(); rebuildExtrasCatalog();
 }
 ensureInstStructure();
 if (!ST.exmInst) {
