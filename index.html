@@ -627,7 +627,7 @@ var SUPA_REFRESH = null;
 // Usa la misma tabla 'presupuestos', cada dato con su clave
 // Claves que SÍ se sincronizan (contenido de trabajo compartido)
 var CLAVES_SYNC = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
-  'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_sync_v29','extras_sync_v30','extras_v1',
+  'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_sync_v29','extras_sync_v30','extras_v1','armarios_v1',
   'logo','map_costados','map_regletas','modmap_v15','modelos_grupos_v1','params','pnum','prices',
   'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
   'modmap_v16','params_m2','tiradores_m2','map_costados_m2','map_regletas_m2'];
@@ -770,7 +770,8 @@ var TIPOS = {
   regletas: {icon:'&#x25AC;', label:'Regletas'},
   extras:   {icon:'&#x2728;',  label:'Extras'},
   electro:  {icon:'&#x1F373;', label:'Electrodom\u00e9sticos'},
-  libre:    {icon:'&#x1F4DD;', label:'Otros conceptos'}
+  libre:    {icon:'&#x1F4DD;', label:'Otros conceptos'},
+  armario:  {icon:'&#x1F6AA;', label:'Armario / vestidor'}
 };
 // Nombre visible de cada calidad según su contenido (usuario, 30/10/2026); por dentro siguen los nombres de CALS
 var CAL_CONTENIDO = ['Melamina', 'Melamina 22 mm y laminado', 'Laca blanco satinado', 'Laca blanco brillo y mates',
@@ -830,7 +831,8 @@ var TIPO_COLORS = {
   costados: '#7d6608',
   regletas: '#6c3483',
   extras:   '#2d6a4f',
-  libre:    '#78281f'
+  libre:    '#78281f',
+  armario:  '#5d4037'
 };
 // MODO CLIENTE: oculta costes, márgenes, rentabilidad
 var _clienteMode = false;
@@ -1774,6 +1776,7 @@ function lineTotal(l, g) {
     if (l.dif) bm = bm * (1 + l.dif/100);
     return Math.round(bm * 100) / 100;
   }
+  if (g && g.tipo === 'armario') return window.ARM ? ARM.precioLinea(l, g) : 0;   // armarios.js
   if (g && g.tipo === 'frentes') return _lineTotalFrente(l, g);
   var base;
   if (g.tipo === 'libre') {
@@ -1843,6 +1846,7 @@ function rawCost(l, g) {
   if (l && l.pmanual != null && l.pmanual !== '' && !isNaN(parseFloat(l.pmanual))) {
     return parseFloat(l.pmanual);
   }
+  if (g && g.tipo === 'armario') return window.ARM ? ARM.costeLinea(l, g) : 0;
   if (g && g.tipo === 'frentes') return _rawCostFrente(l, g);
   if (g.tipo === 'libre') return parseFloat(l.precio)||0;  // precio cerrado = su propio coste asumido
   if (g.tipo === 'electro') {
@@ -1907,6 +1911,7 @@ function unitPVP(l, g) {
   if (l && l.pmanual != null && l.pmanual !== '' && !isNaN(parseFloat(l.pmanual))) {
     return parseFloat(l.pmanual);
   }
+  if (g && g.tipo === 'armario') return window.ARM ? Math.round(ARM.precioLinea(l, g) / (l.und || 1) * 100) / 100 : null;
   return _unitPVPBase(l, g);
 }
 function _unitPVPBase(l, g) {
@@ -3371,6 +3376,7 @@ function _renderGroupsBase() {
         +'<div><lbl>&nbsp;</lbl>'
         +'<button class="btn bp bsm" onclick="addLine('+g.id+')">+ A\u00f1adir</button></div>'
         +'</div>';
+    if (g.tipo === 'armario') { tabs = ''; bodyContent = ''; }   // armarios.js pinta su propio formulario
     div.innerHTML='<div class="gh" style="border-left:4px solid '+col+'">'
       +'<div class="gdot" style="background:'+col+'"></div>'
       +'<span style="font-size:.76rem;font-weight:600;padding:2px 7px;border-radius:9px;border:1px solid '+col+';color:'+col+';white-space:nowrap">'+ti.label+'</span>'
@@ -3843,6 +3849,13 @@ function _rgPasoAnadirVarios() {
 
 // Pinta las líneas de un grupo
 function renderLines(gid) {
+  var _ga = ST.groups.find(function(x){ return x.id === gid; });
+  if (_ga && _ga.tipo === 'armario') {   // armarios.js
+    var _el = document.getElementById('gl' + gid), _sb = document.getElementById('gsb' + gid);
+    if (_el) _el.innerHTML = window.ARM ? ARM.render(_ga) : '<p style="color:#b00020;padding:12px">Módulo de armarios no cargado: recarga la app con conexión.</p>';
+    if (_sb) { var _s = gsub(_ga); _sb.textContent = _s > 0 ? fmt(_s) : ''; }
+    return;
+  }
   _renderLinesBase(gid);
   _rlPasoDificultad(gid);
   _rlPasoDuplicar(gid);
@@ -4744,7 +4757,7 @@ function _pdfGenerar() {
   // (la instalación por ml es de montar la cocina, no de extras/electro/libre).
   var grandMuebles = 0;
   ST.groups.forEach(function(g){
-    if (g.tipo==='extras' || g.tipo==='electro' || g.tipo==='libre' || g.tipo==='frentes' || g.opcional) return;
+    if (g.tipo==='extras' || g.tipo==='electro' || g.tipo==='libre' || g.tipo==='frentes' || g.tipo==='armario' || g.opcional) return;
     g.lines.forEach(function(l){ grandMuebles += lineTotal(l,g); });
   });
   var factor = (grandMuebles > 0 && extra > 0) ? (grandMuebles + extra) / grandMuebles : 1;
@@ -4752,7 +4765,7 @@ function _pdfGenerar() {
   var fx = _fxTotal;
   // fx solo para muebles; el resto sin tocar
   function fxG(v, g){ 
-    if (g && (g.tipo==='extras'||g.tipo==='electro'||g.tipo==='libre'||g.tipo==='frentes'||g.opcional)) return Math.round(v*100)/100;
+    if (g && (g.tipo==='extras'||g.tipo==='electro'||g.tipo==='libre'||g.tipo==='frentes'||g.tipo==='armario'||g.opcional)) return Math.round(v*100)/100;
     return fx(v);
   }
 
@@ -8671,7 +8684,7 @@ function descargarCopiaSeguridad() {
     datos: {}
   };
   var claves = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst_v1','exm_inst_v1',
-    'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_sync_v29','extras_sync_v30','extras_v1','historial_v1',
+    'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_sync_v29','extras_sync_v30','extras_v1','armarios_v1','historial_v1',
     'modelos_grupos_v1',
     'logo','map_costados','map_regletas','modmap_v15','params','pnum','prices',
     'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
@@ -9715,6 +9728,7 @@ if (!totalL() && hayMotor2()) activarMotor(2);
 
 
 </script>
+<script src="armarios.js"></script>
 <script>
 // v122 · Arranque sin recargas: antes de arrancar la app se bajan de la nube los datos de la cuenta
 // (una sola petición, como mucho 4 s). La app arranca ya con lo último y no tiene que recargarse.
