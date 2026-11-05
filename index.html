@@ -4813,9 +4813,11 @@ function _pdfGenerar() {
       }
       return '<tr>'
         +'<td style="padding:6px 8px">'+(i+1)+'</td>'
-        +'<td style="padding:6px 8px">'+eh(l.m)+'</td>'
+        +(g.tipo==='armario'   // armarios.js: descripci\u00f3n completa del tramo en vez de tipo/modelo/medida
+          ?'<td style="padding:6px 8px" colspan="3">'+eh(window.ARM?ARM.descripcion(l.arm, ARM.tabla()):'Armario')+'</td>'
+          :'<td style="padding:6px 8px">'+eh(l.m)+'</td>'
         +'<td style="padding:6px 8px">'+(g.tipo==='electro'?eh([l.marca,l.modelo].filter(Boolean).join(' ')):eh(l.mo))+'</td>'
-        +'<td style="padding:6px 8px;text-align:center">'+(g.tipo==='electro'?'\u2014':(l.med==='\u2014'?'\u2014':l.med+' cm'))+'</td>'
+        +'<td style="padding:6px 8px;text-align:center">'+(g.tipo==='electro'?'\u2014':(l.med==='\u2014'?'\u2014':l.med+' cm'))+'</td>')
         +'<td style="padding:6px 8px;text-align:center">'+l.und+'</td>'
         +(_det2
           ?'<td class="tr" style="padding:6px 8px">'+((g.tipo==='electro'||p!==null)?(((g.tipo==='electro')?(l.und?lt/l.und:lt):fx(p))*_mul).toFixed(2)+' \u20ac':'\u2014')+'</td>'
