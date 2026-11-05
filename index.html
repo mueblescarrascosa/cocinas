@@ -3235,6 +3235,10 @@ function _confirmGrpBase() {
   var name = document.getElementById('MNAME').value.trim() || TIPOS[_mtype].label;
   closeMod();
   var ci = ST.groups.length % GCOLS.length;
+  if (_mtype === 'armario' && window.ARM) {   // armarios.js: el grupo nace con un tramo
+    ST.groups.push({id:nid(), name:name, tipo:'armario', cal:'', ci:ci, lines:[ARM.lineaNueva('armario')], open:true});
+    renderGroups(); upBan(); return;
+  }
   ST.groups.push({id:nid(), name:name, tipo:_mtype, cal:'ENTRADA', ci:ci, lines:[], open:true, casco:cascoNuevo(), herr:herrNuevo()});
   renderGroups(); upBan();
 }
@@ -4239,7 +4243,7 @@ function openMod() {
   // Build type grid
   var grid = document.getElementById('TGRID');
   grid.innerHTML = '';
-  TIPO_KEYS.forEach(function(t) {
+  TIPO_KEYS.concat(window.ARM ? ['armario'] : []).forEach(function(t) {   // armarios.js añade el tipo armario
     var ti = TIPOS[t];
     var d = document.createElement('div');
     d.id = 'TB'+t;
@@ -9624,7 +9628,7 @@ document.addEventListener('click', function(e) {
     });
     tb.style.borderColor = 'var(--a)'; tb.style.background = '#f0f8f4';
     var cur = document.getElementById('MNAME').value;
-    var defs = TIPO_KEYS.map(function(k){ return TIPOS[k].label; }).concat(['Nuevo grupo','','undefined']);
+    var defs = TIPO_KEYS.concat(['armario']).map(function(k){ return TIPOS[k].label; }).concat(['Nuevo grupo','','undefined']);
     if (defs.indexOf(cur) >= 0) document.getElementById('MNAME').value = TIPOS[_mtype].label;
   }
 });
