@@ -327,7 +327,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v143</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v144</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -1911,7 +1911,7 @@ function unitPVP(l, g) {
   if (l && l.pmanual != null && l.pmanual !== '' && !isNaN(parseFloat(l.pmanual))) {
     return parseFloat(l.pmanual);
   }
-  if (g && g.tipo === 'armario') return window.ARM ? Math.round(ARM.precioLinea(l, g) / (l.und || 1) * 100) / 100 : null;
+  if (g && g.tipo === 'armario') return window.ARM ? ARM.precioUnidad(l) : null;
   return _unitPVPBase(l, g);
 }
 function _unitPVPBase(l, g) {
@@ -4821,7 +4821,7 @@ function _pdfGenerar() {
         +'<td style="padding:6px 8px;text-align:center">'+l.und+'</td>'
         +(_det2
           ?'<td class="tr" style="padding:6px 8px">'+((g.tipo==='electro'||p!==null)?(((g.tipo==='electro')?(l.und?lt/l.und:lt):fx(p))*_mul).toFixed(2)+' \u20ac':'\u2014')+'</td>'
-           +'<td class="tr" style="padding:6px 8px">'+(lt*_mul).toFixed(2)+' \u20ac</td>'
+           +'<td class="tr" style="padding:6px 8px">'+((g.tipo==='armario'&&p===null)?'\u2014':(lt*_mul).toFixed(2)+' \u20ac')+'</td>'
           :'')
         +'</tr>'+extRows;
     }).join('');

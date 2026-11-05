@@ -230,6 +230,12 @@
     if (l.dif) b = b * (1 + l.dif / 100);
     return r2(b);
   };
+  // Precio por unidad para la app y el PDF: null si falta algún precio (sale «—», como en las cocinas).
+  ARM.precioUnidad = function (l) {
+    var r = ARM.calcularLinea(l);
+    if (!r || r.precio === null) return null;
+    return r2(ARM.precioLinea(l) / (l.und || 1));
+  };
   ARM.costeLinea = function (l) {
     var r = ARM.calcularLinea(l);
     return r ? r2(r.coste * (l.und || 1)) : 0;
