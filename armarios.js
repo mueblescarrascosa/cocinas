@@ -102,7 +102,8 @@
     if (E.kitAlto && alto > num(E.altoMax || 150)) {
       el = E.kitAlto;
       if (alto > num(el.altoMax)) avisos.push('Escamoteable: hoja de ' + r2(alto) + ' cm de alto (máximo ' + num(el.altoMax) + ' cm)');
-      if (num(el.retrae) < anH * 10 || num(el.guia) > util) avisos.push('Escamoteable: el kit alto necesita ' + Math.ceil(num(el.guia) / 10 + 3) + ' cm de fondo y hojas de hasta ' + num(el.retrae) / 10 + ' cm');
+      if (num(el.retrae) < anH * 10) avisos.push('Escamoteable: con el kit alto, hojas de hasta ' + num(el.retrae) / 10 + ' cm de ancho (ahora ' + r2(anH) + '); pon más hojas');
+      if (num(el.guia) > util) avisos.push('Escamoteable: el kit alto necesita ' + Math.ceil(num(el.guia) / 10 + 3) + ' cm de fondo');
     } else {
       var caben = kits.filter(function (k) { return num(k.guia) <= util; });
       el = caben.filter(function (k) { return num(k.retrae) >= anH * 10; })[0];
