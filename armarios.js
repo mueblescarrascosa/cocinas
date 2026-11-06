@@ -210,7 +210,11 @@
     if (A <= 0) avisos.push('Falta el ancho');
     if (H <= 0) avisos.push('Falta el alto');
     if ((conCasco || interior) && F <= 0) avisos.push('Falta el fondo');
-    var mat = t.casco;
+    var mat = t.casco, alt = Math.max(0, num(t.altillo)), bajoAlt = alt > 0 ? alt + 1.6 : 0;
+    function maleteroOAltillo(c, i, an) {
+      if (alt > 0) { pieza('Suelo de altillo (cuerpo ' + (i + 1) + ')', 1, an, F, mat, an); horas += num(tt.estante); }
+      else if (c.maletero) { pieza('Maletero (cuerpo ' + (i + 1) + ')', 1, an, F, mat, an); horas += num(tt.estante); }
+    }
     if (conCasco) {
       var suma = 0; cuerpos.forEach(function (c) { suma += num(c.ancho); });
       if (cuerpos.length && Math.abs(suma - A) > 0.5) avisos.push('Los cuerpos suman ' + r2(suma) + ' de ' + r2(A) + ' cm');
@@ -219,9 +223,9 @@
       cuerpos.forEach(function (c, i) {
         var an = num(c.ancho), est = Math.max(0, Math.round(num(c.estantes)));
         pieza('Techo y suelo (cuerpo ' + (i + 1) + ')', 2, an, F, mat, an);
-        if (c.maletero) { pieza('Maletero (cuerpo ' + (i + 1) + ')', 1, an, F, mat, an); horas += num(tt.estante); }
+        maleteroOAltillo(c, i, an);
         if (est) { pieza('Estante (cuerpo ' + (i + 1) + ')', est, an, F - 2, mat, an); horas += est * num(tt.estante); }
-        horas += divisiones(c, i, H - (t.zocalo ? (num(t.alturaZocalo) || 10) : 0) - 3.2);
+        horas += divisiones(c, i, H - (t.zocalo ? (num(t.alturaZocalo) || 10) : 0) - 3.2 - bajoAlt);
         horas += num(tt.cuerpo) + Math.max(0, Math.round(num(c.cajones))) * num(tt.cajon);
       });
       if (t.trasera && t.trasera !== 'sin') {
@@ -232,9 +236,9 @@
     } else if (interior) {
       cuerpos.forEach(function (c, i) {
         var an = num(c.ancho), est = Math.max(0, Math.round(num(c.estantes)));
-        if (c.maletero) { pieza('Maletero (cuerpo ' + (i + 1) + ')', 1, an, F, mat, an); horas += num(tt.estante); }
+        maleteroOAltillo(c, i, an);
         if (est) { pieza('Estante (cuerpo ' + (i + 1) + ')', est, an, F - 2, mat, an); horas += est * num(tt.estante); }
-        horas += divisiones(c, i, H);
+        horas += divisiones(c, i, H - bajoAlt);
         horas += num(tt.interior === undefined ? 1 : tt.interior) + Math.max(0, Math.round(num(c.cajones))) * num(tt.cajon);
       });
     }
@@ -260,8 +264,10 @@
       cuerpos.forEach(function (c) {
         var an = num(c.ancho), n = an <= 50 ? 1 : 2;
         for (var k = 0; k < n; k++) {
-          if (!esc.length) { pu.hojas.push({ an: r2(an / n), al: altoHoja }); continue; }
-          var anH = an / n, partes = Math.max(1, Math.ceil(anH / 60 - 1e-9)), altos = altosPuerta(altoHoja, esc);
+          var tramosAlto = alt > 0 && alt < altoHoja ? [r2(altoHoja - alt), alt] : [altoHoja];
+          if (!esc.length) { tramosAlto.forEach(function (al) { pu.hojas.push({ an: r2(an / n), al: al }); }); continue; }
+          var anH = an / n, partes = Math.max(1, Math.ceil(anH / 60 - 1e-9)), altos = [];
+          tramosAlto.forEach(function (h) { altos = altos.concat(altosPuerta(h, esc)); });
           for (var w = 0; w < partes; w++) altos.forEach(function (al) { pu.hojas.push({ an: r2(anH / partes), al: al, tarifa: true }); });
         }
       });
@@ -319,7 +325,7 @@
     });
     // LED y baldas de cristal por cuerpo: extras (no cuentan en la referencia). Solo con casco.
     if (conCasco) {
-      var H = num(t.alto), F = num(t.fondo), util = H - (t.zocalo ? (num(t.alturaZocalo) || 10) : 0);
+      var H = num(t.alto), F = num(t.fondo), alt0 = Math.max(0, num(t.altillo)), util = H - (t.zocalo ? (num(t.alturaZocalo) || 10) : 0) - (alt0 > 0 ? alt0 + 1.6 : 0);
       var L = tabla.led || {}, C = tabla.cristal || {};
       (t.cuerpos || []).forEach(function (c) {
         if (c.ledCostados) ledM += 2 * util / 100;
@@ -361,10 +367,11 @@
     'Tiradores y cerraduras', 'IKEA', 'Otros'];
   function posFam(f) { var i = FAM_ORDEN.indexOf(f); return i < 0 ? FAM_ORDEN.length : i; }
   // Interiores que caben en un cuerpo de `ancho` cm (y, si se da, en un armario de `fondo` cm), por familia y precio.
-  ARM.interiorPara = function (ancho, tabla, fondo) {
-    var c = tabla.interior || {}, a = num(ancho), f = fondo === undefined || fondo === null || fondo === '' ? null : num(fondo);
+  // `hasta` (opcional): ancho máximo del hueco si la división se puede mover; vale lo que quepa en algún ancho entre `ancho` y `hasta`.
+  ARM.interiorPara = function (ancho, tabla, fondo, hasta) {
+    var c = tabla.interior || {}, a = num(ancho), b = hasta ? Math.max(a, num(hasta)) : a, f = fondo === undefined || fondo === null || fondo === '' ? null : num(fondo);
     return Object.keys(c).map(function (k) { var p = c[k]; return { cod: k, nombre: p.nombre, familia: p.familia || 'Otros', min: p.min, max: p.max, prov: p.prov, fondoMin: p.fondoMin, fondoMax: p.fondoMax, coste: ARM.costeProducto(p, tabla) }; })
-      .filter(function (p) { return (p.min === undefined || a >= num(p.min)) && (p.max === undefined || a <= num(p.max))
+      .filter(function (p) { return (p.min === undefined || b >= num(p.min)) && (p.max === undefined || a <= num(p.max))
         && (f === null || ((p.fondoMin === undefined || f >= num(p.fondoMin)) && (p.fondoMax === undefined || f <= num(p.fondoMax)))); })
       .sort(function (x, y) {
         var a2 = posFam(x.familia), b2 = posFam(y.familia);
@@ -387,7 +394,7 @@
   };
   ARM.anchoHueco = function (c) {
     var dv = Math.max(0, Math.round(num(c && c.divisiones))), an = num(c && c.ancho);
-    return dv ? r2((an - 3.2 - 1.6 * dv) / (dv + 1) + 3.2) : an;
+    return dv ? r2((an - 1.6 * dv) / (dv + 1)) : an;   // hueco 100 con una división de 1,6 → 2 de 49,2
   };
   ARM.semaforo = function (base, ref) {
     if (base === null || base === undefined || !ref) return null;
@@ -565,7 +572,7 @@
     var p = t.puertas || {}, n = (t.cuerpos || []).length, h = p.tipo === 'ninguna' ? 0 : (/^corredera/.test(p.tipo) ? hojasDe(t) : null);
     if (t.clase === 'puerta_paso') return 'Hueco ' + num(t.ancho) + ' × ' + num(t.alto) + ' · puerta corredera de paso';
     var s = num(t.ancho) + ' × ' + num(t.alto) + ' × ' + num(t.fondo);
-    if (t.clase !== 'solo_puertas') s += ' · ' + n + (n === 1 ? ' cuerpo' : ' cuerpos');
+    if (t.clase !== 'solo_puertas') s += ' · ' + n + (n === 1 ? ' cuerpo' : ' cuerpos') + (num(t.altillo) > 0 ? ' · altillo ' + num(t.altillo) : '');
     if (/^corredera/.test(p.tipo)) s += ' · ' + h + ' correderas';
     else if (p.tipo === 'plegable_tablero') s += ' · ' + hojasDe(t) + ' plegables';
     else if (p.tipo === 'escamoteable_tablero') s += ' · ' + hojasDe(t) + ' escamoteables';
@@ -586,6 +593,7 @@
       + campo(t.clase === 'puerta_paso' ? 'Ancho del hueco' : 'Ancho (cm)', inp(gid, lid, 'ancho', t.ancho))
       + campo(t.clase === 'puerta_paso' ? 'Alto del hueco' : 'Alto', inp(gid, lid, 'alto', t.alto))
       + (t.clase === 'puerta_paso' ? '' : campo('Fondo', inp(gid, lid, 'fondo', t.fondo)))
+      + (conCuerpos(t) ? campo('Altillo (cm)', inp(gid, lid, 'altillo', t.altillo || 0).replace('<input', '<input data-arm="altillo" title="0 = sin altillo; la balda del maletero pasa a ser su suelo"')) : '')
       + (t.clase === 'solo_interior' ? campo('Tablero de estantes y maletero', sel(gid, lid, 'casco', prods('materiales', t.casco, esTablero)), '2 1 160px') : '')
       + (!conCuerpos(t) || t.clase === 'solo_interior' ? '' :
         campo('Casco', sel(gid, lid, 'casco', prods('materiales', t.casco, esTablero)), '2 1 160px')
@@ -664,10 +672,11 @@
         + (cliente() ? '' : ' <span style="color:#888">' + (e === null ? '<span class="arm-sinprecio" style="color:#b00020">sin precio</span>' : r2(e).toFixed(2).replace('.', ',') + ' €') + ' · ' + eh(p.prov || '') + '</span>')
         + ' <button class="btn bgh bsm" onclick="ARM.delExtra(' + gid + ',' + lid + ',' + k + ',' + j + ')">✕</button></div>';
     });
-    var hueco = ARM.anchoHueco(c), lista = ARM.interiorPara(hueco, T, fondo), fams = {};
+    var hueco = ARM.anchoHueco(c), conDiv = hueco !== num(c.ancho), hasta = conDiv ? r2(num(c.ancho) * 0.75) : null;
+    var lista = ARM.interiorPara(hueco, T, fondo, hasta), fams = {};
     lista.forEach(function (p) { (fams[p.familia] = fams[p.familia] || []).push(p); });
     if (!lista.length) return h;
-    var opts = '<option value="">+ interior (cabe en ' + String(hueco).replace('.', ',') + ' cm' + (hueco !== num(c.ancho) ? ' por hueco' : '') + ')…</option>' + Object.keys(fams).map(function (f) {
+    var opts = '<option value="">+ interior (cabe en ' + String(hueco).replace('.', ',') + ' cm' + (conDiv ? ' por hueco (hasta ' + String(hasta).replace('.', ',') + ' moviendo la división)' : '') + ')…</option>' + Object.keys(fams).map(function (f) {
       return '<optgroup label="' + eh(f) + '">' + fams[f].map(function (p) {
         return '<option value="' + eh(p.cod) + '">' + eh(p.nombre) + (cliente() ? '' : ' · ' + (p.coste === null ? 'sin precio' : r2(p.coste).toFixed(2).replace('.', ',') + ' €') + ' · ' + eh(p.prov || '')) + '</option>';
       }).join('') + '</optgroup>';
@@ -720,6 +729,7 @@
       var txt = cs.length + (cs.length === 1 ? ' cuerpo' : ' cuerpos');
       if (con.length) txt += ' con ' + (con.length > 1 ? con.slice(0, -1).join(', ') + ' y ' + con[con.length - 1] : con[0]);
       partes.push(txt);
+      if (num(t.altillo) > 0) partes.push('altillo de ' + num(t.altillo) + ' cm');
       if (led) partes.push('iluminación LED con sensor');
       if (ints.length) partes.push('interiores: ' + ints.join(', ').toLowerCase());
     }
@@ -795,7 +805,7 @@
     return { g: g, l: g && g.lines.find(function (x) { return x.id === lid; }) };
   }
   function repintar(gid) { if (typeof root.renderLines === 'function') root.renderLines(gid); if (typeof root.upBan === 'function') root.upBan(); }
-  var NUMS = ['ancho', 'alto', 'fondo', 'estantes', 'cajones', 'hojas', 'recargo'];
+  var NUMS = ['ancho', 'alto', 'fondo', 'estantes', 'cajones', 'hojas', 'recargo', 'altillo'];
   ARM.cambia = function (gid, lid, k, v) {
     var x = buscarLinea(gid, lid); if (!x.l) return;
     if (k === 'clase') { var n = ARM.nuevoTramo(v), t = x.l.arm; n.nombre = t.nombre; n.ancho = t.ancho; n.alto = t.alto; n.fondo = t.fondo; n.casco = t.casco; if (v !== 'solo_puertas' && v !== 'puerta_paso' && t.clase !== 'puerta_paso' && t.cuerpos.length) n.cuerpos = t.cuerpos; if (v === 'puerta_paso' || t.clase === 'puerta_paso') { n.ancho = ARM.nuevoTramo(v).ancho; n.alto = ARM.nuevoTramo(v).alto; n.fondo = ARM.nuevoTramo(v).fondo; } x.l.arm = n; }
