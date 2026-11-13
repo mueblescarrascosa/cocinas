@@ -10,6 +10,22 @@
     var t = (typeof CAT_MODULES !== 'undefined') && CAT_MODULES[l.m];
     return !!(t && t[l.mo] && t[l.mo].indexOf(String(l.med)) >= 0);
   }
+  // Medida del catálogo para una medida que no está: la inmediatamente superior (55 → 60; si no hay ninguna mayor,
+  // la más grande). Los rincones, la más cercana (un rincón de 93×93 es el de 90), y si empatan, la menor.
+  function medidaCatalogo(l) {
+    var t = (typeof CAT_MODULES !== 'undefined') && CAT_MODULES[l.m], ms = t && t[l.mo];
+    if (!ms || !ms.length) return null;
+    var n = parseFloat(String(l.med).replace(',', '.')), nums = ms.map(function (x) { return parseFloat(x); });
+    if (isNaN(n)) return null;
+    if (/RINC/i.test(l.mo)) {
+      var mejor = null;
+      ms.forEach(function (x, i) { var d = Math.abs(nums[i] - n); if (mejor === null || d < mejor.d || (d === mejor.d && nums[i] < mejor.v)) mejor = { x: x, d: d, v: nums[i] }; });
+      return mejor.x;
+    }
+    var mayores = ms.filter(function (x, i) { return nums[i] >= n; });
+    if (mayores.length) return mayores.reduce(function (a, b) { return parseFloat(a) <= parseFloat(b) ? a : b; });
+    return ms.reduce(function (a, b) { return parseFloat(a) >= parseFloat(b) ? a : b; });
+  }
   // Medida más cercana que sí exista para ese tipo y modelo (para la nota de «revisar»).
   function cercana(l) {
     var t = (typeof CAT_MODULES !== 'undefined') && CAT_MODULES[l.m], ms = t && t[l.mo];
@@ -29,8 +45,13 @@
         if (g.casco && typeof CASCO_ACABADOS !== 'undefined' && CASCO_ACABADOS.indexOf(g.casco) >= 0) casco.acab = g.casco;
         var lines = [];
         (g.lineas || []).forEach(function (l) {
+          var otra = enCatalogo(l) ? null : medidaCatalogo(l);
           if (enCatalogo(l)) lines.push({ id: nid(), m: l.m, mo: l.mo, med: String(l.med), und: l.und || 1, extras: [] });
-          else {
+          else if (otra) {
+            // Se pone la del catálogo y se avisa en «Revisar» de que se ha cambiado la medida.
+            lines.push({ id: nid(), m: l.m, mo: l.mo, med: String(otra), und: l.und || 1, extras: [] });
+            revisar.push('ℹ ' + (l.texto || (l.m + ' ' + l.mo + ' ' + l.med)) + ': medido ' + String(l.med).replace('.', ',') + ', puesto el de ' + otra);
+          } else {
             var c = cercana(l);
             revisar.push('⚠ ' + (l.texto || (l.m + ' ' + l.mo + ' ' + l.med)) + ': no está en el catálogo' + (c ? ' (la más cercana: ' + l.m + ' ' + l.mo + ' ' + c + ')' : ''));
           }
@@ -92,5 +113,5 @@
     setTimeout(function () { importar(p); }, 400);
   })();
 
-  window.LIBRETA = { grupos: grupos, importar: importar, enCatalogo: enCatalogo };
+  window.LIBRETA = { grupos: grupos, importar: importar, enCatalogo: enCatalogo, medidaCatalogo: medidaCatalogo };
 })();

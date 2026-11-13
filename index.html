@@ -324,13 +324,13 @@ body.bloq #ESTADO-AVISO { display:block; }
 @media (max-width: 600px) {
   [id^="gl"] > table.lt { min-width:0 !important; }
   [id^="gl"] > table.lt thead { display:none; }
-  [id^="gl"] > table.lt tbody tr { display:grid; grid-template-columns:20px minmax(0,1fr) auto auto auto; grid-template-areas:"n e e e t" "n m m d p" "n u u f f" "n x x x x"; column-gap:8px; row-gap:5px; padding:10px 2px; border-bottom:1px solid var(--line); align-items:center; }
+  [id^="gl"] > table.lt tbody tr { display:grid; grid-template-columns:20px minmax(0,1fr) auto auto auto; grid-template-areas:"n e e e t" "n m m m m" "n d d p p" "n u u f f" "n x x x x"; column-gap:8px; row-gap:5px; padding:10px 2px; border-bottom:1px solid var(--line); align-items:center; }
   [id^="gl"] > table.lt tbody tr:last-child { border-bottom:none; }
   [id^="gl"] > table.lt tbody td { display:block; padding:0 !important; border:0 !important; white-space:normal !important; text-align:left; min-width:0; }
   [id^="gl"] > table.lt tbody td:nth-child(1) { grid-area:n; align-self:start; padding-top:2px !important; }
   [id^="gl"] > table.lt tbody td:nth-child(2) { grid-area:e; align-self:start; }
   [id^="gl"] > table.lt tbody td:nth-child(3) { grid-area:m; color:var(--ink2); font-size:13px; }
-  [id^="gl"] > table.lt tbody td:nth-child(4) { grid-area:d; color:var(--ink2); font-size:13px; text-align:right; white-space:nowrap !important; }
+  [id^="gl"] > table.lt tbody td:nth-child(4) { grid-area:d; color:var(--ink2); font-size:13px; text-align:left; white-space:nowrap !important; }
   [id^="gl"] > table.lt tbody td:nth-child(5) { grid-area:u; white-space:nowrap !important; }
   [id^="gl"] > table.lt tbody td:nth-child(5)::before { content:'Und. '; font-size:12px; color:var(--muted); }
   [id^="gl"] > table.lt tbody td:nth-child(6) { grid-area:f; display:flex; align-items:center; gap:3px; }
@@ -340,6 +340,7 @@ body.bloq #ESTADO-AVISO { display:block; }
   [id^="gl"] > table.lt tbody td:nth-child(8) { grid-area:t; align-self:start; text-align:right; font-weight:700; color:var(--a); white-space:nowrap !important; }
   [id^="gl"] > table.lt tbody td:nth-child(9) { grid-area:x; text-align:right; white-space:nowrap !important; }
   [id^="gl"] > table.lt tbody td input[type="number"] { padding:4px 6px !important; font-size:15px !important; min-height:0; }
+  [id^="gl"] > table.lt tbody td select.ed-linea { width:100%; max-width:none !important; font-size:15px !important; padding:4px 6px !important; }
   [id^="gl"] > table.lt .pmanual-tag { margin:4px 0 0 !important; }
   [id^="gl"] > table.lt .pmanual-tag input { width:70px !important; }
   [id^="gl"] > table.lt tbody td:nth-child(9) .btn { min-height:36px; padding:6px 10px !important; }
@@ -349,7 +350,7 @@ body.bloq #ESTADO-AVISO { display:block; }
   [id^="gl"] > table.lt .dif-inp { width:46px !important; min-width:46px; }
   /* el plus de dificultad por mueble casi nunca se usa: en el móvil solo se ve si tiene valor */
   [id^="gl"] > table.lt tbody td:nth-child(6):has(.dif-inp[value="0"]) { display:none; }
-  [id^="gl"] > table.lt tbody tr:has(td:nth-child(6) .dif-inp[value="0"]) { grid-template-areas:"n e e e t" "n m m d p" "n u u x x"; }
+  [id^="gl"] > table.lt tbody tr:has(td:nth-child(6) .dif-inp[value="0"]) { grid-template-areas:"n e e e t" "n m m m m" "n d d p p" "n u u x x"; }
   [id^="gl"] > table.lt tbody td:nth-child(n+10) { grid-column:2 / -1; }
 }
 @media (max-width: 480px) {
@@ -371,7 +372,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v156</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v157</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -3979,11 +3980,13 @@ function _renderLinesBase(gid) {
     if(hasFF) extHtml+='<div style="font-size:.79rem;color:#7B3FA0;padding-left:8px">\u2514 casco+frente\u00d72 +'+ffExtra.toFixed(2)+' \u20ac</div>';
     extSum+=ffExtra;
     var lt=lineTotal(l,g); sub+=lt;
+    // v157: en un grupo de muebles, tipo, modelo y medida se cambian en la propia línea (sin borrarla y ponerla de nuevo).
+    var _ed = (g.tipo||'muebles')==='muebles' && !_congelado() && l.med!=='\u2014';
     return '<tr>'
       +'<td style="color:var(--muted);font-size:.75rem;vertical-align:top;padding-top:9px">'+(i+1)+'</td>'
-      +'<td style="vertical-align:top"><strong>'+eh(l.m)+'</strong>'+(extHtml?'<div style="margin-top:2px">'+extHtml+'</div>':'')+'</td>'
-      +'<td style="vertical-align:top">'+eh(l.mo)+'</td>'
-      +'<td class="tc" style="vertical-align:top">'+(l.med==='\u2014'?'\u2014':l.med+' cm')+'</td>'
+      +'<td style="vertical-align:top">'+(_ed?_selLinea(gid,l,'m',g):'<strong>'+eh(l.m)+'</strong>')+(extHtml?'<div style="margin-top:2px">'+extHtml+'</div>':'')+'</td>'
+      +'<td style="vertical-align:top">'+(_ed?_selLinea(gid,l,'mo',g):eh(l.mo))+'</td>'
+      +'<td class="tc" style="vertical-align:top">'+(_ed?_selLinea(gid,l,'med',g):(l.med==='\u2014'?'\u2014':l.med+' cm'))+'</td>'
       +'<td class="tc" style="vertical-align:top"><input type="number" value="'+l.und+'" min="1" max="99" style="width:48px;text-align:center;padding:3px 4px;font-size:.79rem" onchange="chUnd('+gid+','+l.id+',this.value)"></td>'
       +'<td class="tr" style="vertical-align:top">'+(p!==null?p.toFixed(2)+' \u20ac':'\u2014')
         +(adj&&p0!==null?'<div style="font-size:.77rem;color:#b08a1e">base '+p0.toFixed(2)+'</div>':'')+'</td>'
@@ -4289,6 +4292,36 @@ function setGCal(gid, cal) {
   renderLines(gid);upBan();
 }
 
+// v157: selector de tipo, modelo o medida de una línea de muebles ya puesta.
+function _selLinea(gid, l, campo, g) {
+  var cat = getCat(g) || {}, ops;
+  if (campo === 'm') ops = Object.keys(cat);
+  else if (campo === 'mo') ops = Object.keys(cat[l.m] || {});
+  else ops = ((cat[l.m] || {})[l.mo] || []).slice();
+  if (ops.indexOf(String(l[campo])) < 0) ops.unshift(String(l[campo]));
+  return '<select class="ed-linea" data-campo="'+campo+'" title="Cambiar '+(campo==='m'?'tipo':campo==='mo'?'modelo':'medida')+'" '
+    +'style="max-width:100%;padding:2px 3px;font-size:.79rem;'+(campo==='m'?'font-weight:700;':'')+'" '
+    +'onchange="chLineaCat('+gid+','+l.id+',\''+campo+'\',this.value)">'
+    +ops.map(function(o){ return '<option value="'+eh(o)+'"'+(o===String(l[campo])?' selected':'')+'>'+eh(o)+(campo==='med'?' cm':'')+'</option>'; }).join('')+'</select>';
+}
+// Cambia tipo, modelo o medida; si lo de después ya no existe, el modelo pasa al primero y la medida a la
+// inmediatamente superior que haya (o la mayor). Los extras se quedan (los que no valgan salen en rojo).
+function chLineaCat(gid, lid, campo, val) {
+  var g=ST.groups.find(function(g){return g.id===gid;});if(!g)return;
+  var l=g.lines.find(function(l){return l.id===lid;});if(!l)return;
+  var cat=getCat(g)||{};
+  l[campo]=val;
+  var mos=Object.keys(cat[l.m]||{});
+  if (mos.length && mos.indexOf(l.mo)<0) l.mo=mos[0];
+  var meds=(cat[l.m]||{})[l.mo]||[];
+  if (meds.length && meds.indexOf(String(l.med))<0) {
+    var n=parseFloat(l.med), mayores=meds.filter(function(x){return parseFloat(x)>=n;});
+    l.med = mayores.length ? mayores.reduce(function(a,b){return parseFloat(a)<=parseFloat(b)?a:b;}) : meds.reduce(function(a,b){return parseFloat(a)>=parseFloat(b)?a:b;});
+  }
+  renderLines(gid);upBan();
+  if (typeof markDirty==='function') markDirty();
+  toast('Cambiado: '+l.m+' \u00b7 '+l.mo+' \u00b7 '+l.med+' cm');
+}
 function chUnd(gid, lid, val) {
   var g=ST.groups.find(function(g){return g.id===gid;});if(!g)return;
   var l=g.lines.find(function(l){return l.id===lid;});if(!l)return;
