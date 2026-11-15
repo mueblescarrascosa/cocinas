@@ -372,7 +372,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v157</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v158</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -471,6 +471,7 @@ body.bloq #ESTADO-AVISO { display:block; }
           <a onclick="openHerrajesList();closeMenus()">&#x1F527; Lista de herrajes</a>
           <a onclick="compartirWhatsApp();closeMenus()">&#x1F4AC; Enviar por WhatsApp</a>
           <a onclick="compartirEmail();closeMenus()">&#x2709;&#xFE0F; Enviar por email</a>
+          <a onclick="closeMenus();if(window.abrirGuiaColores)abrirGuiaColores()">&#x1F3A8; Gu&#237;a de colores</a>
         </div>
       </div>
       <div class="menu-wrap hide-cliente">
@@ -678,7 +679,7 @@ var CLAVES_SYNC = ['cat','cfg','electro_johnson_v1','electro_lista_v1','exg_inst
   'extras_sync_v24','extras_sync_v25','extras_sync_v26','extras_sync_v28','extras_sync_v29','extras_sync_v30','extras_v1','armarios_v1',
   'logo','map_costados','map_regletas','modmap_v15','modelos_grupos_v1','params','pnum','prices',
   'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
-  'modmap_v16','params_m2','tiradores_m2','map_costados_m2','map_regletas_m2'];
+  'modmap_v16','params_m2','tiradores_m2','map_costados_m2','map_regletas_m2','guia_colores_v1'];
 // (historial_v1 se sincroniza aparte; ultimo_backup y pnum quedan locales)
 var _syncCache = {};
 // hasta haber descargado la nube NO se sube nada. Antes, al abrir la app se subían
@@ -8806,7 +8807,7 @@ function descargarCopiaSeguridad() {
     'modelos_grupos_v1',
     'logo','map_costados','map_regletas','modmap_v15','params','pnum','prices',
     'texto_base_v1','presentacion_base_v1','herr_cat_v1','tiradores_v1',
-    'modmap_v16','params_m2','tiradores_m2','map_costados_m2','map_regletas_m2'];
+    'modmap_v16','params_m2','tiradores_m2','map_costados_m2','map_regletas_m2','guia_colores_v1'];
   claves.forEach(function(k){
     var v = localStorage.getItem(k);
     if (v !== null) backup.datos[k] = v;
@@ -9848,6 +9849,7 @@ if (!totalL() && hayMotor2()) activarMotor(2);
 </script>
 <script src="armarios.js"></script>
 <script src="libreta.js"></script>
+<script src="colores.js"></script>
 <script>
 // v122 · Arranque sin recargas: antes de arrancar la app se bajan de la nube los datos de la cuenta
 // (una sola petición, como mucho 4 s). La app arranca ya con lo último y no tiene que recargarse.
