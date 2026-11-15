@@ -3,8 +3,8 @@
 // Las tipografías y la librería de PDF (cdnjs): de la copia guardada, que se refresca por detrás.
 // Supabase y WhatsApp no se tocan: van siempre a la red.
 // Al actualizarse solo borra sus cachés (cocinas-*): en la misma web hay otras apps con las suyas.
-const CACHE = 'cocinas-v41';
-const APP = ['./', './index.html', './armarios.js', './libreta.js', './colores.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const CACHE = 'cocinas-v42';
+const APP = ['./', './index.html', './armarios.js', './libreta.js', './colores.js', './asistente.js', './asistente.css', './guia-uso.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 const LIBS = /^https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com)\//;
 
 self.addEventListener('install', e => {

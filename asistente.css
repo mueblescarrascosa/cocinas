@@ -1,0 +1,86 @@
+/* Asistente (v160): presupuesto paso a paso y lectura más fácil. */
+
+/* Más legible para todos: etiquetas sin mayúsculas, más grandes y con más contraste. */
+:root { --muted: #5f6078; }
+lbl { text-transform: none !important; letter-spacing: 0 !important; font-size: .9rem !important; color: #3d3d5c !important; font-weight: 600; }
+.mut { font-size: .88rem; }
+input, select, textarea { font-size: 1rem; }
+.btn { font-size: .92rem; }
+.btn.bsm { font-size: .84rem; }
+
+/* Letra grande (se recuerda en este ordenador). */
+body.asis-letra { zoom: 1.18; }
+
+/* Menú de arriba. */
+nav .asis-oculto { display: none !important; }
+#nadv, #nletra { white-space: nowrap; }
+#nletra { border: 1px solid rgba(255, 255, 255, .35); border-radius: 8px; margin-left: 6px; }
+body.cliente-mode #nadv { display: none; }
+
+/* Barra de pasos. */
+.asis-pasos { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 14px 0 6px; }
+.asis-pasos ol { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; flex: 1; counter-reset: none; }
+.asis-pasos li { flex: 1 1 150px; }
+.asis-pasos li button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 2px solid var(--line); background: var(--w); border-radius: 10px;
+  font: 600 1rem 'DM Sans', sans-serif; color: var(--ink2); cursor: pointer; text-align: left; }
+.asis-pasos li button:hover { border-color: var(--a2); }
+.asis-pasos li button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.asis-num { flex: 0 0 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--line); color: var(--ink); font-weight: 700; }
+.asis-pasos li button.on { border-color: var(--a); background: #eef6f1; color: var(--ink); }
+.asis-pasos li button.on .asis-num { background: var(--a); color: #fff; }
+.asis-pasos li button.hecho .asis-num { background: #cfe5d8; color: var(--a); }
+.asis-vertodo { border: 1px dashed var(--muted); background: transparent; border-radius: 8px; padding: 8px 12px; font: 600 .9rem 'DM Sans', sans-serif; color: var(--ink2); cursor: pointer; white-space: nowrap; }
+
+/* Explicación de cada paso. */
+.asis-ayuda { background: #fffbea; border: 1px solid #ecd9a0; border-radius: 10px; padding: 12px 16px; margin: 8px 0 14px; font-size: 1.02rem; line-height: 1.55; color: var(--ink); }
+.asis-ayuda:empty { display: none; }
+.asis-masayuda { color: var(--a); font-weight: 600; margin-left: 4px; white-space: nowrap; }
+
+/* Solo se ve el paso en que se está (salvo «Ver todo junto»). */
+body.asis:not(.asis-todo) #pb[data-paso-actual="0"] > [data-paso]:not([data-paso="0"]),
+body.asis:not(.asis-todo) #pb[data-paso-actual="1"] > [data-paso]:not([data-paso="1"]),
+body.asis:not(.asis-todo) #pb[data-paso-actual="2"] > [data-paso]:not([data-paso="2"]),
+body.asis:not(.asis-todo) #pb[data-paso-actual="3"] > [data-paso]:not([data-paso="3"]),
+body.asis:not(.asis-todo) #pb[data-paso-actual="4"] > [data-paso]:not([data-paso="4"]) { display: none; }
+body.asis-todo .asis-pie { display: none; }
+
+/* Atrás / Siguiente. */
+.asis-pie { display: flex; justify-content: space-between; gap: 12px; margin: 18px 0 40px; }
+.asis-grande { font-size: 1.02rem !important; padding: 12px 20px !important; border-radius: 10px !important; }
+#ASIS-SIGUIENTE { min-width: 260px; }
+
+/* Guardar siempre a la vista. */
+.asis-guardar { font-size: .98rem !important; padding: 9px 16px !important; }
+.asis-guardar.pendiente { box-shadow: 0 0 0 3px #ffd70088; }
+
+/* Paso 4 y 5. */
+.asis-col-res { margin: 6px 0 14px; font-size: 1rem; }
+.asis-total { display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0 16px; }
+.asis-total > div { flex: 1 1 180px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; }
+.asis-total span { font-size: .9rem; color: var(--muted); }
+.asis-total b { font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.asis-total .asis-final { color: var(--a); }
+.asis-sub { font: 700 1rem 'DM Sans', sans-serif; margin: 14px 0 8px; color: var(--ink); }
+.asis-campos { gap: 12px; }
+.asis-acciones { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* Grupos: detalles técnicos plegados. */
+.asis-tecnico-btn { margin: 8px 0; }
+body.asis .gb:not(.asis-tecnico) > [id^="gcasco"], body.asis .gb:not(.asis-tecnico) > [id^="gherr"],
+body.asis .gb:not(.asis-tecnico) .ajd-abrir, body.asis .gb:not(.asis-tecnico) .frmodelo-pick { display: none !important; }
+body.asis .gb > .mtabs::before { content: 'Calidad (cambia el precio):'; display: block; width: 100%; font: 600 .9rem 'DM Sans', sans-serif; color: #3d3d5c; margin-bottom: 4px; }
+body.asis .gb > .mtabs { flex-wrap: wrap; }
+body.asis .gb button.dup-btn, body.asis .gb button.lmove { font-size: .84rem; }
+
+/* Avisos (modal propio). */
+.asis-modal { position: fixed; inset: 0; z-index: 3500; background: rgba(15, 20, 25, .55); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.asis-caja { background: #fff; color: var(--ink); border-radius: 14px; max-width: 560px; width: 100%; padding: 26px 28px; box-shadow: 0 12px 40px rgba(0, 0, 0, .25); font-size: 1.05rem; line-height: 1.55; }
+.asis-caja h2 { font: 400 1.5rem 'DM Serif Display', serif; margin: 0 0 12px; }
+.asis-caja p { margin: 0 0 12px; }
+.asis-lista { margin: 0 0 12px; padding-left: 24px; display: grid; gap: 4px; }
+.asis-botones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+
+@media print { .asis-pasos, .asis-ayuda, .asis-pie, .asis-guardar { display: none !important; } }
+
+/* En el móvil los botones de iconos se quedan sin texto (no caben). */
+@media (max-width: 760px) { .asis-txt { display: none; } .asis-pasos li { flex-basis: 46%; } #ASIS-SIGUIENTE { min-width: 0; flex: 1; } }

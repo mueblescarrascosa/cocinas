@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía de uso del presupuestador</title>
+<style>
+:root { --tinta: #1a1a2e; --suave: #4a4a66; --linea: #dcdce8; --fondo: #f7f7fc; --verde: #2d6a4f; --oro: #b5943a; --nota: #fffbea; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--tinta); font: 19px/1.6 'Segoe UI', Arial, sans-serif; }
+.hoja { max-width: 820px; margin: 0 auto; padding: 28px 20px 60px; }
+header { border-bottom: 3px solid var(--verde); padding-bottom: 14px; margin-bottom: 20px; }
+h1 { font-size: 34px; margin: 0 0 6px; line-height: 1.2; }
+h2 { font-size: 26px; margin: 34px 0 10px; padding-top: 6px; border-top: 1px solid var(--linea); }
+h2 .n { display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--verde); color: #fff; font-size: 20px; margin-right: 10px; vertical-align: 3px; }
+h3 { font-size: 21px; margin: 20px 0 6px; }
+p, li { max-width: 68ch; }
+ol, ul { padding-left: 28px; }
+li { margin: 6px 0; }
+.boton { display: inline-block; border: 2px solid var(--verde); border-radius: 8px; padding: 1px 9px; font-weight: 700; color: var(--verde); background: #fff; white-space: nowrap; }
+.nota { background: var(--nota); border: 1px solid #ecd9a0; border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+.indice { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; padding: 0; list-style: none; }
+.indice a { display: block; padding: 10px 14px; border: 1px solid var(--linea); border-radius: 10px; background: #fff; color: var(--tinta); text-decoration: none; font-weight: 600; }
+.indice a:hover, .indice a:focus-visible { border-color: var(--verde); outline: none; }
+.imprimir { float: right; font: 600 16px inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--verde); background: #fff; color: var(--verde); cursor: pointer; }
+@media print { body { background: #fff; font-size: 13pt; } .imprimir { display: none; } h2 { break-after: avoid; } .nota { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="hoja">
+<header>
+  <button class="imprimir" onclick="window.print()">Imprimir esta guía</button>
+  <h1>Guía de uso del presupuestador</h1>
+  <p>Muebles Carrascosa. Para hacer un presupuesto de cocina, armario o lo que haga falta, paso a paso.</p>
+</header>
+
+<ul class="indice">
+  <li><a href="#empezar">Antes de empezar</a></li>
+  <li><a href="#cliente">1. Cliente</a></li>
+  <li><a href="#muebles">2. Muebles</a></li>
+  <li><a href="#otros">3. Transporte e imágenes</a></li>
+  <li><a href="#colores">4. Colores</a></li>
+  <li><a href="#enviar">5. Revisar y enviar</a></li>
+  <li><a href="#guardados">Abrir un presupuesto guardado</a></li>
+  <li><a href="#libreta">Desde la Libreta Taller</a></li>
+  <li><a href="#trucos">Letra grande, modo cliente y ayuda</a></li>
+  <li><a href="#problemas">Si algo no va</a></li>
+</ul>
+
+<h2 id="empezar">Antes de empezar</h2>
+<p>Arriba verás cinco botones numerados: son los <b>pasos del presupuesto</b>. El que estás haciendo sale en verde. Debajo, en amarillo, siempre hay una explicación de qué hacer en ese paso.</p>
+<p>Para ir de un paso a otro pulsa <span class="boton">Siguiente →</span> abajo a la derecha, o directamente el número del paso de arriba.</p>
+<div class="nota"><b>Para practicar sin miedo:</b> la primera vez sale un aviso con el botón <span class="boton">Practicar con un ejemplo</span>. Abre un presupuesto inventado con unos muebles puestos. Puedes cambiar lo que quieras: no se guarda si tú no le das a Guardar.</div>
+<p>Lo que hagas <b>no se guarda solo</b>: pulsa <span class="boton">💾 Guardar</span>, arriba junto al total. Si hay cambios sin guardar, el botón tiene un borde amarillo y pone «Sin guardar».</p>
+
+<h2 id="cliente"><span class="n">1</span>Cliente</h2>
+<ol>
+  <li>Escribe el <b>nombre del cliente</b>.</li>
+  <li>Si los tienes, la <b>dirección</b> y el <b>teléfono</b>. La fecha ya viene puesta.</li>
+  <li>En <b>Notas internas</b> puedes apuntar recordatorios para ti. No salen en el PDF del cliente.</li>
+</ol>
+
+<h2 id="muebles"><span class="n">2</span>Muebles</h2>
+<p>Los muebles se ordenan en <b>grupos</b>: por ejemplo «Bajos», «Altos» o «Columnas». Ya hay un grupo hecho para empezar.</p>
+<h3>Añadir un mueble</h3>
+<ol>
+  <li>En el grupo, elige la <b>calidad</b>: G1 es la más económica y G8 la más alta. Cambiarla cambia el precio de todo el grupo.</li>
+  <li>En <b>Mueble</b> elige el tipo (bajo, alto, columna…), luego el <b>Modelo</b> y la <b>Medida</b>.</li>
+  <li>Pulsa <span class="boton">+ Añadir mueble</span>. Aparece en la lista de abajo con su precio.</li>
+</ol>
+<h3>Cambiar o quitar un mueble</h3>
+<ul>
+  <li>Tipo, modelo y medida se cambian en la propia línea, con sus desplegables.</li>
+  <li><span class="boton">Duplicar</span> pone otro igual. <span class="boton">✕ Quitar</span> lo quita. Las flechas lo suben o bajan en la lista.</li>
+  <li><span class="boton">+ extras</span> añade cosas a ese mueble (cajón especial, cubo de basura…).</li>
+</ul>
+<h3>Otros grupos</h3>
+<p>Pulsa <span class="boton">+ Nuevo grupo</span> y elige qué es: muebles, electrodomésticos, extras, costados, regletas, armario o vestidor, u otros conceptos. Ponle un nombre y pulsa <span class="boton">Crear grupo</span>.</p>
+<div class="nota">Los <b>detalles técnicos</b> (casco, herrajes, descuento y modelo de puerta) están plegados porque casi nunca hay que tocarlos. Si los necesitas, pulsa <span class="boton">⚙ Detalles técnicos</span> en el grupo.</div>
+
+<h2 id="otros"><span class="n">3</span>Transporte e imágenes</h2>
+<ul>
+  <li>Si hay <b>transporte</b>, escribe lo que cuesta. La <b>instalación</b> se calcula sola según los muebles.</li>
+  <li>Marca <b>Plus por dificultad</b> si la obra es complicada (sube la instalación).</li>
+  <li>Con <span class="boton">+ Añadir imágenes</span> pones fotos o planos del diseño. Salen al final del PDF.</li>
+</ul>
+
+<h2 id="colores"><span class="n">4</span>Colores</h2>
+<p>Pulsa <span class="boton">🎨 Abrir la guía de colores</span>. Es para hacerla con el cliente delante:</p>
+<ol>
+  <li>A la izquierda, di cómo es el <b>suelo</b> (o hazle una foto y toca el suelo), las paredes, la luz, el tamaño y el estilo.</li>
+  <li>En «Lo que quiere el cliente» marca lo que le gusta y lo que <b>no</b> quiere ver, y si hay niños o mascotas.</li>
+  <li>A la derecha salen <b>tres propuestas</b> dibujadas, con el porqué de cada una. Nunca pasan del grupo de precio del presupuesto.</li>
+  <li>Pulsa <span class="boton">Elegir para el presupuesto</span> en la que le guste. Sale en el PDF.</li>
+</ol>
+<p>No es obligatorio: si el cliente ya lo tiene claro, pasa al siguiente paso.</p>
+
+<h2 id="enviar"><span class="n">5</span>Revisar y enviar</h2>
+<ol>
+  <li>Mira el <b>total</b> con y sin IVA.</li>
+  <li>Revisa las <b>condiciones</b>: IVA (21 % o 10 % en reforma), validez, plazo de entrega y señal. Normalmente no hay que tocarlas.</li>
+  <li>Pulsa <span class="boton">💾 Guardar el presupuesto</span>. La primera vez te pide un nombre (ya viene uno puesto).</li>
+  <li>Pulsa <span class="boton">📄 PDF para el cliente</span> para verlo y descargarlo, o envíalo por WhatsApp o email.</li>
+</ol>
+<p><b>Ficha de taller</b> es lo mismo sin precios, para el taller. <b>Rentabilidad</b> y <b>Comparar calidades</b> son solo para ti: nunca salen al cliente.</p>
+
+<h2 id="guardados">Abrir un presupuesto guardado</h2>
+<ol>
+  <li>Arriba, menú <span class="boton">💾 Archivo</span> → <b>Proyectos guardados</b>.</li>
+  <li>Busca por el nombre del cliente y pulsa el que quieras.</li>
+</ol>
+<p>Para empezar otro desde cero: <span class="boton">Archivo</span> → <b>Nuevo presupuesto</b>.</p>
+
+<h2 id="libreta">Desde la Libreta Taller</h2>
+<p>Si la cocina se midió con la Libreta Taller, allí está el botón para pasarla al presupuesto. Los muebles llegan ya puestos con la medida de catálogo. Lo que no encaje sale en un grupo «Revisar» para elegirlo a mano.</p>
+
+<h2 id="trucos">Letra grande, modo cliente y ayuda</h2>
+<ul>
+  <li><span class="boton">A+ Letra grande</span> (arriba) agranda todo en este ordenador. Se quita igual.</li>
+  <li><span class="boton">👁 Modo cliente</span> oculta costes y márgenes para enseñar la pantalla al cliente.</li>
+  <li><span class="boton">🔍 Buscar una función</span> encuentra cualquier cosa que haga la app escribiendo, por ejemplo, «herrajes» o «copia».</li>
+  <li><span class="boton">Ver todo junto</span> enseña el presupuesto entero en una sola página, como antes. Se vuelve con «Volver al paso a paso».</li>
+  <li><span class="boton">⚙ Ajustes avanzados</span> lleva al catálogo de precios y a la configuración. <b>Un cambio ahí afecta a todos los presupuestos</b>: si no estás seguro, no lo toques.</li>
+</ul>
+
+<h2 id="problemas">Si algo no va</h2>
+<ul>
+  <li><b>No sale un modelo o una medida:</b> ese mueble no existe en esa medida en el catálogo. Prueba con la medida de al lado.</li>
+  <li><b>El precio sale con «—»:</b> esa combinación no tiene precio en esa calidad. Prueba otra calidad o avisa.</li>
+  <li><b>Me he equivocado de grupo:</b> quítalo con <span class="boton">✕ Quitar grupo</span> (pide confirmación) y créalo otra vez.</li>
+  <li><b>He cerrado sin guardar:</b> en <span class="boton">Archivo</span> → <b>Copias automáticas (nube)</b> puede estar una copia reciente.</li>
+</ul>
+</div>
+</body>
+</html>
