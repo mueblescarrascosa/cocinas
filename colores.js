@@ -80,6 +80,61 @@
     ['do-azulpiedra', 'Azul piedra nº 45', 'azul', 2, 'f', '#6e8391'], ['do-musgo', 'Verde musgo nº 46', 'verde', 3, 'c', '#4f5a3c'], ['do-cafe', 'Café nº 51', 'madera_oscura', 3, 'c', '#6a5544'],
     ['do-terracota', 'Terracota nova nº 60', 'terracota', 2, 'c', '#b5684b'], ['do-griosc', 'Gris oscuro nº 67', 'oscuro', 3, 'n', '#4c4c4b'], ['do-varcilla', 'Verde arcilla nº 73', 'verde', 2, 'c', '#8f8d6f'],
     ['do-pergamon', 'Pergamon nº 216', 'crema', 1, 'c', '#e4dbc6']]);
+  // ── Moral Maderas (proveedor). Sin tarifa: grupo de precio como la competencia (supermate y brillo como laca, grupo 4;
+  //    seda y texturas, grupo 3). Nombres y códigos de los muestrarios; tonos sacados de las fotos (orientativos). ──
+  serie('Lamiarte', 'Sólidos X-Mat (ultramate antihuellas)', 'Laminado', F, null, [['lm-xm-000', 'SLL-000 White Lamiarte', 'blanco', 1, 'c', '#f4f2ec'], ['lm-xm-001', 'SLL-001 White', 'blanco', 1, 'f', '#eef0f0'], ['lm-xm-002', 'SLL-002 White Blush', 'crema', 1, 'c', '#efe9de'],
+    ['lm-xm-003', 'SLL-003 Plumice Grey', 'crema', 1, 'c', '#c9c1b6'], ['lm-xm-004', 'SLL-004 Irish', 'crema', 1, 'c', '#d8ccbc'], ['lm-xm-007', 'SLL-007 Shore', 'azul', 3, 'f', '#50718c'],
+    ['lm-xm-010', 'SLL-010 English', 'verde', 3, 'n', '#3f5244'], ['lm-xm-013', 'SLL-013 Silver Grey', 'gris_claro', 1, 'f', '#c8cac8'], ['lm-xm-014', 'SLL-014 Dove', 'gris', 2, 'n', '#999896'],
+    ['lm-xm-016', 'SLL-016 Blush', 'terracota', 2, 'c', '#a0604f'], ['lm-xm-019', 'SLL-019 Pearl', 'oscuro', 3, 'n', '#505457'], ['lm-xm-020', 'SLL-020 Black', 'negro', 3, 'n', '#262626']], { g: 4, antihuella: true, prov: 'Moral Maderas' });
+  serie('Lamiarte', 'Sólidos Gloss (brillo)', 'Laminado', F, null, [['lm-gl-000', 'SLG-000 White Lamiarte', 'blanco', 1, 'c', '#f4f2ec'], ['lm-gl-001', 'SLG-001 White', 'blanco', 1, 'f', '#eef0f0'], ['lm-gl-002', 'SLG-002 White Blush', 'crema', 1, 'c', '#efe9de'],
+    ['lm-gl-003', 'SLG-003 Plumice Grey', 'crema', 1, 'c', '#c9c1b6'], ['lm-gl-004', 'SLG-004 Irish', 'crema', 1, 'c', '#d8ccbc'], ['lm-gl-007', 'SLG-007 Shore', 'azul', 3, 'f', '#50718c'],
+    ['lm-gl-010', 'SLG-010 English', 'verde', 3, 'n', '#3f5244'], ['lm-gl-013', 'SLG-013 Silver Grey', 'gris_claro', 1, 'f', '#c8cac8'], ['lm-gl-014', 'SLG-014 Dove', 'gris', 2, 'n', '#999896'],
+    ['lm-gl-016', 'SLG-016 Blush', 'terracota', 2, 'c', '#a0604f'], ['lm-gl-019', 'SLG-019 Pearl', 'oscuro', 3, 'n', '#505457'], ['lm-gl-020', 'SLG-020 Black', 'negro', 3, 'n', '#262626']], { g: 4, brillo: true, prov: 'Moral Maderas' });
+  serie('Lamiarte', 'Sólidos Mat (seda)', 'Laminado', F, null, [['lm-mt-000', 'SLM-000 White Lamiarte', 'blanco', 1, 'c', '#f4f2ec'], ['lm-mt-001', 'SLM-001 White', 'blanco', 1, 'f', '#eef0f0'], ['lm-mt-002', 'SLM-002 White Blush', 'crema', 1, 'c', '#efe9de'],
+    ['lm-mt-003', 'SLM-003 Plumice Grey', 'crema', 1, 'c', '#c9c1b6'], ['lm-mt-004', 'SLM-004 Irish', 'crema', 1, 'c', '#d8ccbc'], ['lm-mt-007', 'SLM-007 Shore', 'azul', 3, 'f', '#50718c'],
+    ['lm-mt-010', 'SLM-010 English', 'verde', 3, 'n', '#3f5244'], ['lm-mt-013', 'SLM-013 Silver Grey', 'gris_claro', 1, 'f', '#c8cac8'], ['lm-mt-014', 'SLM-014 Dove', 'gris', 2, 'n', '#999896'],
+    ['lm-mt-016', 'SLM-016 Blush', 'terracota', 2, 'c', '#a0604f'], ['lm-mt-019', 'SLM-019 Pearl', 'oscuro', 3, 'n', '#505457'], ['lm-mt-020', 'SLM-020 Black', 'negro', 3, 'n', '#262626']], { g: 3, prov: 'Moral Maderas' });
+  // Alvic Just in Time (Moral Maderas): puertas Finger-Pull y Quadro Slim; colores del muestrario JIT.
+  serie('Alvic', 'Luxe (alto brillo)', 'Laca', F, null, [['al-lux-blanco', 'Blanco', 'blanco', 1, 'f', '#f6f6f5'], ['al-lux-polar', 'Blanco Polar', 'blanco', 1, 'n', '#f1f1ef'], ['al-lux-magnolia', 'Magnolia', 'crema', 1, 'c', '#efe7d3'],
+    ['al-lux-cashmere', 'Cashmere', 'crema', 1, 'c', '#d8cdc0'], ['al-lux-iceblue', 'Ice Blue', 'azul', 1, 'f', '#c3d1d8'], ['al-lux-aguamarina', 'Agua Marina', 'azul', 1, 'f', '#a9b8bb'],
+    ['al-lux-marino', 'Azul Marino', 'azul', 3, 'f', '#2f3550'], ['al-lux-ultramar', 'Azul Ultramar', 'azul', 3, 'f', '#3e57c4'], ['al-lux-salvia', 'Verde Salvia', 'verde', 2, 'n', '#6f736b'],
+    ['al-lux-nube', 'Gris Nube', 'gris_claro', 1, 'n', '#c9c7c6'], ['al-lux-basalto', 'Basalto', 'gris', 2, 'c', '#8c7f80'], ['al-lux-plomo', 'Gris Plomo', 'oscuro', 3, 'n', '#5f5862'],
+    ['al-lux-pompei', 'Rojo Pompei', 'terracota', 3, 'c', '#c2503a'], ['al-lux-metallo01', 'Metallo 01 Silver', 'metal', 2, 'f', '#a3a2a5'], ['al-lux-metallo04', 'Metallo 04 Grafitt', 'oscuro', 3, 'f', '#47474b'],
+    ['al-lux-antracita', 'Antracita', 'oscuro', 3, 'n', '#38363a'], ['al-lux-negro', 'Negro', 'negro', 3, 'n', '#1b1b1b']], { g: 4, brillo: true, prov: 'Moral Maderas' });
+  serie('Alvic', 'Luxe Plus (brillo espejo)', 'Laca', F, null, [['al-lxp-polar', 'Blanco Polar', 'blanco', 1, 'n', '#f1f1ef'], ['al-lxp-nogal02', 'Nogal Rosales 02', 'madera_oscura', 3, 'c', '#6b4532'], ['al-lxp-indigo', 'Azul Índigo', 'azul', 3, 'f', '#2e3a5c']], { g: 4, brillo: true, prov: 'Moral Maderas' });
+  serie('Alvic', 'Zenit (supermate antihuellas)', 'Laca', F, null, [['al-zen-blanco', 'Blanco SM', 'blanco', 1, 'n', '#f2f1ee'], ['al-zen-polar', 'Blanco Polar SM', 'blanco', 1, 'f', '#ecedee'], ['al-zen-magnolia', 'Magnolia SM', 'crema', 1, 'c', '#ece6d3'],
+    ['al-zen-cameo', 'Cameo SM', 'crema', 1, 'c', '#e3dbcd'], ['al-zen-arena', 'Arena SM', 'crema', 1, 'c', '#d4c3b0'], ['al-zen-cashmere', 'Cashmere SM', 'crema', 1, 'c', '#c9beb3'],
+    ['al-zen-taupe', 'Taupe SM', 'gris', 2, 'c', '#9b8f86'], ['al-zen-nube', 'Gris Nube SM', 'gris_claro', 1, 'n', '#bdbcbd'], ['al-zen-tortora', 'Tortora SM', 'gris', 2, 'c', '#a08883'],
+    ['al-zen-basalto', 'Basalto SM', 'gris', 2, 'c', '#857373'], ['al-zen-plomo', 'Gris Plomo SM', 'oscuro', 3, 'n', '#625a60'], ['al-zen-antracita', 'Antracita SM', 'oscuro', 3, 'n', '#3f3b3e'],
+    ['al-zen-iceblue', 'Ice Blue SM', 'azul', 1, 'f', '#c6d2d8'], ['al-zen-ultramar', 'Azul Ultramar SM', 'azul', 3, 'f', '#3f55bb'], ['al-zen-indigo', 'Azul Índigo SM', 'azul', 3, 'f', '#3c4766'],
+    ['al-zen-marino', 'Azul Marino SM', 'azul', 3, 'f', '#333854'], ['al-zen-agave', 'Agave SM', 'verde', 1, 'n', '#b7b9ad'], ['al-zen-aguamarina', 'Agua Marina SM', 'azul', 1, 'f', '#aab6b8'],
+    ['al-zen-salvia', 'Verde Salvia SM', 'verde', 2, 'n', '#5f625c'], ['al-zen-negro', 'Negro SM', 'negro', 3, 'n', '#2a2a2a'], ['al-zen-ginger', 'Ginger SM', 'crema', 2, 'c', '#c2a98a'],
+    ['al-zen-camel', 'Camel SM', 'madera_media', 2, 'c', '#b8935f'], ['al-zen-albero', 'Amarillo Albero SM', 'crema', 2, 'c', '#d7a54a'], ['al-zen-citrus', 'Naranja Citrus SM', 'terracota', 2, 'c', '#df7440'],
+    ['al-zen-coral', 'Coral SM', 'terracota', 2, 'c', '#c56b52'], ['al-zen-cotto', 'Cotto SM', 'terracota', 3, 'c', '#8d4b3b'], ['al-zen-pompei', 'Rojo Pompei SM', 'terracota', 3, 'c', '#a24636'],
+    ['al-zen-almagra', 'Almagra SM', 'terracota', 3, 'c', '#5e3029'], ['al-zen-lightgold', 'Metal Plus Light Gold', 'oro', 2, 'c', '#b6955c'], ['al-zen-copper', 'Metal Plus Copper', 'bronce', 3, 'c', '#9c5d3a'],
+    ['al-zen-champagne', 'Metal Plus Champagne', 'bronce', 2, 'c', '#8f7867'], ['al-zen-titanio', 'Metal Plus Titanio', 'metal', 3, 'n', '#6e6b6c'], ['al-zen-elitis01', 'Elitis 01 SM', 'gris_claro', 1, 'n', '#c7c1ba'],
+    ['al-zen-elitis03', 'Elitis 03 SM', 'oscuro', 3, 'n', '#4b4749'], ['al-zen-cashmeremd', 'Cashmere MD', 'crema', 1, 'c', '#d6cfc8'], ['al-zen-nubemd', 'Gris Nube MD', 'gris_claro', 1, 'n', '#d0cfcf'],
+    ['al-zen-basaltomd', 'Basalto MD', 'gris', 2, 'c', '#8b8282'], ['al-zen-antracitamd', 'Antracita MD', 'negro', 3, 'n', '#2d2b2d'], ['al-zen-nuvola01', 'Nuvola 01 SM', 'marmol', 1, 'c', '#e8ddcc'],
+    ['al-zen-nuvola03', 'Nuvola 03 SM', 'marmol', 1, 'f', '#e4e2e1'], ['al-zen-versilia', 'Mármol Versilia SM', 'marmol', 1, 'f', '#ecebe9'], ['al-zen-picasso01', 'Picasso 01 SM', 'madera_media', 2, 'c', '#c79a72'],
+    ['al-zen-picasso02', 'Picasso 02 SM', 'madera_media', 2, 'c', '#c08d68']], { g: 4, antihuella: true, prov: 'Moral Maderas' });
+  serie('Alvic', 'Syncron (textura)', 'Laminado', F, null, [['al-syn-picasso01', 'Picasso 01 AR', 'madera_media', 2, 'c', '#b78563'], ['al-syn-picasso02', 'Picasso 02 AR', 'madera_media', 2, 'c', '#b98b66'], ['al-syn-picasso03', 'Picasso 03 AR', 'madera_media', 2, 'c', '#a8735a'],
+    ['al-syn-woodline03', 'Woodline 03 BA', 'madera_oscura', 3, 'c', '#5a3a2c'], ['al-syn-velazquez01', 'Velázquez 01 AR', 'madera_clara', 1, 'c', '#e2d3c4'], ['al-syn-velazquez02', 'Velázquez 02 AR', 'madera_clara', 1, 'c', '#d3aa76'],
+    ['al-syn-goya01', 'Goya 01 NA', 'gris', 2, 'n', '#a8a39d'], ['al-syn-goya02', 'Goya 02 NA', 'gris', 2, 'n', '#8f8984'], ['al-syn-nocce01', 'Nocce 01 HO', 'madera_media', 2, 'c', '#a98a68'],
+    ['al-syn-nocce03', 'Nocce 03 HO', 'madera_oscura', 3, 'c', '#5a4636'], ['al-syn-lakeland03', 'Lakeland Oak 03 SI', 'madera_media', 2, 'c', '#7b5c41'], ['al-syn-como02', 'Como Ash 02 RE', 'madera_media', 2, 'n', '#a28c7f'],
+    ['al-syn-nogal01', 'Nogal Rosales 01 RE', 'madera_clara', 1, 'c', '#e2d8c7'], ['al-syn-nogal02', 'Nogal Rosales 02 RE', 'madera_oscura', 3, 'c', '#5e3d2c'], ['al-syn-nogal03', 'Nogal Rosales 03 RE', 'madera_oscura', 3, 'c', '#4c3226'],
+    ['al-syn-nogal04', 'Nogal Rosales 04 RE', 'madera_media', 2, 'c', '#8a6e58'], ['al-syn-anniv01', 'Anniversary Oak 01 RE', 'madera_clara', 1, 'n', '#b9b2a8'], ['al-syn-anniv02', 'Anniversary Oak 02 RE', 'madera_clara', 1, 'c', '#c9a988'],
+    ['al-syn-anniv03', 'Anniversary Oak 03 RE', 'madera_oscura', 3, 'c', '#5f4637'], ['al-syn-icecream01', 'Ice Cream 01 JA', 'piedra', 1, 'n', '#d2cdc6'], ['al-syn-icecream02', 'Ice Cream 02 JA', 'piedra', 3, 'n', '#5e5953'],
+    ['al-syn-muratti01', 'Roble Muratti 01 MU', 'oscuro', 3, 'n', '#57514c'], ['al-syn-muratti04', 'Roble Muratti 04 MU', 'blanco', 1, 'n', '#e7e3e0'], ['al-syn-alhambra01', 'Alhambra 01 NZ', 'madera_clara', 1, 'c', '#d9c2ae'],
+    ['al-syn-alhambra02', 'Alhambra 02 NZ', 'madera_media', 2, 'c', '#c38a45'], ['al-syn-alhambra03', 'Alhambra 03 NZ', 'madera_oscura', 3, 'c', '#5b3826'], ['al-syn-titan01', 'Titán 01 PT', 'crema', 1, 'c', '#dccabd'],
+    ['al-syn-vulcano', 'Vulcano DY', 'crema', 1, 'c', '#cdb7a6'], ['al-syn-vitaminemi', 'Vitamine MI', 'verde', 1, 'f', '#c3d8cf'], ['al-syn-vitamineav', 'Vitamine AV', 'verde', 1, 'f', '#c8dbd2'],
+    ['al-syn-vitaminedy', 'Vitamine DY', 'verde', 1, 'f', '#c9ddd3'], ['al-syn-blancojz', 'Blanco JZ', 'blanco', 1, 'n', '#efefee'], ['al-syn-polarav', 'Blanco Polar AV', 'blanco', 1, 'f', '#f0f1f1'],
+    ['al-syn-polardy', 'Blanco Polar DY', 'blanco', 1, 'f', '#eff0f0'], ['al-syn-factory01', 'Factory 01 CRT', 'piedra', 1, 'n', '#c9c5c4'], ['al-syn-factory02', 'Factory 02 CRT', 'piedra', 3, 'n', '#6c6869'],
+    ['al-syn-spatt01', 'Spatt 01 Blanco VE', 'piedra', 1, 'n', '#d8d5d4'], ['al-syn-oxid04', 'Oxid 04 Graffit SS', 'oscuro', 3, 'n', '#3b3838'], ['al-syn-siena', 'Siena ST', 'marmol', 1, 'c', '#d9c6b1'],
+    ['al-syn-trevi02', 'Trevi 02 AR', 'piedra', 2, 'c', '#b8a48d'], ['al-syn-porcelain01', 'Porcelain 01 Gold JA', 'marmol', 1, 'c', '#dedad5'], ['al-syn-porcelain03', 'Porcelain 03 Silver JA', 'marmol', 3, 'n', '#46413f']], { g: 3, prov: 'Moral Maderas' });
+  serie('Alvic', 'MattDeco (ultramate)', 'Laminado', F, null, [['al-mdc-blanco', 'Blanco', 'blanco', 1, 'n', '#efeeec'], ['al-mdc-nube', 'Gris Nube', 'gris', 2, 'n', '#9e9b9b'], ['al-mdc-cashmere', 'Cashmere', 'crema', 1, 'c', '#bdb2a8'],
+    ['al-mdc-tortora', 'Tortora', 'gris', 2, 'c', '#8f7470'], ['al-mdc-agave', 'Agave', 'verde', 2, 'n', '#8f948b'], ['al-mdc-aguamarina', 'Agua Marina', 'azul', 2, 'f', '#9fa9ab'],
+    ['al-mdc-salvia', 'Verde Salvia', 'verde', 3, 'n', '#5c5f59'], ['al-mdc-antracita', 'Antracita', 'oscuro', 3, 'n', '#3a3739'], ['al-mdc-cotto', 'Cotto', 'terracota', 2, 'c', '#a8604f'],
+    ['al-mdc-picasso02', 'Picasso 02', 'madera_media', 2, 'c', '#b88a65']], { g: 3, antihuella: true, prov: 'Moral Maderas' });
   // ── Laca propia: selección de NCS y RAL para cocina (cualquier otro código se escribe) ──
   var LACA_PROPIA = [
     ['RAL 9016', 'Blanco tráfico', 'blanco', 1, 'f', '#f6f6f4'], ['RAL 9010', 'Blanco puro', 'blanco', 1, 'n', '#f3f1e8'], ['RAL 9003', 'Blanco señales', 'blanco', 1, 'f', '#f4f4f2'],
@@ -160,10 +215,25 @@
     ['en-tau-marquina', 'Marquina Black', 'negro', 3, 'n', '#232323']]);
   serie('Venux', 'Porcelánico (sinterizado)', 'Porcelánico', E, null, [['en-ven-montblanc', 'Montblanc', 'blanco', 1, 'n', '#f5f5f3'], ['en-ven-ceppo', 'Dolce Ceppo', 'piedra', 1, 'c', '#d9d2c5'],
     ['en-ven-tajmahal', 'Taj Mahal', 'crema', 1, 'c', '#e5dccb']]);
+  // Encimeras R4 (Moral Maderas): laminado HPL/CHPL sobre aglomerado estándar o hidrófugo, 30 y 38 mm, 3600 × 620 mm.
+  serie('R4 · Moral Maderas', 'Laminado 30/38 mm', 'Laminado', E, null, [['en-r4-enp001', 'Blanco Soft ENP-001', 'blanco', 1, 'c', '#f1eee6'], ['en-r4-enp004', 'Roble Aurora ENP-004', 'madera_clara', 1, 'n', '#c4b49c'], ['en-r4-enp007', 'Mineral Negro ENP-007', 'negro', 3, 'n', '#1f1f1f'],
+    ['en-r4-enp010', 'Blanco Matt ENP-010', 'blanco', 1, 'f', '#f3f4f4'], ['en-r4-enp039', 'Statuario Bianco ENP-039', 'marmol', 1, 'f', '#e3e3e1'], ['en-r4-enp040', 'Statuario Marrone ENP-040', 'piedra', 3, 'c', '#5d5650'],
+    ['en-r4-enp074', 'Stone Sand ENP-074', 'piedra', 1, 'c', '#cfc6bb'], ['en-r4-enp075', 'Stone Grafito ENP-075', 'oscuro', 3, 'n', '#34363a'], ['en-r4-enp076', 'Medieval Claro ENP-076', 'madera_clara', 1, 'n', '#c7bba9'],
+    ['en-r4-enp077', 'Medieval Medio ENP-077', 'madera_media', 2, 'c', '#9b8466'], ['en-r4-enp078', 'Medieval Oscuro ENP-078', 'madera_media', 2, 'c', '#7c6750'], ['en-r4-enp084', 'Tauros ENP-084', 'madera_clara', 1, 'c', '#c9ae8f'],
+    ['en-r4-enp085', 'Stone Chalk ENP-085', 'piedra', 1, 'n', '#d9d5cd'], ['en-r4-ep002', 'Blanco Soft EP-002-SF', 'blanco', 1, 'c', '#efece5'], ['en-r4-ep086', 'Fresko EP-086-IS', 'oscuro', 3, 'c', '#4b3d36'],
+    ['en-r4-ep090', 'Piedra Carbón EP-090-PI', 'negro', 3, 'n', '#2c2c2d'], ['en-r4-ep124', 'Roble Sonoma EP-124-OP', 'madera_clara', 1, 'c', '#c3a988'], ['en-r4-ep138', 'Piedra Tripura EP-138-PI', 'piedra', 2, 'n', '#a7a6a3'],
+    ['en-r4-ep140', 'Mármol Versilia EP-140-SM', 'marmol', 1, 'f', '#eceeee'], ['en-r4-ep141', 'Anniversary Oak 02 EP-141-NAT', 'madera_clara', 1, 'c', '#cfb796'], ['en-r4-ep151', 'Mármol Marquina Apomazado EP-151-ST', 'negro', 3, 'n', '#222326'],
+    ['en-r4-ep159', 'Taupe EP-159-SM', 'crema', 1, 'c', '#d9cdbf'], ['en-r4-ep160', 'Agave EP-160-SM', 'verde', 2, 'n', '#a9b0a2'], ['en-r4-ep163', 'Bernini EP-163-LV', 'marmol', 1, 'c', '#e2c9b8'],
+    ['en-r4-ep164', 'Siena EP-164-LV', 'marmol', 1, 'c', '#e5d3c1']], { prov: 'Moral Maderas' });
   // ── Tiradores (tipo: visto, integrado, sin) ──
   serie('', 'Tirador visto', 'Tirador', T, null, [['ti-plata', 'Plata / inox', 'metal', 1, 'f', '#b9bcbe'], ['ti-negro', 'Negro', 'negro', 3, 'n', '#1f1f1f'], ['ti-antracita', 'Antracita', 'oscuro', 3, 'n', '#3d3f41'],
     ['ti-blanco', 'Blanco', 'blanco', 1, 'n', '#f2f2f0'], ['ti-oro', 'Oro / latón', 'oro', 2, 'c', '#c3a35a'], ['ti-bronce', 'Bronce', 'bronce', 3, 'c', '#7a5b3c'], ['ti-madera', 'Madera', 'madera_media', 2, 'c', '#b08d68']], { tipoTir: 'visto' });
   serie('', 'Tirador integrado', 'Tirador', T, null, [['ti-int-inox', 'Integrado inox (forma, grada, lineal)', 'metal', 1, 'f', '#c4c6c7'], ['ti-int-negro', 'Integrado negro (vector)', 'negro', 3, 'n', '#202020']], { tipoTir: 'integrado' });
+  serie('Alvic', 'Puertas con tirador integrado', 'Tirador', T, null, [['ti-alv-finger', 'Finger-Pull (uñero en J)', 'gola', 0, 'n', '#9aa0a6'],
+    ['ti-alv-formentera', 'Formentera (tirador continuo)', 'gola', 0, 'n', '#9aa0a6'], ['ti-alv-ibiza', 'Ibiza (perfil metálico)', 'metal', 1, 'f', '#c4c6c7'],
+    ['ti-alv-mallorca', 'Mallorca (efecto gola)', 'gola', 0, 'n', '#9aa0a6'], ['ti-alv-menorca', 'Menorca (tirador en U)', 'gola', 0, 'n', '#9aa0a6'],
+    ['ti-alv-madeira', 'Madeira (tirador cepillado)', 'metal', 1, 'f', '#bfc1c2'], ['ti-alv-tenerife', 'Tenerife (canto a 45°)', 'gola', 0, 'n', '#9aa0a6'],
+    ['ti-alv-lanzarote', 'Lanzarote (tirador discreto)', 'gola', 0, 'n', '#9aa0a6']], { tipoTir: 'integrado', prov: 'Moral Maderas' });
   serie('', 'Sin tirador', 'Tirador', T, null, [['ti-gola', 'Gola', 'gola', 0, 'n', '#9aa0a6'], ['ti-unero', 'Uñero', 'gola', 0, 'n', '#a7a29b']], { tipoTir: 'sin' });
 
   var FAM = { blanco: 'Blanco', crema: 'Crema y beige', gris_claro: 'Gris claro', gris: 'Gris medio', oscuro: 'Antracita', negro: 'Negro', madera_clara: 'Madera clara', madera_media: 'Madera media',
