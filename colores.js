@@ -135,6 +135,35 @@
     ['en-mar-emperador', 'Marrón Emperador', 'madera_oscura', 3, 'c', '#5b4436']]);
   serie('', 'Compacto', 'Compacto', E, null, [['en-cpt-blanco', 'Compacto blanco', 'blanco', 1, 'n', '#f3f3f1'], ['en-cpt-gris', 'Compacto gris', 'gris', 2, 'n', '#8c8c8a'], ['en-cpt-negro', 'Compacto negro', 'negro', 3, 'n', '#222222']]);
   serie('', 'Madera maciza', 'Madera maciza', E, null, [['en-mad-roble', 'Roble macizo', 'madera_clara', 1, 'c', '#c49a6c'], ['en-mad-nogal', 'Nogal macizo', 'madera_oscura', 3, 'c', '#6b4c36']]);
+  // ── Más encimeras del mercado nacional (v169): nombres de las cartas públicas de cada marca; tonos orientativos. ──
+  serie('Silestone', 'Cuarzo (Cosentino)', 'Cuarzo', E, null, [['en-sil-norte', 'Blanco Norte', 'blanco', 1, 'n', '#f2f1ee'], ['en-sil-miami', 'Miami White', 'blanco', 1, 'f', '#f4f5f5'],
+    ['en-sil-iconic', 'Iconic White', 'blanco', 1, 'n', '#f6f6f3'], ['en-sil-storm', 'White Storm', 'blanco', 1, 'n', '#ecebe7'], ['en-sil-statuario', 'Eternal Statuario', 'marmol', 1, 'f', '#efefed'],
+    ['en-sil-noctis', 'Ethereal Noctis', 'negro', 3, 'n', '#2a2a2b'], ['en-sil-dusk', 'Ethereal Dusk', 'gris', 2, 'n', '#a7a6a3'], ['en-sil-jasmine', 'Pearl Jasmine', 'crema', 1, 'c', '#e8e1d4'],
+    ['en-sil-bronze', 'Bronze Rivers', 'crema', 1, 'c', '#e4dbcd'], ['en-sil-calablue', 'Cala Blue', 'azul', 2, 'f', '#7c8c99'], ['en-sil-posidonia', 'Posidonia Green', 'verde', 3, 'f', '#3f4a42'],
+    ['en-sil-poblenou', 'Poblenou', 'piedra', 2, 'n', '#a9a6a0'], ['en-sil-concrete', 'Concrete Pulse', 'piedra', 2, 'n', '#9b9994'], ['en-sil-brass', 'Brass Relish', 'piedra', 1, 'c', '#d9d2c6'],
+    ['en-sil-faro', 'Faro White', 'blanco', 1, 'n', '#f1f0ec'], ['en-sil-coral', 'Coral Clay', 'gris_claro', 1, 'c', '#d4cbc1']]);
+  serie('Dekton', 'Sinterizado (Cosentino)', 'Porcelánico', E, null, [['en-dek-opera', 'Opera', 'marmol', 1, 'c', '#efebe4'], ['en-dek-rem', 'Rem', 'marmol', 1, 'f', '#ecebe9'],
+    ['en-dek-natura', 'Natura', 'marmol', 1, 'n', '#eeece8'], ['en-dek-zenith', 'Zenith', 'blanco', 1, 'n', '#f5f5f3'], ['en-dek-uyuni', 'Uyuni', 'blanco', 1, 'c', '#efece5'],
+    ['en-dek-halo', 'Halo', 'marmol', 1, 'c', '#ece8e1'], ['en-dek-arga', 'Arga', 'gris', 2, 'n', '#a3a2a0'], ['en-dek-sasea', 'Sasea', 'crema', 1, 'c', '#e2dbcf'],
+    ['en-dek-keon', 'Keon', 'gris', 2, 'n', '#8f8e8b'], ['en-dek-laos', 'Laos', 'oscuro', 3, 'c', '#4a3f38'], ['en-dek-kira', 'Kira', 'piedra', 1, 'c', '#d8d2c8'],
+    ['en-dek-lunar', 'Lunar', 'gris_claro', 1, 'n', '#cfcecb'], ['en-dek-taga', 'Taga', 'marmol', 1, 'c', '#e7e1d6'], ['en-dek-avorio', 'Avorio', 'crema', 1, 'c', '#e6dcc9'],
+    ['en-dek-soke', 'Soke', 'piedra', 2, 'n', '#8b8984'], ['en-dek-radium', 'Radium', 'terracota', 3, 'c', '#5d4537'], ['en-dek-khalo', 'Khalo', 'negro', 3, 'n', '#2c2c2c']]);
+  serie('Sensa', 'Granito (Cosentino)', 'Granito', E, null, [['en-sen-blackbeauty', 'Black Beauty', 'negro', 3, 'n', '#262626'], ['en-sen-tajmahal', 'Taj Mahal', 'crema', 1, 'c', '#e1d7c5'],
+    ['en-sen-vancouver', 'Vancouver', 'gris', 2, 'n', '#8f8c87'], ['en-sen-indianblack', 'Indian Black', 'negro', 3, 'n', '#1f1f20'], ['en-sen-colonial', 'Colonial White', 'piedra', 1, 'n', '#d9d6cf']]);
+  serie('Neolith', 'Sinterizado', 'Porcelánico', E, null, [['en-neo-calacattaluxe', 'Calacatta Luxe', 'marmol', 1, 'c', '#efebe4'], ['en-neo-estatuario', 'Estatuario', 'marmol', 1, 'f', '#efeeec'],
+    ['en-neo-calatorao', 'Calatorao', 'negro', 3, 'n', '#2b2a29'], ['en-neo-pietraluna', 'Pietra di Luna', 'piedra', 1, 'n', '#d6d3cd'], ['en-neo-beton', 'Beton', 'piedra', 2, 'n', '#9a9893'],
+    ['en-neo-basaltgrey', 'Basalt Grey', 'gris', 2, 'n', '#7f7e7b'], ['en-neo-basaltblack', 'Basalt Black', 'negro', 3, 'n', '#2f2f2f'], ['en-neo-irongrey', 'Iron Grey', 'oscuro', 3, 'n', '#4c4b49'],
+    ['en-neo-boheme', 'La Bohème', 'marmol', 1, 'c', '#e8e2d6'], ['en-neo-ceppo', 'Ceppo', 'piedra', 2, 'c', '#a69e92']]);
+  serie('Compac', 'Cuarzo', 'Cuarzo', E, null, [['en-com-arabesque', 'Unique Arabesque', 'marmol', 1, 'f', '#ecebe8'], ['en-com-marquina', 'Unique Marquina', 'negro', 3, 'n', '#232323'],
+    ['en-com-glacier', 'Glacier', 'blanco', 1, 'f', '#f3f4f4'], ['en-com-noir', 'Absolute Noir', 'negro', 3, 'n', '#1e1e1e']]);
+  serie('TAU · Ascale', 'Porcelánico', 'Porcelánico', E, null, [['en-tau-statuario', 'Alto Statuario', 'marmol', 1, 'f', '#efefed'], ['en-tau-arabescatto', 'Arabescatto White', 'marmol', 1, 'n', '#ebeae6'],
+    ['en-tau-marquina', 'Marquina Black', 'negro', 3, 'n', '#232323']]);
+  serie('Venux', 'Sinterizado (STN)', 'Porcelánico', E, null, [['en-ven-montblanc', 'Montblanc', 'blanco', 1, 'n', '#f5f5f3'], ['en-ven-ceppo', 'Dolce Ceppo', 'piedra', 1, 'c', '#d9d2c5'],
+    ['en-ven-tajmahal', 'Taj Mahal', 'crema', 1, 'c', '#e5dccb']]);
+  serie('Egger', 'Encimera laminada', 'Laminado', E, null, [['en-egg-f243', 'Mármol Candela gris claro F-243', 'marmol', 1, 'n', '#e3e2df'], ['en-egg-f244', 'Mármol Candela antracita F-244', 'oscuro', 3, 'n', '#4d4d4c'],
+    ['en-egg-f311', 'Cerámica antracita F-311', 'oscuro', 3, 'n', '#4a4a49'], ['en-egg-h3730', 'Nogal Hickory natural H-3730', 'madera_media', 2, 'c', '#9b7553'], ['en-egg-h1176', 'Roble Halifax blanco H-1176', 'madera_clara', 1, 'c', '#d8cdbd']]);
+  serie('Alvic', 'Twin (compacto)', 'Compacto', E, null, [['en-alv-blanco', 'Blanco SM', 'blanco', 1, 'n', '#f2f2f0'], ['en-alv-plomo', 'Gris Plomo SM', 'oscuro', 3, 'n', '#545659'],
+    ['en-alv-negro', 'Negro SM', 'negro', 3, 'n', '#232323'], ['en-alv-lino', 'Syncron Lino Perla', 'crema', 1, 'c', '#ddd6ca']]);
   // ── Tiradores (tipo: visto, integrado, sin) ──
   serie('', 'Tirador visto', 'Tirador', T, null, [['ti-plata', 'Plata / inox', 'metal', 1, 'f', '#b9bcbe'], ['ti-negro', 'Negro', 'negro', 3, 'n', '#1f1f1f'], ['ti-antracita', 'Antracita', 'oscuro', 3, 'n', '#3d3f41'],
     ['ti-blanco', 'Blanco', 'blanco', 1, 'n', '#f2f2f0'], ['ti-oro', 'Oro / latón', 'oro', 2, 'c', '#c3a35a'], ['ti-bronce', 'Bronce', 'bronce', 3, 'c', '#7a5b3c'], ['ti-madera', 'Madera', 'madera_media', 2, 'c', '#b08d68']], { tipoTir: 'visto' });
@@ -585,6 +614,26 @@
     var linea = function (re) { var m = re.exec(notas); return m ? m[1] : ''; };
     return { notas: notas, lineas: lineas, frentes: linea(/Frentes:\s*([^\n]+)/i), altos: linea(/altos:\s*([^·\n]+)/i), bajos: linea(/bajos:\s*([^·\n]+)/i), encimera: linea(/Encimera:\s*([^\n]+)/i) };
   }
+  // La encimera elegida en el presupuesto (paso 4): se guarda como copia en ST.encimeraPres.
+  function encimerasCatalogo() { return catalogo().filter(function (c) { return c.uso === E; }); }
+  function elegirEncimera(id) {
+    if (!window.ST) return;
+    var c = id ? porId(catalogo(), id) : null;
+    ST.encimeraPres = c ? copia(c) : null;
+    var en = Object.assign({}, DEF, ST.coloresEntrada || {}); en.fijo = Object.assign({}, en.fijo || {});
+    if (c) en.fijo.encimera = c.id; else delete en.fijo.encimera;
+    ST.coloresEntrada = en;
+    if (ST.colores && c) ST.colores.encimera = copia(c);
+    if (typeof markDirty === 'function') markDirty();
+  }
+  // Para el PDF del cliente si no hay combinación elegida ni 3D: la encimera elegida.
+  function htmlEncimera() {
+    var c = window.ST && ST.encimeraPres; if (!c) return '';
+    return '<div class="pfcolores" style="margin-top:14px;page-break-inside:avoid"><div class="pfsec">Encimera</div><table style="border-collapse:collapse"><tr><td style="width:44px;padding:4px"><span style="display:inline-block;width:34px;height:24px;border-radius:4px;border:1px solid #bbb;background:' + c.hex + ';-webkit-print-color-adjust:exact;print-color-adjust:exact"></span></td>'
+      + '<td style="padding:4px 6px"><b>' + eh(c.nombre) + '</b> <span style="color:#777;font-size:.8rem">' + eh(detalle(c)) + '</span></td></tr></table>'
+      + '<div style="font-size:.75rem;color:#888;margin-top:4px">Color orientativo: el tono real se ve en la muestra.</div></div>';
+  }
+
   function coloresPresupuesto() {
     var p = plano3d(), ac = (p && p.datos && p.datos.acabados) || {}, T = textosPresupuesto(), cat = catalogo(), enc = ac.encimera || {};
     var txt = function (a, b) { return [a, b].filter(Boolean).join(' '); };
@@ -592,7 +641,7 @@
     var fAltos = ac.bitono ? txt(ac.modelo_altos, ac.color_altos) || T.altos : txt(ac.modelo, ac.color) || T.frentes || T.altos;
     var bajos = buscarColor(fBajos, F, cat), altos = buscarColor(fAltos, F, cat) || bajos;
     var encTxt = [enc.color, enc.modelo, enc.material].filter(Boolean).join(' ') || T.encimera;
-    var encimera = buscarColor(encTxt, E, cat);
+    var encimera = window.ST && ST.encimeraPres ? ST.encimeraPres : buscarColor(encTxt, E, cat);
     if (!encimera) T.lineas.some(function (l) { if (!/encimera|silestone|dekton|compac|neolith|granito|marmol|porcelanico|cuarzo/i.test(norm(l))) return false; encimera = buscarColor(l, E, cat); return !!encimera; });
     if (!bajos && !altos && !encimera) return null;
     return { titulo: 'Colores del presupuesto', altos: altos, bajos: bajos || altos, columna: altos, encimera: encimera, tirador: null, gola: null, deTexto: { frentes: fBajos, altos: fAltos, encimera: encTxt } };
@@ -928,6 +977,6 @@
     + 'body.gc-imprimiendo .gc-mu,body.gc-imprimiendo .gc-svg *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
 
   window.GUIA_COLORES = { BASE: BASE, FAM: FAM, recomendar: recomendar, catalogo: catalogo, filtrar: filtrar, abrir: abrir, cerrar: cerrar, texto: texto, CLAVE: CLAVE,
-    cargar3d: cargar3d, coloresPresupuesto: coloresPresupuesto, htmlCocina3d: htmlCocina3d, buscarColor: buscarColor, piezasCascoLibreta: piezasCascoLibreta, htmlSolo3d: htmlSolo3d, hay3d: function () { return !!(M3D && plano3d()); }, vistaElegida: vistaElegida, cascoPara: cascoPara, grupoDe: grupoDe, RECETAS: RECETAS, GOLAS: GOLAS, golaPara: golaPara, grupoPresupuesto: grupoPresupuesto, colorDeCodigo: colorDeCodigo, ncsHex: ncsHex, datosHex: datosHex, htmlPresupuesto: htmlPresupuesto, elegir: elegir, tomarColor: tomarColor };
+    MATS_ENC: MATS_ENC, encimerasCatalogo: encimerasCatalogo, elegirEncimera: elegirEncimera, htmlEncimera: htmlEncimera, cargar3d: cargar3d, coloresPresupuesto: coloresPresupuesto, htmlCocina3d: htmlCocina3d, buscarColor: buscarColor, piezasCascoLibreta: piezasCascoLibreta, htmlSolo3d: htmlSolo3d, hay3d: function () { return !!(M3D && plano3d()); }, vistaElegida: vistaElegida, cascoPara: cascoPara, grupoDe: grupoDe, RECETAS: RECETAS, GOLAS: GOLAS, golaPara: golaPara, grupoPresupuesto: grupoPresupuesto, colorDeCodigo: colorDeCodigo, ncsHex: ncsHex, datosHex: datosHex, htmlPresupuesto: htmlPresupuesto, elegir: elegir, tomarColor: tomarColor };
   window.abrirGuiaColores = abrir;
 })();

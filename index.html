@@ -373,7 +373,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v168</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v169</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -3354,7 +3354,7 @@ function newBudget() {
     try { _updProyectoBadge(); } catch(e){}
     ST.curNum = null;
     ST.estado = 'borrador'; ST.fechaEnvio = null; ST.fechaAceptado = null; ST.opcionDe = null;
-    ST.bloqueado = false; ST.fzInst = null; ST.colores = null; ST.coloresEntrada = null; ST.libreta3d = null;
+    ST.bloqueado = false; ST.fzInst = null; ST.colores = null; ST.coloresEntrada = null; ST.libreta3d = null; ST.encimeraPres = null;
     _aplicarEstadoUI();
   }
 
@@ -5017,6 +5017,7 @@ function _pdfGenerar() {
   // v159: colores elegidos en la guía de colores
   if (ST.colores && window.GUIA_COLORES) document.getElementById('PF').innerHTML += GUIA_COLORES.htmlPresupuesto(ST.colores, false);
   else if (window.GUIA_COLORES && GUIA_COLORES.hay3d()) document.getElementById('PF').innerHTML += GUIA_COLORES.htmlCocina3d(false);   // v164: el 3D con los colores del presupuesto
+  else if (window.GUIA_COLORES && ST.encimeraPres) document.getElementById('PF').innerHTML += GUIA_COLORES.htmlEncimera();   // v169: la encimera elegida
   var _imgsPdf = ST.images.filter(function(im){ return im.data; });
   if (_imgsPdf.length) {
     var pf = document.getElementById('PF');
@@ -8565,6 +8566,7 @@ function serializeBudget() {
   d.bloqueado = !!ST.bloqueado;
   d.colores = ST.colores || null;   // v159: combinación elegida en la guía de colores
   d.coloresEntrada = ST.coloresEntrada || null;   // v161: lo rellenado en la guía (suelo, estilo, filtros)
+  d.encimeraPres = ST.encimeraPres || null;   // v169: la encimera elegida (tipo, marca y color)
   d.libreta3d = ST.libreta3d || null;   // v162: el plano de la Libreta para la vista 3D
   if (ST.bloqueado) d.fzInst = ST.fzInst;
   if (ST.opcionDe) d.opcionDe = ST.opcionDe;
@@ -8684,6 +8686,7 @@ function _abPasoEstado(d) {
   ST.opcionDe = d.opcionDe || null;
   ST.colores = d.colores || null;
   ST.coloresEntrada = d.coloresEntrada || null;
+  ST.encimeraPres = d.encimeraPres || null;
   ST.libreta3d = d.libreta3d || null;
   if (ST.libreta3d && window.GUIA_COLORES) GUIA_COLORES.cargar3d();
 }

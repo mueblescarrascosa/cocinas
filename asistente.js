@@ -11,7 +11,7 @@
     { id: 'cliente', t: 'Cliente', ayuda: 'Escribe el nombre del cliente y, si los tienes, su dirección y teléfono. La fecha ya está puesta. Luego pulsa «Siguiente».' },
     { id: 'muebles', t: 'Muebles', ayuda: 'Los muebles van en grupos (por ejemplo «Bajos» y «Altos»). En cada grupo elige la calidad y añade los muebles: tipo, modelo y medida, y pulsa «Añadir mueble». Para otra cosa (electrodomésticos, extras, armario) pulsa «+ Nuevo grupo».' },
     { id: 'otros', t: 'Transporte e imágenes', ayuda: 'Si hay transporte, escribe lo que cuesta. La instalación se calcula sola. Puedes añadir fotos o planos del diseño: salen en el PDF.' },
-    { id: 'colores', t: 'Colores', ayuda: 'Abre la guía de colores para enseñar al cliente hasta cinco propuestas (distintas en cada estilo) con su suelo y su cocina. La que elija queda guardada en el presupuesto y sale en el PDF.' },
+    { id: 'colores', t: 'Colores', ayuda: 'Elige la encimera (tipo, marca y color) si ya se sabe. Abre la guía de colores para enseñar al cliente hasta cinco propuestas (distintas en cada estilo) con su suelo y su cocina. La que elija queda guardada en el presupuesto y sale en el PDF.' },
     { id: 'enviar', t: 'Revisar y enviar', ayuda: 'Comprueba el total y las condiciones. Guarda el presupuesto y sácalo en PDF para el cliente, o envíalo por WhatsApp o email.' },
   ];
   var ls = {
@@ -56,7 +56,10 @@
 
     // Paso 4: colores.
     var colores = el('div', { class: 'card', 'data-paso': '3', id: 'ASIS-COLORES' });
-    colores.innerHTML = '<div class="ct">&#x1F3A8; Colores de la cocina</div><div id="ASIS-COL-RES" class="asis-col-res"></div>'
+    colores.innerHTML = '<div class="ct">&#x1F3A8; Colores de la cocina</div>'
+      + '<div class="asis-enc"><div class="asis-sub">Encimera</div><div class="asis-enc-fila"><label>Tipo<select id="ASIS-ENC-TIPO"></select></label><label>Marca y color<select id="ASIS-ENC"></select></label></div>'
+      + '<div class="asis-enc-muestra" id="ASIS-ENC-MUESTRA"></div><small class="mut">Se guarda en el presupuesto, la respeta la guía de colores y sale en el 3D y en el PDF.</small></div>'
+      + '<div id="ASIS-COL-RES" class="asis-col-res"></div>'
       + '<button type="button" class="btn bp asis-grande" id="ASIS-ABRIR-COLORES">&#x1F3A8; Abrir la guía de colores</button>';
     // Paso 5: revisar y enviar (se mueven aquí IVA, validez, entrega, señal, estado y los textos del PDF).
     var enviar = el('div', { class: 'card', 'data-paso': '4', id: 'ASIS-ENVIAR' });
@@ -91,6 +94,9 @@
       taller: function () { fichaTaller(); }, rentabilidad: function () { openRentabilidad(); }, comparar: function () { openComparador(); } };
     enviar.querySelectorAll('[data-asis]').forEach(function (b) { b.onclick = function () { var f = acc[b.dataset.asis]; if (f) f(); }; });
     $('ASIS-ABRIR-COLORES').onclick = function () { if (window.abrirGuiaColores) abrirGuiaColores(); };
+    $('ASIS-ENC-TIPO').onchange = function (ev) { ev.target.dataset.tipo = ev.target.value; pintarEncimera(); };
+    $('ASIS-ENC').onchange = function (ev) { if (window.GUIA_COLORES) GUIA_COLORES.elegirEncimera(ev.target.value || null); pintarEncimera(); refrescar(); };
+    pintarEncimera();
 
     // Barra de pasos (arriba) y botones Atrás / Siguiente (abajo).
     var barra = el('div', { class: 'asis-pasos', id: 'ASIS-PASOS', role: 'navigation', 'aria-label': 'Pasos del presupuesto' });
@@ -151,9 +157,26 @@
     refrescar();
   }
 
+  // Paso 4: encimera por tipo y luego marca y color (del catálogo de la guía de colores).
+  function pintarEncimera() {
+    var G = window.GUIA_COLORES, st = $('ASIS-ENC-TIPO'), sc = $('ASIS-ENC');
+    if (!G || !st || !sc || !G.encimerasCatalogo) return;
+    var actual = window.ST && ST.encimeraPres, tipo = st.dataset.tipo || (actual && actual.mat) || '';
+    st.innerHTML = '<option value="">— Elige el tipo —</option>' + G.MATS_ENC.map(function (m) { return '<option' + (m === tipo ? ' selected' : '') + '>' + eh(m) + '</option>'; }).join('');
+    var lista = G.encimerasCatalogo().filter(function (c) { return !tipo || c.mat === tipo; }), grupos = {};
+    lista.forEach(function (c) { var k = [c.fab, c.serie].filter(Boolean).join(' · ') || c.mat; (grupos[k] = grupos[k] || []).push(c); });
+    sc.innerHTML = '<option value="">' + (tipo ? '— Elige marca y color —' : '— Primero el tipo —') + '</option>' + Object.keys(grupos).map(function (k) {
+      return '<optgroup label="' + eh(k) + '">' + grupos[k].map(function (c) { return '<option value="' + c.id + '"' + (actual && actual.id === c.id ? ' selected' : '') + '>' + eh(c.nombre) + '</option>'; }).join('') + '</optgroup>';
+    }).join('');
+    sc.disabled = !tipo;
+    var mu = $('ASIS-ENC-MUESTRA');
+    if (mu) mu.innerHTML = actual ? '<span style="background:' + eh(actual.hex) + '"></span><b>' + eh(actual.nombre) + '</b> · ' + eh([actual.fab, actual.serie].filter(Boolean).join(' · ')) + ' <small class="mut">(tono orientativo)</small>' : '';
+  }
+
   // Lo que se ve en los pasos 4 y 5 (la elegida y el total), al día.
   function refrescar() {
     if (!montado) return;
+    var stT = $('ASIS-ENC-TIPO'); if (stT && window.ST && ST.encimeraPres && !stT.dataset.tipo) pintarEncimera();
     var bEj = $('ASIS-EJEMPLO'); if (bEj) bEj.hidden = !(window.ST && ST._ejemplo && $('FC') && $('FC').value === 'Cliente de ejemplo');
     var col = window.ST && ST.colores, r = $('ASIS-COL-RES');
     if (r) r.innerHTML = col ? '<p>Elegida: <b>' + eh(col.titulo) + '</b> · bajos ' + eh((col.bajos || {}).nombre) + (col.altos && col.bajos && col.altos.id !== col.bajos.id ? ', altos ' + eh(col.altos.nombre) : '') + (col.encimera ? ', encimera ' + eh(col.encimera.nombre) : '') + '.</p>'
@@ -263,7 +286,7 @@
     });
     var cal = (window.CALS || [])[1] || 'BÁSICO';
     ST.groups = [{ id: nid(), name: 'Cocina de ejemplo', tipo: 'muebles', cal: cal, ci: 0, lines: lineas, open: true, casco: typeof cascoNuevo === 'function' ? cascoNuevo() : undefined, herr: typeof herrNuevo === 'function' ? herrNuevo() : undefined }];
-    ST.colores = null; ST.coloresEntrada = null; ST.libreta3d = null; ST.proyectoActual = null; ST._ejemplo = true;
+    ST.colores = null; ST.coloresEntrada = null; ST.libreta3d = null; ST.encimeraPres = null; ST.proyectoActual = null; ST._ejemplo = true;
     $('FC').value = 'Cliente de ejemplo'; $('FD').value = 'Calle de práctica 1'; $('FT').value = '';
     var notas = $('F-NOTAS'); if (notas) notas.value = 'Presupuesto de ejemplo para practicar. Puedes cambiar todo lo que quieras.';
     if (typeof renderGroups === 'function') renderGroups();
