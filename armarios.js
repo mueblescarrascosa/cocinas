@@ -399,16 +399,89 @@
       });
   };
 
-  // Tableros enteros por material: m² de casco + puertas del mismo tablero, con el desperdicio, entre el tablero estándar
-  // (280×207, o la medida del material si la tiene, p. ej. 244x122). Es una cuenta por superficie, no un despiece optimizado.
-  ARM.tableros = function (t, tabla) {
-    var d = ARM.despiece(t, tabla), p = t.puertas || {}, m2 = {}, desp = 1 + num(tabla.desperdicio) / 100;
-    Object.keys(d.m2).forEach(function (m) { m2[m] = (m2[m] || 0) + d.m2[m]; });
-    if (d.puertas.m2 && /_tablero$/.test(d.puertas.tipo)) { var pm = p.mat || t.casco; m2[pm] = (m2[pm] || 0) + d.puertas.m2; }
-    return Object.keys(m2).map(function (m) {
-      var mp = buscar(tabla, m) || {}, md = /(\d+)\s*[x×]\s*(\d+)/.exec(mp.medida || '') || [0, 280, 207];
-      var a = num(md[1]), b = num(md[2]);
-      return { mat: m, nombre: mp.nombre || m, m2: r2(m2[m]), medida: a + '×' + b, tableros: Math.ceil(m2[m] * desp / (a * b / 1e4) - 1e-9) };
+  // Tableros enteros por material: las piezas del casco y las puertas del mismo tablero, colocadas en el tablero
+  // (2800×2070, o la medida del material si la tiene, p. ej. 244x122) con ARM.empaquetar.
+  // Cuántos tableros hacen falta para unas piezas (mm), colocándolas por filas (como se corta en la seccionadora):
+  // tablero de 2800×2070 por defecto, 4 mm de corte entre piezas y 10 mm de recorte en cada borde; las piezas se pueden
+  // girar. Una pieza más grande que el tablero se parte en trozos iguales (y se avisa). Se prueba cortando las filas a lo
+  // largo y a lo ancho del tablero, y vale la que gasta menos. Es una estimación buena para pedir material: el despiece
+  // real de la seccionadora puede aprovechar algo más.
+  function empaquetar(piezas, op) {
+    op = op || {};
+    var L = op.largo || 2800, A = op.ancho || 2070, r = op.recorte === undefined ? 10 : op.recorte, k = op.corte === undefined ? 4 : op.corte;
+    var a = filas(piezas, L - 2 * r, A - 2 * r, k), b = filas(piezas, A - 2 * r, L - 2 * r, k), m = b.tableros < a.tableros ? b : a;
+    m.aprovechamiento = m.tableros ? Math.round(m.area / (m.tableros * L * A) * 100) : 0;
+    m.m2 = Math.round(m.area / 1e4) / 100;
+    delete m.area;
+    return m;
+  }
+  function filas(piezas, W, H, k) {
+    var mayor = Math.max(W, H), menor = Math.min(W, H), items = [], partidas = 0, area = 0;
+    (piezas || []).forEach(function (p) {
+      var a = Math.max(p.an, p.al), b = Math.min(p.an, p.al), n = Math.max(0, Math.round(p.cant || 1));
+      if (!(a > 0 && b > 0) || !n) return;
+      area += n * p.an * p.al;
+      var ta = Math.ceil(a / mayor), tb = Math.ceil(b / menor);
+      if (ta * tb > 1) { partidas += n; a = a / ta; b = b / tb; var x = Math.max(a, b); b = Math.min(a, b); a = x; }
+      for (var i = 0; i < n * ta * tb; i++) items.push([a, b]);
+    });
+    // De mayor a menor por su lado corto (el alto de la fila) y luego por el largo.
+    items.sort(function (x, y) { return y[1] - x[1] || y[0] - x[0]; });
+    var tableros = [];
+    // Orientaciones de una pieza: [a lo largo de la fila, alto]; primero tumbada.
+    var orient = function (it) { return [[it[0], it[1]], [it[1], it[0]]].filter(function (o) { return o[0] <= W && o[1] <= H; }); };
+    items.forEach(function (it) {
+      var os = orient(it), puesto = false;
+      for (var t = 0; t < tableros.length && !puesto; t++) {
+        var T = tableros[t];
+        for (var f = 0; f < T.filas.length && !puesto; f++) {
+          var F = T.filas[f];
+          for (var j = 0; j < os.length && !puesto; j++) if (os[j][1] <= F.alto && F.usado + os[j][0] <= W) { F.usado += os[j][0] + k; puesto = true; }
+        }
+        for (var j2 = 0; j2 < os.length && !puesto; j2++) if (T.alto + os[j2][1] <= H) { T.filas.push({ alto: os[j2][1], usado: os[j2][0] + k }); T.alto += os[j2][1] + k; puesto = true; }
+      }
+      if (!puesto && os.length) tableros.push({ alto: os[0][1] + k, filas: [{ alto: os[0][1], usado: os[0][0] + k }] });
+    });
+    return { tableros: tableros.length, area: area, partidas: partidas };
+  }
+  ARM.empaquetar = empaquetar;
+  // Piezas de tablero de un tramo, por material, en mm: [{an, al, cant}] (las hojas compradas no cuentan).
+  ARM.piezasTablero = function (t, tabla, und) {
+    var d = ARM.despiece(t, tabla), p = t.puertas || {}, porMat = {}, u = und || 1;
+    var poner = function (m, an, al, cant) { (porMat[m] = porMat[m] || []).push({ an: an * 10, al: al * 10, cant: cant * u }); };
+    d.piezas.forEach(function (x) { poner(x.mat, x.an, x.al, x.cant); });
+    if (/_tablero$/.test(d.puertas.tipo) || t.clase === 'puerta_paso' && p.tipo === 'corredera_tablero') d.puertas.hojas.forEach(function (h) { if (!h.tarifa) poner(p.mat || t.casco, h.an, h.al, 1); });
+    return porMat;
+  };
+  function medidaTablero(tabla, m) {
+    var mp = buscar(tabla, m) || {}, md = /(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)/.exec(mp.medida || '');
+    var a = md ? num(md[1]) : 280, b = md ? num(md[2]) : 207;
+    return { nombre: mp.nombre || m, prov: mp.prov || '', largo: a * 10, ancho: b * 10, medida: a + '×' + b };
+  }
+  function tablerosDe(porMat, tabla) {
+    return Object.keys(porMat).map(function (m) {
+      var mt = medidaTablero(tabla, m), e = empaquetar(porMat[m], { largo: mt.largo, ancho: mt.ancho });
+      return { mat: m, nombre: mt.nombre, prov: mt.prov, medida: mt.medida, m2: e.m2, tableros: e.tableros, aprovechamiento: e.aprovechamiento, partidas: e.partidas };
+    });
+  }
+  ARM.tableros = function (t, tabla) { return tablerosDe(ARM.piezasTablero(t, tabla), tabla); };
+  // Todos los armarios y vestidores del presupuesto juntos (se aprovechan los tableros entre ellos).
+  ARM.tablerosPresupuesto = function (grupos) {
+    var tabla = ARM.tabla(), porMat = {};
+    (grupos || []).forEach(function (g) {
+      if (g.tipo !== 'armario') return;
+      (g.lines || []).forEach(function (l) {
+        if (!l.arm || !l.arm.clase) return;
+        var pm = ARM.piezasTablero(l.arm, tabla, l.und || 1);
+        Object.keys(pm).forEach(function (m) { porMat[m] = (porMat[m] || []).concat(pm[m]); });
+      });
+    });
+    return tablerosDe(porMat, tabla);
+  };
+  ARM.textoTableros = function (lista) {
+    return lista.map(function (x) {
+      return eh(x.nombre) + ': <b>' + x.tableros + (x.tableros === 1 ? ' tablero' : ' tableros') + ' de ' + x.medida + '</b> (' + String(x.m2).replace('.', ',') + ' m² de piezas, aprovecha el ' + x.aprovechamiento + ' %'
+        + (x.partidas ? '; ' + x.partidas + (x.partidas === 1 ? ' pieza no cabe entera y va partida' : ' piezas no caben enteras y van partidas') : '') + ')';
     });
   };
   ARM.anchoHueco = function (c) {
@@ -770,7 +843,7 @@
   ARM.detalleInterno = function (t, T, r) {
     r = r || ARM.calcular(t, T, ARM.margenApp());
     var d = r.despiece, filas = d.piezas.map(function (x) { return '<tr><td>' + eh(x.n) + '</td><td>' + x.cant + '</td><td>' + x.an + ' × ' + x.al + '</td></tr>'; }).join('');
-    var mats = ARM.tableros(t, T).map(function (x) { var p = (T.materiales || {})[x.mat] || {}; return eh(x.nombre) + ' ' + String(x.m2).replace('.', ',') + ' m² → <b>' + x.tableros + (x.tableros === 1 ? ' tablero' : ' tableros') + ' de ' + x.medida + '</b> (' + eh(p.prov || '') + ')'; }).join(' · ');
+    var mats = ARM.textoTableros(ARM.tableros(t, T)).join(' · ');
     return '<div class="arm-despiece" style="font-size:.75rem;margin-top:6px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">' + filas + '</table>'
       + '<div style="margin-top:4px">' + mats + ' · canto ' + d.ml_canto + ' m · ' + d.horas + ' h de taller' + (r.ledMetros ? ' · LED ' + String(r.ledMetros).replace('.', ',') + ' m' : '') + '</div>'
       + '<div>Casco ' + eur(r.casco) + ' · puertas ' + eur(r.puertas) + ' · herrajes ' + eur(r.herrajes) + (r.extras ? ' · interiores ' + eur(r.extras) : '')

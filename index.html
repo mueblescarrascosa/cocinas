@@ -373,7 +373,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v165</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v166</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -3511,7 +3511,7 @@ function _rgPasoCalidadesCostados() {
 }
 function _rgPasoOcultarCalidadExtras() {
   ST.groups.forEach(function(g){
-    if (g.tipo !== 'extras') return;
+    if (g.tipo !== 'extras' && g.tipo !== 'libre') return;   // v166: tampoco en «Otros conceptos» (no tienen calidad)
     var gc = document.getElementById('gc'+g.id); if (!gc) return;
     // Ocultar las mini-tabs
     var mtabs = gc.querySelector('.mtabs');
@@ -5152,6 +5152,15 @@ function _fichaHerrajesGrupo(g) {
           + '<td style="padding:3px 6px;border:1px solid #ccc;text-align:center">'+eh(h.color||'')+'</td><td style="padding:3px 6px;border:1px solid #ccc;text-align:center">'+tot[cod]+'</td></tr>'; }).join('')
     + '</tbody></table>';
 }
+// v166: tableros de los armarios y vestidores del presupuesto (todos juntos, por material), para pedir material.
+function _tallerTableros() {
+  if (!window.ARM || !ARM.tablerosPresupuesto) return '';
+  var l = []; try { l = ARM.tablerosPresupuesto(ST.groups); } catch (e) { return ''; }
+  if (!l.length) return '';
+  return '<div style="margin-top:14px;page-break-inside:avoid"><h3 style="font-size:1rem;margin:14px 0 6px">Tableros para armarios y vestidores</h3><ul style="margin:0;padding-left:18px;font-size:.88rem">'
+    + ARM.textoTableros(l).map(function(t){ return '<li>'+t+'</li>'; }).join('') + '</ul>'
+    + '<div style="font-size:.75rem;color:#888;margin-top:4px">Piezas colocadas en el tablero con 4 mm de corte y 1 cm de recorte al borde. Orientativo: el despiece de la seccionadora puede aprovechar algo más.</div></div>';
+}
 function fichaTaller() {
   _pfTipo = 'taller';
   if (!totalL()) { toast('A\u00f1ade elementos primero'); return; }
@@ -5201,6 +5210,7 @@ function fichaTaller() {
     +'<div style="text-align:right;font-size:.84rem">Cliente: <strong>'+eh(cli)+'</strong><br>Fecha: '+fecha+'</div></div>'
     + gh
     + (ST.colores && window.GUIA_COLORES ? GUIA_COLORES.htmlPresupuesto(ST.colores, true) : (window.GUIA_COLORES && GUIA_COLORES.hay3d() ? GUIA_COLORES.htmlSolo3d() : ''))
+    + _tallerTableros()
     + (notas?'<div style="margin-top:14px;padding:10px;background:#fffbe6;border:1px solid #e8d9a8;border-radius:6px"><strong>Notas:</strong><br>'+eh(notas).replace(/\n/g,'<br>')+'</div>':'')
     + '<div style="margin-top:20px;font-size:.75rem;color:#888;text-align:center">Documento interno de taller \u2014 sin precios</div>'
     +'</div>';

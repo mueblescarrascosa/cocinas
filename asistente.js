@@ -169,12 +169,20 @@
       var falta = [];
       if (!($('FC') && $('FC').value.trim())) falta.push('<li>Falta el <b>nombre del cliente</b>. <button type="button" class="btn bgh bsm" data-ir-a="0">Ir al paso 1</button></li>');
       if (typeof totalL === 'function' && !totalL()) falta.push('<li>No hay <b>ningún mueble</b>. <button type="button" class="btn bgh bsm" data-ir-a="1">Ir al paso 2</button></li>');
+      // Lo que llegó de la Libreta sin resolver y las líneas de «otros conceptos» a 0 € (p. ej. la encimera de piedra).
+      var gs = (window.ST && ST.groups) || [], porRevisar = 0, aCero = 0;
+      gs.forEach(function (g) {
+        if (/^Revisar/.test(g.name || '')) porRevisar += (g.lines || []).length;
+        else if (g.tipo === 'libre') (g.lines || []).forEach(function (l) { if (!(Number(l.precio) > 0)) aCero++; });
+      });
+      if (porRevisar) falta.push('<li>Quedan <b>' + porRevisar + (porRevisar === 1 ? ' cosa' : ' cosas') + ' por revisar</b> de la Libreta (grupo «Revisar»): ponles precio o quítalas. <button type="button" class="btn bgh bsm" data-ir-a="1">Ir al paso 2</button></li>');
+      if (aCero) falta.push('<li>Hay <b>' + aCero + (aCero === 1 ? ' línea' : ' líneas') + ' a 0 €</b> (por ejemplo, la encimera a precio del marmolista). <button type="button" class="btn bgh bsm" data-ir-a="1">Ir al paso 2</button></li>');
       av.hidden = !falta.length;
-      av.innerHTML = falta.length ? '<b>&#x26A0; Antes de enviarlo:</b><ul>' + falta.join('') + '</ul>' : '';
+      av.innerHTML = falta.length ? '<b>&#x26A0; Antes de enviarlo, revisa:</b><ul>' + falta.join('') + '</ul>' : '';
       av.querySelectorAll('[data-ir-a]').forEach(function (b) { b.onclick = function () { ir(+b.dataset.irA); }; });
     }
     var t = $('ASIS-TOTAL'), bto = $('BTO'), biv = $('BIV'), bco = $('BCO');
-    if (t && bto) t.innerHTML = '<div><span>Muebles</span><b>' + (bco ? bco.textContent : '') + '</b></div><div><span>Total sin IVA</span><b>' + bto.textContent + '</b></div><div><span>Total con IVA</span><b class="asis-final">' + (biv ? biv.textContent : '') + '</b></div>';
+    if (t && bto) t.innerHTML = '<div><span>Líneas</span><b>' + (bco ? bco.textContent : '') + '</b></div><div><span>Total sin IVA</span><b>' + bto.textContent + '</b></div><div><span>Total con IVA</span><b class="asis-final">' + (biv ? biv.textContent : '') + '</b></div>';
     var sg = $('ASIS-GUARDAR'), dirty = $('dirty-ind');
     if (sg && dirty) sg.classList.toggle('pendiente', dirty.style.display !== 'none');
   }
