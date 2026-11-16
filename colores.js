@@ -337,6 +337,21 @@
     else { id = 'go-plata'; porque = 'Plata con los tonos fríos: la más neutra.'; }
     return Object.assign(golaId(id), { porque: porque });
   }
+  // Interior de los muebles (casco) y herrajes (bisagras y guías): se ven al abrir.
+  var CASCOS = { blanco: ['Blanco', '#f4f3ef'], madera: ['Madera (roble)', '#c4a27c'], gris: ['Gris', '#b8b7b2'], antracita: ['Antracita', '#3c3f42'], negro: ['Negro', '#232323'] };
+  var HERRAJES = { blanco: ['Blanco', '#f2f2f0'], antracita: ['Antracita', '#45484b'] };
+  function cascoPara(e, B, A) {
+    var k, porque, calido = ['nordico', 'japandi', 'rustico', 'boho'].indexOf(e.estilo) >= 0;
+    if (B.fam === 'negro') { k = 'negro'; porque = 'Interior negro como los frentes: al abrir, todo sigue igual.'; }
+    else if (B.tono === 3 && !esMadera(B.fam)) { k = 'antracita'; porque = 'Interior antracita con los bajos oscuros: no hace un salto de color al abrir y disimula el uso.'; }
+    else if (esMadera(B.fam) && (calido || esMadera(A.fam))) { k = 'madera'; porque = 'Interior de madera con frentes de madera: cálido también por dentro.'; }
+    else if (esMadera(B.fam) && B.tono === 3) { k = 'antracita'; porque = 'Interior antracita con la madera oscura: no hace un salto de color al abrir.'; }
+    else if ((B.fam === 'gris' || B.fam === 'gris_claro') && e.estilo !== 'clasico') { k = 'gris'; porque = 'Interior gris a juego con los frentes: más sufrido que el blanco.'; }
+    else { k = 'blanco'; porque = 'Interior blanco: se ve mejor lo que hay dentro y es el más económico.'; }
+    var h = k === 'blanco' ? 'blanco' : 'antracita';
+    return { casco: { id: 'casco-' + k, nombre: CASCOS[k][0], hex: CASCOS[k][1], uso: 'casco' }, herrajes: { id: 'herr-' + h, nombre: HERRAJES[h][0], hex: HERRAJES[h][1], uso: 'herrajes' },
+      porque: porque + ' Herrajes (bisagras y guías) en ' + HERRAJES[h][0].toLowerCase() + (h === 'blanco' ? ', que no se notan sobre el blanco.' : ', que no destacan sobre el interior.') };
+  }
   var NIVEL_ENC = { Laminado: 1, Compacto: 2, Cuarzo: 2, Granito: 2, 'Madera maciza': 2, 'Porcelánico': 3, 'Mármol': 3 };
   var esBrillo = function (c) { return !!c.brillo || /brillo/i.test(c.nombre); };
   var cuida = function (e) { return (e.uso || []).some(function (u) { return u === 'ninos' || u === 'mascotas'; }); };
@@ -449,7 +464,7 @@
       if (enc) encUsadas.push(enc.id);
       var tir = tiradorPara(B, A, R); if (tir) tiUsados.push(tir.id);
       var gola = tir && tir.id === 'ti-gola' ? golaPara(e, B, A) : null;
-      var columna = R.col === 'b' ? B : A;
+      var columna = R.col === 'b' ? B : A, ch = cascoPara(e, B, A);
       // El título de la receta solo si los colores son los suyos (con lo fijado o lo cambiado por la luz o el suelo, el de los colores).
       var suyo = R.b.f.indexOf(B.fam) >= 0 && (R.a === 'claro' || (R.a === '=' ? A.id === B.id : R.a.f.indexOf(A.fam) >= 0));
       var titulo = suyo ? R.t : (A.id === B.id ? B.nombre : B.nombre + ' y ' + A.nombre);
@@ -462,13 +477,14 @@
       if (enc && !fE) r.push(esMadera(enc.fam) ? 'La encimera de madera da calidez.' : enc.tono === 3 ? 'La encimera oscura marca la línea de trabajo.' : enc.tono === 1 && (A.tono > 1 || B.tono > 1) ? 'La encimera clara equilibra el color de los frentes.' : 'La encimera de aspecto piedra o mármol es fácil de combinar y de limpiar.');
       if (A.id !== B.id) r.push(R.col === 'b' ? 'Las columnas van como los bajos y hacen de bloque.' : 'Las columnas van como los altos, para que no pesen.');
       if (gola) r.push(gola.porque);
+      r.push(ch.porque);
       if (cuida(e) && !esBrillo(B) && B.fam !== 'blanco') r.push('Con niños o mascotas: bajos mate' + (B.antihuella ? ' y antihuella' : '') + ', que disimulan golpes y huellas.');
       if (A.id !== B.id && A.fab && A.fab === B.fab) r.push('Altos y bajos del mismo fabricante: un solo pedido.');
       if (R.gusta) r.push('Con los colores que le gustan al cliente.');
       if (e.pared === 'color' && (B.tono > 1 || !/blanco|crema|gris/.test(B.fam))) r.push('Con la pared de color, que no compita con los frentes (mejor pared blanca o suave).');
       if (fA || fB || fE) r.push('Respeta lo que el cliente ya ha elegido.');
       var g = Math.max(A.g || 0, B.g || 0) || null;
-      combos.push({ titulo: titulo, altos: A, bajos: B, columna: columna, encimera: enc, tirador: tir, gola: gola, razones: r, g: g });
+      combos.push({ titulo: titulo, altos: A, bajos: B, columna: columna, encimera: enc, tirador: tir, gola: gola, casco: ch.casco, herrajes: ch.herrajes, razones: r, g: g });
     }
     // Primero, si el cliente ha dicho lo que le gusta, una con sus colores.
     var gustan = [];
@@ -534,12 +550,40 @@
         suelo: e ? sueloHex(e) : null, pared: e ? paredHex(e) : null } : null;
       var esc = M3D.escenaPerspectiva(p.datos, { margen: aj.margen || 10, ajustes: aj, colores: col });
       if (!esc) return '';
-      var svg = M3D.svgPerspectiva(esc, M3D.vistaDe(esc, p.datos.vista), { W: W || 600, H: H || 384, textos: false, fondo: '#f7f5f0' });
+      var svg = M3D.svgPerspectiva(esc, M3D.vistaDe(esc, p.vista || p.datos.vista), { W: W || 600, H: H || 384, textos: false, fondo: '#f7f5f0' });
       svg.setAttribute('class', 'gc-svg gc-3d');
       svg.setAttribute('aria-label', 'La cocina en 3D' + (cb && cb.titulo ? ' con la combinación ' + cb.titulo : ''));
       return svg.outerHTML;
     } catch (er) { return ''; }
   }
+  // Girar la vista alrededor del centro de la cocina (se guarda con el presupuesto); 0 = la vista de la Libreta.
+  function girar3d(grados) {
+    var p = plano3d(); if (!M3D || !p) return;
+    if (!grados) { delete p.vista; }
+    else {
+      var aj = p.ajustes || {}, esc = M3D.escenaPerspectiva(p.datos, { margen: aj.margen || 10, ajustes: aj }); if (!esc) return;
+      var v = M3D.vistaDe(esc, p.vista || p.datos.vista), c = esc.caja, cx = (c.x0 + c.x1) / 2, cy = (c.y0 + c.y1) / 2, a = grados * Math.PI / 180, dx = v.x - cx, dy = v.y - cy;
+      p.vista = Object.assign({}, v, { x: cx + dx * Math.cos(a) - dy * Math.sin(a), y: cy + dx * Math.sin(a) + dy * Math.cos(a), ang: v.ang + grados });
+    }
+    if (typeof markDirty === 'function') markDirty();
+    var m = document.getElementById('GC-MOD');
+    if (m && m.style.display !== 'none' && !m.classList.contains('mios')) pintar();
+    if (typeof window.upBan === 'function') window.upBan();
+  }
+  function controles3d() {
+    return '<div class="gc-girar" role="group" aria-label="Girar la vista 3D"><span>Vista 3D:</span>'
+      + '<button type="button" class="btn bgh bsm" data-g3d="-45" title="Girar a la izquierda">&#x21BA; Girar</button>'
+      + '<button type="button" class="btn bgh bsm" data-g3d="45" title="Girar a la derecha">Girar &#x21BB;</button>'
+      + '<button type="button" class="btn bgh bsm" data-g3d="0" title="La vista que se dejó en la Libreta">Vista inicial</button></div>';
+  }
+  document.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('[data-g3d]'); if (b) girar3d(+b.dataset.g3d); });
+  // La cocina sin colores elegidos (para la ficha de taller).
+  function htmlSolo3d() {
+    var s3 = svg3d(null, null, 760, 440);
+    return s3 ? '<div style="margin-top:14px;page-break-inside:avoid;break-inside:avoid"><h3 style="font-size:1rem;margin:14px 0 6px">La cocina (de la Libreta)</h3>'
+      + s3.replace('class="gc-svg gc-3d"', 'style="width:100%;max-width:640px;height:auto"') + '</div>' : '';
+  }
+
   // Lo que se enseña de la elegida (o de la cocina sin colores) en el paso 4 del asistente.
   function vistaElegida(col) {
     var e = col ? { sueloHex: col.suelo, paredHex: col.pared } : {};
@@ -690,6 +734,7 @@
     m.querySelector('.gc-res').innerHTML = '<div class="gc-cab-imp"><b>Propuesta de colores</b>' + (cli ? ' · ' + eh(cli) : '') + '<br><small>Suelo ' + eh(nomSuelo)
       + ', ' + ['', 'claro', 'medio', 'oscuro'][e.sueloTono] + ' · cocina ' + ({ pequena: 'pequeña', media: 'mediana', grande: 'grande' })[e.tam] + ' · estilo ' + eh(NOMBRE_ESTILO[e.estilo] || '')
       + (e.tope ? ' · hasta grupo ' + NOMBRE_GRUPO[e.tope] : '') + '</small></div>'
+      + (M3D && plano3d() ? controles3d() : '')
       + (elegida ? '<div class="gc-elegida">✓ Elegida para este presupuesto: <b>' + eh(elegida.titulo) + '</b> (' + eh(elegida.bajos && elegida.bajos.nombre) + ') <button type="button" class="btn bgh bsm" data-acc="gc-quitar-elegida">Quitar</button></div>' : '')
       + (cb.length ? '<div class="gc-combos">' + cb.map(function (c, i) { return tarjeta(c, e, i, elegida); }).join('') + '</div>'
         : '<p>No hay colores con estas condiciones. Sube el grupo, quita algún filtro o lo que no quiere ver, o añade colores en «Mis colores».</p>')
@@ -701,7 +746,7 @@
     var es = !!(elegida && elegida.titulo === cb.titulo && elegida.bajos && elegida.bajos.id === cb.bajos.id && elegida.altos && elegida.altos.id === cb.altos.id);
     return '<div class="gc-combo' + (es ? ' elegida' : '') + '" data-combo="' + i + '"><h4>' + (i + 1) + '. ' + eh(cb.titulo) + '</h4>' + (svg3d(cb, e) || dibujo(cb, e))
       + (cb.altos.id === cb.bajos.id ? fila('Frentes', cb.bajos) : fila('Altos', cb.altos) + fila('Bajos', cb.bajos) + fila('Columnas', cb.columna))
-      + fila('Encimera', cb.encimera) + fila('Tirador', cb.tirador) + fila('Color del gola', cb.gola) + textoGrupo(cb, e.tope)
+      + fila('Encimera', cb.encimera) + fila('Tirador', cb.tirador) + fila('Color del gola', cb.gola) + fila('Interior (casco)', cb.casco) + fila('Herrajes', cb.herrajes) + textoGrupo(cb, e.tope)
       + '<ul class="gc-por">' + cb.razones.map(function (r) { return '<li>' + eh(r) + '</li>'; }).join('') + '</ul>'
       + '<button type="button" class="btn ' + (es ? 'bgh' : 'bp') + ' bsm gc-elegir" data-elegir="' + i + '">' + (es ? '✓ Elegida' : 'Elegir para el presupuesto') + '</button></div>';
   }
@@ -709,7 +754,7 @@
   function copia(c) { return c ? { id: c.id, nombre: c.nombre, fab: c.fab, serie: c.serie, mat: c.mat, uso: c.uso, hex: c.hex, g: c.g || null, codigo: c.codigo || null, tipoTir: c.tipoTir || null } : null; }
   function elegir(cb, e) {
     if (!window.ST) return;
-    ST.colores = { titulo: cb.titulo, altos: copia(cb.altos), bajos: copia(cb.bajos), columna: copia(cb.columna), encimera: copia(cb.encimera), tirador: copia(cb.tirador), gola: copia(cb.gola), razones: cb.razones.slice(), g: cb.g,
+    ST.colores = { titulo: cb.titulo, altos: copia(cb.altos), bajos: copia(cb.bajos), columna: copia(cb.columna), encimera: copia(cb.encimera), tirador: copia(cb.tirador), gola: copia(cb.gola), casco: copia(cb.casco), herrajes: copia(cb.herrajes), razones: cb.razones.slice(), g: cb.g,
       suelo: sueloHex(e), pared: paredHex(e), estilo: e.estilo, fecha: new Date().toISOString() };
     if (typeof markDirty === 'function') markDirty();
     toastGc('Combinación «' + cb.titulo + '» guardada en el presupuesto: sale en el PDF y en la ficha de taller.');
@@ -724,16 +769,16 @@
         + '<td style="padding:4px 6px;color:#666;font-size:.8rem;width:80px">' + et + '</td><td style="padding:4px 6px"><b>' + eh(c.nombre) + '</b>' + (detalle(c) ? ' <span style="color:#777;font-size:.8rem">' + eh(detalle(c)) + '</span>' : '') + '</td></tr>';
     };
     var cb = { titulo: col.titulo, altos: col.altos, bajos: col.bajos, columna: col.columna, encimera: col.encimera, tirador: col.tirador, gola: col.gola };
-    var eCol = { sueloHex: col.suelo, paredHex: col.pared }, s3 = taller ? '' : svg3d(cb, eCol, 760, 440);
+    var eCol = { sueloHex: col.suelo, paredHex: col.pared }, s3 = svg3d(cb, eCol, 760, 440);   // también en la ficha de taller
     var pc = '-webkit-print-color-adjust:exact;print-color-adjust:exact';
     var svg = taller || s3 ? '' : dibujo(cb, eCol, 170).replace('class="gc-svg"', 'style="width:100%;max-width:300px;height:auto;border-radius:6px;' + pc + '"');
     if (s3) s3 = '<div style="margin:4px 0 8px">' + s3.replace('class="gc-svg gc-3d"', 'style="width:100%;max-width:640px;height:auto;border-radius:6px;' + pc + '"')
-      + '<div style="font-size:.75rem;color:#888">Tu cocina con estos colores (vista orientativa).</div></div>';
+      + '<div style="font-size:.75rem;color:#888">' + (taller ? 'La cocina con estos colores.' : 'Tu cocina con estos colores (vista orientativa).') + '</div></div>';
     return '<div class="pfcolores" style="margin-top:14px;page-break-inside:avoid;break-inside:avoid">'
       + (taller ? '<h3 style="font-size:1rem;margin:14px 0 6px">Colores: ' + eh(col.titulo) + '</h3>' : '<div class="pfsec">Colores elegidos · ' + eh(col.titulo) + '</div>') + s3
       + '<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">' + (svg ? '<div style="flex:0 0 260px">' + svg + '</div>' : '')
       + '<table style="border-collapse:collapse;flex:1;min-width:240px">' + (col.altos && col.bajos && col.altos.id === col.bajos.id ? fila2('Frentes', col.bajos) : fila2('Altos', col.altos) + fila2('Bajos', col.bajos) + fila2('Columnas', col.columna))
-      + fila2('Encimera', col.encimera) + fila2('Tirador', col.tirador) + fila2('Gola', col.gola) + '</table></div>'
+      + fila2('Encimera', col.encimera) + fila2('Tirador', col.tirador) + fila2('Gola', col.gola) + fila2('Interior', col.casco) + fila2('Herrajes', col.herrajes) + '</table></div>'
       + (taller ? '' : '<div style="font-size:.75rem;color:#888;margin-top:4px">Colores orientativos: el tono real se ve en la muestra del fabricante.</div>') + '</div>';
   }
 
@@ -746,6 +791,7 @@
       if (c.encimera) l.push('Encimera: ' + c.encimera.nombre + (c.encimera.fab ? ' (' + c.encimera.fab + ')' : ''));
       if (c.columna && c.altos.id !== c.bajos.id) l.push('Columnas: ' + c.columna.nombre);
       if (c.tirador) l.push('Tirador: ' + c.tirador.nombre + (c.gola ? ' (' + c.gola.nombre.toLowerCase() + ')' : ''));
+      if (c.casco) l.push('Interior de los muebles: ' + c.casco.nombre.toLowerCase() + (c.herrajes ? ' · herrajes en ' + c.herrajes.nombre.toLowerCase() : ''));
       c.razones.forEach(function (r) { l.push('- ' + r); });
     });
     l.push('', 'Colores orientativos: el tono real se ve en la muestra.');
@@ -833,6 +879,7 @@
     + '.gc-combo{border:1px solid #e5e7eb;border-radius:10px;padding:10px;break-inside:avoid;display:flex;flex-direction:column}.gc-combo.elegida{border:2px solid #2d6a4f;background:#f3faf6}'
     + '.gc-combo h4{margin:0 0 6px;font-size:1rem}.gc-elegir{margin-top:auto;align-self:flex-start}'
     + '.gc-svg{width:100%;height:auto;border-radius:6px;display:block;margin-bottom:8px}.gc-3d{background:#f7f5f0}'
+    + '.gc-girar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px;font-size:.85rem;font-weight:700}body.gc-imprimiendo .gc-girar{display:none!important}'
     + '.gc-fila{display:flex;gap:8px;align-items:center;margin:5px 0}.gc-fila small{display:block;font-size:.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:.04em}'
     + '.gc-fila b{display:block;font-size:.88rem}.gc-fila em{display:block;font-style:normal;font-size:.74rem;color:#6b7280}'
     + '.gc-mu{flex:0 0 34px;height:34px;border-radius:6px;border:1px solid rgba(0,0,0,.2)}'
@@ -848,6 +895,6 @@
     + 'body.gc-imprimiendo .gc-mu,body.gc-imprimiendo .gc-svg *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
 
   window.GUIA_COLORES = { BASE: BASE, FAM: FAM, recomendar: recomendar, catalogo: catalogo, filtrar: filtrar, abrir: abrir, cerrar: cerrar, texto: texto, CLAVE: CLAVE,
-    cargar3d: cargar3d, hay3d: function () { return !!(M3D && plano3d()); }, vistaElegida: vistaElegida, grupoDe: grupoDe, RECETAS: RECETAS, GOLAS: GOLAS, golaPara: golaPara, grupoPresupuesto: grupoPresupuesto, colorDeCodigo: colorDeCodigo, ncsHex: ncsHex, datosHex: datosHex, htmlPresupuesto: htmlPresupuesto, elegir: elegir, tomarColor: tomarColor };
+    cargar3d: cargar3d, girar3d: girar3d, controles3d: controles3d, htmlSolo3d: htmlSolo3d, hay3d: function () { return !!(M3D && plano3d()); }, vistaElegida: vistaElegida, cascoPara: cascoPara, grupoDe: grupoDe, RECETAS: RECETAS, GOLAS: GOLAS, golaPara: golaPara, grupoPresupuesto: grupoPresupuesto, colorDeCodigo: colorDeCodigo, ncsHex: ncsHex, datosHex: datosHex, htmlPresupuesto: htmlPresupuesto, elegir: elegir, tomarColor: tomarColor };
   window.abrirGuiaColores = abrir;
 })();

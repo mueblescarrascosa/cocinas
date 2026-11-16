@@ -161,7 +161,7 @@
     // La cocina en 3D (si viene de la Libreta) o el dibujo de la elegida.
     if (r && window.GUIA_COLORES && (paso === 3 || document.body.classList.contains('asis-todo'))) {
       var G = window.GUIA_COLORES, vista = (col || G.hay3d()) ? G.vistaElegida(col) : '';
-      if (vista) r.innerHTML += '<div class="asis-3d">' + vista + (G.hay3d() ? '<small>' + (col ? 'La cocina medida en la Libreta con estos colores.' : 'La cocina medida en la Libreta. Elige colores para verla con ellos.') + '</small>' : '') + '</div>';
+      if (vista) r.innerHTML += '<div class="asis-3d">' + (G.hay3d() ? G.controles3d() : '') + vista + (G.hay3d() ? '<small>' + (col ? 'La cocina medida en la Libreta con estos colores.' : 'La cocina medida en la Libreta. Elige colores para verla con ellos.') + '</small>' : '') + '</div>';
       else if (window.ST && ST.libreta3d) G.cargar3d().then(function (m) { if (m) refrescar(); });
     }
     var av = $('ASIS-AVISO');

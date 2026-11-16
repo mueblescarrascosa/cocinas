@@ -373,7 +373,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v162</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v163</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -5199,7 +5199,7 @@ function fichaTaller() {
     +'<h1 style="font-size:1.3rem;margin:0">FICHA DE TALLER</h1>'
     +'<div style="text-align:right;font-size:.84rem">Cliente: <strong>'+eh(cli)+'</strong><br>Fecha: '+fecha+'</div></div>'
     + gh
-    + (ST.colores && window.GUIA_COLORES ? GUIA_COLORES.htmlPresupuesto(ST.colores, true) : '')
+    + (ST.colores && window.GUIA_COLORES ? GUIA_COLORES.htmlPresupuesto(ST.colores, true) : (window.GUIA_COLORES && GUIA_COLORES.hay3d() ? GUIA_COLORES.htmlSolo3d() : ''))
     + (notas?'<div style="margin-top:14px;padding:10px;background:#fffbe6;border:1px solid #e8d9a8;border-radius:6px"><strong>Notas:</strong><br>'+eh(notas).replace(/\n/g,'<br>')+'</div>':'')
     + '<div style="margin-top:20px;font-size:.75rem;color:#888;text-align:center">Documento interno de taller \u2014 sin precios</div>'
     +'</div>';
