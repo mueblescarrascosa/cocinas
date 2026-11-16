@@ -82,7 +82,7 @@
       + (p.resumen || '') + '\n\nLo que tengas abierto ahora se cierra: guárdalo antes si no lo está.');
     if (!ok) return false;
     ST.groups = grupos(p);
-    ST.proyectoActual = null; ST.curNum = null; ST.estado = 'borrador'; ST.fechaEnvio = null; ST.fechaAceptado = null; ST.opcionDe = null; ST.bloqueado = false; ST.fzInst = null;
+    ST.proyectoActual = null; ST.curNum = null; ST.estado = 'borrador'; ST.fechaEnvio = null; ST.fechaAceptado = null; ST.opcionDe = null; ST.bloqueado = false; ST.fzInst = null; ST.colores = null; ST.coloresEntrada = null;
     ST.images = [];
     var poner = function (id, v) { var e = document.getElementById(id); if (e) e.value = v || ''; };
     poner('FC', p.cliente); poner('FD', p.direccion); poner('FT', p.telefono);
@@ -97,20 +97,26 @@
     return true;
   }
 
-  // Espera a que arranque la app (se carga después de bajar los datos de la nube) y mira si hay algo de la libreta.
+  // Espera a que arranque la app y a que termine de bajar la nube: si la nube trae cambios la app se recarga, y lo de
+  // la libreta se perdería. Por eso el paquete solo se quita de localStorage cuando ya se ha preguntado; si hay que
+  // entrar (login) o la página se recarga, se ofrece al volver.
   var intentos = 0;
   (function esperar() {
-    if (typeof renderGroups !== 'function' || typeof ST === 'undefined' || typeof CAT_MODULES === 'undefined' || typeof nid !== 'function') {
-      if (++intentos < 60) setTimeout(esperar, 300);
+    var fase = window._syncFase, arrancada = typeof renderGroups === 'function' && typeof ST !== 'undefined' && typeof CAT_MODULES !== 'undefined' && typeof nid === 'function';
+    // Hasta 30 s esperando a la nube; si no contesta, se sigue con lo del dispositivo.
+    if (!arrancada || fase === 'recargando' || fase === 'login' || (!fase && intentos < 100)) {
+      if (fase !== 'recargando' && fase !== 'login' && ++intentos < 200) setTimeout(esperar, 300);
       return;
     }
     var p = null;
     try { p = JSON.parse(localStorage.getItem(CLAVE) || 'null'); } catch (e) {}
     if (!p) return;
-    // Se quita siempre (se haga o no): solo se ofrece una vez.
-    try { localStorage.removeItem(CLAVE); } catch (e) {}
-    if (!p.creado || Date.now() - Date.parse(p.creado) > MAX_EDAD) return;
-    setTimeout(function () { importar(p); }, 400);
+    if (!p.creado || Date.now() - Date.parse(p.creado) > MAX_EDAD) { try { localStorage.removeItem(CLAVE); } catch (e) {} return; }
+    setTimeout(function () {
+      // Se quita al preguntar (se haga o no): solo se ofrece una vez.
+      try { localStorage.removeItem(CLAVE); } catch (e) {}
+      importar(p);
+    }, 300);
   })();
 
   window.LIBRETA = { grupos: grupos, importar: importar, enCatalogo: enCatalogo, medidaCatalogo: medidaCatalogo };

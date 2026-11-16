@@ -11,7 +11,7 @@
     { id: 'cliente', t: 'Cliente', ayuda: 'Escribe el nombre del cliente y, si los tienes, su dirección y teléfono. La fecha ya está puesta. Luego pulsa «Siguiente».' },
     { id: 'muebles', t: 'Muebles', ayuda: 'Los muebles van en grupos (por ejemplo «Bajos» y «Altos»). En cada grupo elige la calidad y añade los muebles: tipo, modelo y medida, y pulsa «Añadir mueble». Para otra cosa (electrodomésticos, extras, armario) pulsa «+ Nuevo grupo».' },
     { id: 'otros', t: 'Transporte e imágenes', ayuda: 'Si hay transporte, escribe lo que cuesta. La instalación se calcula sola. Puedes añadir fotos o planos del diseño: salen en el PDF.' },
-    { id: 'colores', t: 'Colores', ayuda: 'Abre la guía de colores para enseñar al cliente tres propuestas con su suelo y su cocina. La que elija queda guardada en el presupuesto y sale en el PDF.' },
+    { id: 'colores', t: 'Colores', ayuda: 'Abre la guía de colores para enseñar al cliente hasta cinco propuestas (distintas en cada estilo) con su suelo y su cocina. La que elija queda guardada en el presupuesto y sale en el PDF.' },
     { id: 'enviar', t: 'Revisar y enviar', ayuda: 'Comprueba el total y las condiciones. Guarda el presupuesto y sácalo en PDF para el cliente, o envíalo por WhatsApp o email.' },
   ];
   var ls = {
@@ -42,6 +42,18 @@
     if (costes) costes.setAttribute('data-paso', '2');
     if (imagenes) imagenes.setAttribute('data-paso', '2');
 
+    // Paso 1: para seguir con uno que ya existe.
+    var abrirG = el('div', { class: 'asis-abrir' });
+    abrirG.innerHTML = '<span>¿Es un presupuesto que ya empezaste?</span> <button type="button" class="btn bgh" id="ASIS-ABRIR-GUARDADO">&#x1F4C2; Abrir un presupuesto guardado</button>';
+    var ctD = datos.querySelector('.ct'); (ctD ? ctD.parentNode : datos).insertBefore(abrirG, ctD ? ctD.nextSibling : datos.firstChild);
+    $('ASIS-ABRIR-GUARDADO').onclick = function () { if (typeof openHistory === 'function') openHistory(); };
+    // Paso 2: qué es cada calidad (de la lista de modelos de la tarifa).
+    var cals = el('details', { class: 'asis-calidades', id: 'ASIS-CALIDADES' });
+    cals.innerHTML = '<summary>&#x2753; ¿Qué es cada calidad?</summary><div></div>';
+    var ctG = grupos.querySelector('.ct'); (ctG ? ctG.parentNode : grupos).insertBefore(cals, ctG ? ctG.nextSibling : grupos.firstChild);
+    cals.lastChild.innerHTML = textoCalidades();
+    cals.addEventListener('toggle', function () { if (cals.open) cals.lastChild.innerHTML = textoCalidades(); });
+
     // Paso 4: colores.
     var colores = el('div', { class: 'card', 'data-paso': '3', id: 'ASIS-COLORES' });
     colores.innerHTML = '<div class="ct">&#x1F3A8; Colores de la cocina</div><div id="ASIS-COL-RES" class="asis-col-res"></div>'
@@ -49,6 +61,7 @@
     // Paso 5: revisar y enviar (se mueven aquí IVA, validez, entrega, señal, estado y los textos del PDF).
     var enviar = el('div', { class: 'card', 'data-paso': '4', id: 'ASIS-ENVIAR' });
     enviar.innerHTML = '<div class="ct">&#x2705; Revisar y enviar</div>'
+      + '<div class="asis-aviso" id="ASIS-AVISO" hidden></div>'
       + '<div class="asis-total" id="ASIS-TOTAL"></div>'
       + '<div class="asis-cond"><div class="asis-sub">Condiciones</div><div class="g4 asis-campos" id="ASIS-CAMPOS"></div></div>'
       + '<div id="ASIS-PDF"></div>'
@@ -84,9 +97,13 @@
     barra.innerHTML = '<ol>' + PASOS.map(function (p, i) { return '<li><button type="button" data-ir="' + i + '"><span class="asis-num">' + (i + 1) + '</span>' + p.t + '</button></li>'; }).join('') + '</ol>'
       + '<button type="button" class="asis-vertodo" id="ASIS-VERTODO"></button>';
     var ayuda = el('div', { class: 'asis-ayuda', id: 'ASIS-AYUDA' });
+    // Banda fija mientras se practica con el presupuesto de ejemplo (que no se confunda con uno de verdad).
+    var bandaEj = el('div', { class: 'asis-ejemplo', id: 'ASIS-EJEMPLO', hidden: 'hidden' });
+    bandaEj.innerHTML = '&#x1F393; <b>Presupuesto de EJEMPLO</b> para practicar: no es de ningún cliente. Cuando acabes, «Nuevo presupuesto» para empezar uno de verdad.';
     var ban = pb.querySelector('.ban');
     ban.parentNode.insertBefore(barra, ban.nextSibling);
-    barra.parentNode.insertBefore(ayuda, barra.nextSibling);
+    barra.parentNode.insertBefore(bandaEj, barra.nextSibling);
+    bandaEj.parentNode.insertBefore(ayuda, bandaEj.nextSibling);
     var pie = el('div', { class: 'asis-pie', id: 'ASIS-PIE' });
     pie.innerHTML = '<button type="button" class="btn bgh asis-grande" id="ASIS-ATRAS">&#x2190; Atrás</button><button type="button" class="btn bp asis-grande" id="ASIS-SIGUIENTE">Siguiente &#x2192;</button>';
     pb.appendChild(pie);
@@ -137,9 +154,19 @@
   // Lo que se ve en los pasos 4 y 5 (la elegida y el total), al día.
   function refrescar() {
     if (!montado) return;
+    var bEj = $('ASIS-EJEMPLO'); if (bEj) bEj.hidden = !(window.ST && ST._ejemplo && $('FC') && $('FC').value === 'Cliente de ejemplo');
     var col = window.ST && ST.colores, r = $('ASIS-COL-RES');
     if (r) r.innerHTML = col ? '<p>Elegida: <b>' + eh(col.titulo) + '</b> · bajos ' + eh((col.bajos || {}).nombre) + (col.altos && col.bajos && col.altos.id !== col.bajos.id ? ', altos ' + eh(col.altos.nombre) : '') + (col.encimera ? ', encimera ' + eh(col.encimera.nombre) : '') + '.</p>'
       : '<p class="mut">Aún no hay colores elegidos. No es obligatorio: si el cliente ya lo tiene claro, pasa al siguiente paso.</p>';
+    var av = $('ASIS-AVISO');
+    if (av) {
+      var falta = [];
+      if (!($('FC') && $('FC').value.trim())) falta.push('<li>Falta el <b>nombre del cliente</b>. <button type="button" class="btn bgh bsm" data-ir-a="0">Ir al paso 1</button></li>');
+      if (typeof totalL === 'function' && !totalL()) falta.push('<li>No hay <b>ningún mueble</b>. <button type="button" class="btn bgh bsm" data-ir-a="1">Ir al paso 2</button></li>');
+      av.hidden = !falta.length;
+      av.innerHTML = falta.length ? '<b>&#x26A0; Antes de enviarlo:</b><ul>' + falta.join('') + '</ul>' : '';
+      av.querySelectorAll('[data-ir-a]').forEach(function (b) { b.onclick = function () { ir(+b.dataset.irA); }; });
+    }
     var t = $('ASIS-TOTAL'), bto = $('BTO'), biv = $('BIV'), bco = $('BCO');
     if (t && bto) t.innerHTML = '<div><span>Muebles</span><b>' + (bco ? bco.textContent : '') + '</b></div><div><span>Total sin IVA</span><b>' + bto.textContent + '</b></div><div><span>Total con IVA</span><b class="asis-final">' + (biv ? biv.textContent : '') + '</b></div>';
     var sg = $('ASIS-GUARDAR'), dirty = $('dirty-ind');
@@ -197,6 +224,18 @@
   }
   window.asisBienvenida = bienvenida;
 
+  // Cada calidad (grupo de precio) con las marcas y modelos de puertas que entran, de menos a más precio.
+  function textoCalidades() {
+    var cals = window.CALS || [], mg = window.MODELOS_GRUPOS || [];
+    var nombre = function (m) { return String(m).toLowerCase().replace(/(^|\s)\S/g, function (x) { return x.toUpperCase(); }); };
+    return '<p>De menos a más precio. La calidad es la de las <b>puertas</b>; el mueble por dentro es el mismo.</p><ol>' + cals.map(function (c, i) {
+      var ms = mg.filter(function (m) { return m.g === i + 1 && m.f; }), marcas = [];
+      ms.forEach(function (m) { var n = nombre(m.marca); if (marcas.indexOf(n) < 0) marcas.push(n); });
+      return '<li><b>' + eh(c) + '</b>' + (ms.length ? ': ' + ms.length + ' modelos de ' + eh(marcas.join(', ')) : '') + '</li>';
+    }).join('') + '</ol>';
+  }
+  window.asisCalidades = textoCalidades;
+
   // Presupuesto de ejemplo: unos muebles del catálogo en un grupo, para practicar.
   function ejemplo() {
     if (typeof totalL === 'function' && totalL() && !confirm('Tienes un presupuesto abierto. ¿Lo cambias por el de ejemplo? (Si no lo has guardado, se pierde.)')) return;
@@ -210,7 +249,7 @@
     });
     var cal = (window.CALS || [])[1] || 'BÁSICO';
     ST.groups = [{ id: nid(), name: 'Cocina de ejemplo', tipo: 'muebles', cal: cal, ci: 0, lines: lineas, open: true, casco: typeof cascoNuevo === 'function' ? cascoNuevo() : undefined, herr: typeof herrNuevo === 'function' ? herrNuevo() : undefined }];
-    ST.colores = null; ST.proyectoActual = null;
+    ST.colores = null; ST.coloresEntrada = null; ST.proyectoActual = null; ST._ejemplo = true;
     $('FC').value = 'Cliente de ejemplo'; $('FD').value = 'Calle de práctica 1'; $('FT').value = '';
     var notas = $('F-NOTAS'); if (notas) notas.value = 'Presupuesto de ejemplo para practicar. Puedes cambiar todo lo que quieras.';
     if (typeof renderGroups === 'function') renderGroups();
@@ -253,6 +292,12 @@
   function esperar() {
     if (typeof renderGroups !== 'function' || !document.getElementById('pb') || typeof guardarProyecto !== 'function') return setTimeout(esperar, 200);
     montar();
+    // Lo de los pasos 4 y 5 (total, guardado, banda del ejemplo) al día con cada cambio del presupuesto.
+    if (typeof window.upBan === 'function' && !window.upBan._asis) {
+      var orig = window.upBan;
+      window.upBan = function () { var r = orig.apply(this, arguments); try { refrescar(); } catch (e) {} return r; };
+      window.upBan._asis = true;
+    }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', esperar); else esperar();
   window.ASISTENTE = { ir: function (n) { ir(n); }, paso: function () { return paso; }, letra: letra, ejemplo: ejemplo, bienvenida: bienvenida };

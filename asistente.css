@@ -84,3 +84,20 @@ body.asis .gb button.dup-btn, body.asis .gb button.lmove { font-size: .84rem; }
 
 /* En el móvil los botones de iconos se quedan sin texto (no caben). */
 @media (max-width: 760px) { .asis-txt { display: none; } .asis-pasos li { flex-basis: 46%; } #ASIS-SIGUIENTE { min-width: 0; flex: 1; } }
+
+/* v161: banda del presupuesto de ejemplo */
+.asis-ejemplo{background:#fff4d6;border:2px dashed #c9a227;color:#5c4400;border-radius:10px;padding:10px 14px;margin:8px 0;font-size:1rem;line-height:1.4}
+.asis-ejemplo[hidden]{display:none}
+/* v161: cabecera en una fila. Grupos y Muebles ya salen en los pasos; los botones, a la derecha y juntos. */
+body.asis .ban { gap: 10px 14px; }
+body.asis .ban .bi:nth-child(2), body.asis .ban .bi:nth-child(3) { display: none; }
+body.asis .ban .bi { flex: 1 1 auto; min-width: 0; }
+body.asis .ban .bi:first-child .bv { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
+body.asis .ban .ba { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+/* v161: abrir uno guardado, calidades y aviso del paso 5 */
+.asis-abrir{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 12px;font-size:.95rem}
+.asis-calidades{margin:4px 0 12px;font-size:.95rem}.asis-calidades>summary{cursor:pointer;font-weight:700;padding:4px 0}
+.asis-calidades ol{margin:6px 0 0;padding-left:22px;line-height:1.6}
+.asis-aviso{background:#fdecea;border:1px solid #e0a39b;color:#7a1f14;border-radius:10px;padding:10px 14px;margin:6px 0 12px;font-size:1rem}
+.asis-aviso[hidden]{display:none}.asis-aviso ul{margin:6px 0 0;padding-left:20px;line-height:1.9}
+body:not(.asis) .asis-abrir,body:not(.asis) .asis-calidades{display:none}

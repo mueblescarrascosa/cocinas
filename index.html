@@ -373,7 +373,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v160</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v161</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -552,7 +552,7 @@ body.bloq #ESTADO-AVISO { display:block; }
         <label for="F-DIFICULTAD" style="font-size:.82rem;color:var(--ink2);cursor:pointer;text-transform:none;letter-spacing:0;font-weight:400;margin:0" id="F-DIF-LABEL">Plus por dificultad</label>
       </div>
     </div>
-    <div style="margin-top:10px;font-size:.82rem;color:var(--muted);line-height:1.7" id="F-ML-INFO"></div>
+    <div style="margin-top:10px;font-size:.92rem;color:var(--text,#222);line-height:1.7" id="F-ML-INFO"></div>
     <div style="display:none">
     </div>
   </div>
@@ -941,6 +941,7 @@ function _goPasoCatalogo(p) {
 
 function nid() {return SEQ++;}
 
+function _num(n) { return (+n).toLocaleString('es-ES', { maximumFractionDigits: 2 }); }
 function fmt(n) {
   if(n===null||n===undefined||n==='') return '\u2014';
   return (+n).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' \u20ac';
@@ -1274,11 +1275,13 @@ async function supaCargarTodo() {
     // Cada clave se sube sola en cuanto cambia (guardado automático); ya no hay botón de subir.
   }
   if (algunaError) {
+    window._syncFase = 'error';
     _mostrarEstadoSync('error', '\u26a0 Sin conexi\u00f3n (usando local)');
     return false;
   }
   if (huboCambios && !sessionStorage.getItem('_recargaSync')) {
     sessionStorage.setItem('_recargaSync', '1');
+    window._syncFase = 'recargando';
     _mostrarEstadoSync('cargando', '\u2601 Aplicando datos de la nube...');
     setTimeout(function(){ location.reload(); }, 250);
     return true;
@@ -1292,6 +1295,7 @@ async function supaCargarTodo() {
 function _marcarSyncListo() {
   CLAVES_SYNC.forEach(function(k){ _syncCache[k] = localStorage.getItem(k); });
   _syncListo = true;
+  window._syncFase = 'listo';
   if (_migrExtrasPendiente) _subirMigracionExtras();
 }
 
@@ -3314,21 +3318,22 @@ function _upBanInstalacion() {
   ML_CATS.forEach(function(c){
     if (ml[c.key] > 0) {
       var coste = Math.round(ml[c.key]*(ST.params[c.key]||0)*100)/100;
-      parts.push(c.label+': '+ml[c.key]+' ml \u00d7 '+(ST.params[c.key]||0).toFixed(2)+' \u20ac = '+coste.toFixed(2)+' \u20ac');
+      parts.push(c.label+': '+_num(ml[c.key])+' metros \u00d7 '+fmt(ST.params[c.key]||0)+' = <b>'+fmt(coste)+'</b>');
     }
   });
   var nCost = countUnits('costados');
   var nReg  = countUnits('regletas');
-  if (nCost > 0) parts.push('Costados: '+nCost+' ud \u00d7 '+(ST.params.ml_costados||0).toFixed(2)+' \u20ac = '+(nCost*(ST.params.ml_costados||0)).toFixed(2)+' \u20ac');
-  if (nReg > 0)  parts.push('Regletas: '+nReg+' ud \u00d7 '+(ST.params.ml_regletas||0).toFixed(2)+' \u20ac = '+(nReg*(ST.params.ml_regletas||0)).toFixed(2)+' \u20ac');
-  if (plusRincon() > 0) parts.push('Plus de rincón: ' + plusRincon().toFixed(2) + ' \u20ac');
+  if (nCost > 0) parts.push('Costados: '+nCost+(nCost === 1 ? ' unidad' : ' unidades')+' \u00d7 '+fmt(ST.params.ml_costados||0)+' = <b>'+fmt(nCost*(ST.params.ml_costados||0))+'</b>');
+  if (nReg > 0)  parts.push('Regletas: '+nReg+(nReg === 1 ? ' unidad' : ' unidades')+' \u00d7 '+fmt(ST.params.ml_regletas||0)+' = <b>'+fmt(nReg*(ST.params.ml_regletas||0))+'</b>');
+  if (plusRincon() > 0) parts.push('Plus de rincón: <b>' + fmt(plusRincon()) + '</b>');
   var dif = document.getElementById('F-DIFICULTAD');
   var difOn = dif && dif.checked;
   var total = getInstalacion();
   if (parts.length) {
-    var txt = '<strong>Instalaci\u00f3n (autom\u00e1tico):</strong><br>'+parts.join('<br>');
-    if (difOn) txt += '<br>Plus dificultad +'+(ST.params.plus_dif||0)+'% \u2192 <strong>'+total.toFixed(2)+' \u20ac</strong>';
-    else txt += '<br><strong>Total instalaci\u00f3n: '+total.toFixed(2)+' \u20ac</strong>';
+    // v161: en metros y euros con coma, letra normal y oscura (antes «1.4 ml × 85.00 €» en gris pequeño).
+    var txt = '<strong>Instalaci\u00f3n (se calcula sola con los muebles):</strong><br>'+parts.join('<br>');
+    if (difOn) txt += '<br>Plus por dificultad +'+(ST.params.plus_dif||0)+'% \u2192 <strong>Total instalaci\u00f3n: '+fmt(total)+'</strong>';
+    else txt += '<br><strong>Total instalaci\u00f3n: '+fmt(total)+'</strong>';
     info.innerHTML = txt;
   } else {
     info.innerHTML = 'A\u00f1ade muebles para calcular la instalaci\u00f3n autom\u00e1ticamente.';
@@ -3349,7 +3354,7 @@ function newBudget() {
     try { _updProyectoBadge(); } catch(e){}
     ST.curNum = null;
     ST.estado = 'borrador'; ST.fechaEnvio = null; ST.fechaAceptado = null; ST.opcionDe = null;
-    ST.bloqueado = false; ST.fzInst = null; ST.colores = null;
+    ST.bloqueado = false; ST.fzInst = null; ST.colores = null; ST.coloresEntrada = null;
     _aplicarEstadoUI();
   }
 
@@ -8509,6 +8514,7 @@ function serializeBudget() {
   d.fechaAceptado = ST.fechaAceptado || null;
   d.bloqueado = !!ST.bloqueado;
   d.colores = ST.colores || null;   // v159: combinación elegida en la guía de colores
+  d.coloresEntrada = ST.coloresEntrada || null;   // v161: lo rellenado en la guía (suelo, estilo, filtros)
   if (ST.bloqueado) d.fzInst = ST.fzInst;
   if (ST.opcionDe) d.opcionDe = ST.opcionDe;
   // Las fotos subidas a la nube viajan solo como referencia (el presupuesto pesa poco)
@@ -8626,6 +8632,7 @@ function _abPasoEstado(d) {
   ST.fzInst = (d.fzInst != null) ? d.fzInst : null;
   ST.opcionDe = d.opcionDe || null;
   ST.colores = d.colores || null;
+  ST.coloresEntrada = d.coloresEntrada || null;
 }
 function _applyBudgetBase(d) {
   document.getElementById('FC').value = d.cliente || '';
@@ -8862,6 +8869,9 @@ function restaurarCopiaSeguridad(input) {
 
 // Recordatorio de backup cada 7 días
 function comprobarRecordatorioBackup() {
+  // v161: la copia diaria en la nube ya guarda los datos; el aviso solo sale si tampoco hay copia en la nube de la última semana.
+  var nube = localStorage.getItem('ultima_copia_nube');
+  if (nube && (Date.now() - new Date(nube).getTime()) / 864e5 < 7) return;
   var ultimo = localStorage.getItem('ultimo_backup');
   var diasAviso = 7;
   var hacerAviso = false;
@@ -9792,7 +9802,7 @@ document.addEventListener('change', function(e){
 
   // Tareas diferidas
 setTimeout(cargarTextoBase, 800);
-setTimeout(comprobarRecordatorioBackup, 2500);
+setTimeout(comprobarRecordatorioBackup, 20000);   // v161: después de la copia automática en la nube (9 s)
 setTimeout(cargarPresentacion, 850);
 setTimeout(function(){ try{ _updProyectoBadge(); }catch(e){} }, 400);
 
@@ -9813,6 +9823,7 @@ setTimeout(function(){ try{ _updProyectoBadge(); }catch(e){} }, 400);
     // Sin sesión, o con la sesión de otra cuenta (cambio cortado a medias): pedir login,
     // que es donde se avisa y se vacían los datos de la cuenta anterior
     if (!haySesion()) {
+      window._syncFase = 'login';
       mostrarLogin();
       return;
     }
@@ -9825,6 +9836,7 @@ setTimeout(function(){ try{ _updProyectoBadge(); }catch(e){} }, 400);
         await supaCargarTodo();
       } else {
         // No se pudo renovar: pedir login otra vez
+        window._syncFase = 'login';
         mostrarLogin('Tu sesi\u00f3n ha caducado, entra de nuevo');
         return;
       }
@@ -9881,9 +9893,24 @@ if (!totalL() && hayMotor2()) activarMotor(2);
     return;
   }
   var ctl = ('AbortController' in window) ? new AbortController() : null;
-  var tiempo = setTimeout(function(){ if (ctl) ctl.abort(); }, 4000);
-  fetch(url + '/rest/v1/presupuestos?select=clave,datos&clave=in.(' + claves.join(',') + ')',
-        {headers: {apikey: key, Authorization: 'Bearer ' + tok}, signal: ctl ? ctl.signal : undefined})
+  var tiempo = setTimeout(function(){ if (ctl) ctl.abort(); }, 5000);
+  var bajar = function(t){ return fetch(url + '/rest/v1/presupuestos?select=clave,datos&clave=in.(' + claves.join(',') + ')',
+        {headers: {apikey: key, Authorization: 'Bearer ' + t}, signal: ctl ? ctl.signal : undefined}); };
+  // Sesión caducada (al volver después de un rato): se renueva aquí y se reintenta, así la app no se recarga luego.
+  var renovar = function(){
+    var ses = {}; try { ses = JSON.parse(localStorage.getItem('supa_session') || '{}') || {}; } catch(e) {}
+    if (!ses.refresh_token) return Promise.reject('sin refresh');
+    return fetch(url + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { apikey: key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: ses.refresh_token }), signal: ctl ? ctl.signal : undefined })
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function(d){
+        if (!d.access_token) return Promise.reject('sin token');
+        try { localStorage.setItem('supa_session', JSON.stringify({ access_token: d.access_token, refresh_token: d.refresh_token })); } catch(e) {}
+        return d.access_token;
+      });
+  };
+  bajar(tok)
+    .then(function(r){ return (r.status === 401 || r.status === 403) ? renovar().then(bajar) : r; })
     .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function(filas){
       filas.forEach(function(f){

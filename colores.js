@@ -1,12 +1,13 @@
-// Guía de colores (v159). Con el suelo, la cocina y lo que quiere el cliente propone tres combinaciones de frentes,
-// encimera y tirador con los colores que se venden, sin pasar del grupo de precio del presupuesto, y la elegida se
+// Guía de colores (v161). Con el suelo, la cocina y lo que quiere el cliente propone hasta cinco combinaciones (distintas
+// en cada estilo) de frentes, columnas, encimera, tirador y color del gola con los colores que se venden, sin pasar del grupo de precio del presupuesto, y la elegida se
 // guarda en el presupuesto (sale en el PDF para el cliente y en la ficha de taller).
 //  · Frentes: tarifas de Briforma, Monpuertas y Dossia, y la laca propia en cualquier NCS o RAL (selección + código).
 //    Cada serie va enlazada a su modelo de MODELOS_GRUPOS para saber su grupo (1 ECONÓMICO … 8 EXCLUSIVO).
 //  · Encimeras: laminado Egger (Briforma), cuarzo, porcelánico, granito y mármol, compacto y madera.
 //  · Tiradores: vistos (plata, negro, antracita, blanco, oro, bronce, madera), integrados, gola y uñero.
 // Los tonos son orientativos (puestos a mano o calculados del código): en «Mis colores» se corrigen, quitan o añaden.
-// Lo que se recuerda va en localStorage 'guia_colores_v1' (sincronizado); la elegida, en el presupuesto (ST.colores).
+// «Mis colores» va en localStorage 'guia_colores_v1' (sincronizado); lo rellenado y la elegida, en el presupuesto
+// (ST.coloresEntrada y ST.colores), así cada cocina empieza de cero.
 (function () {
   'use strict';
   var CLAVE = 'guia_colores_v1';
@@ -232,18 +233,110 @@
   function paredHex(e) { return e.paredHex || PARED_HEX[e.pared] || PARED_HEX.blanco; }
 
   // ── Recomendación ──
+  // Familias que pegan con cada estilo (para puntuar) y sus tiradores por orden.
   var ESTILO = {
-    moderno: { fr: ['blanco', 'gris_claro', 'gris', 'oscuro', 'negro', 'madera_media'], en: ['marmol', 'piedra', 'blanco', 'negro', 'oscuro'], ti: ['ti-plata', 'ti-int-inox', 'ti-negro', 'ti-gola'] },
+    moderno: { fr: ['blanco', 'gris_claro', 'gris', 'oscuro', 'negro', 'madera_media'], en: ['marmol', 'piedra', 'blanco', 'negro', 'oscuro'], ti: ['ti-int-inox', 'ti-negro', 'ti-plata', 'ti-gola'] },
     minimalista: { fr: ['blanco', 'gris_claro', 'negro', 'oscuro', 'gris'], en: ['blanco', 'negro', 'oscuro', 'piedra'], ti: ['ti-gola', 'ti-unero', 'ti-int-inox'] },
     nordico: { fr: ['blanco', 'crema', 'gris_claro', 'madera_clara', 'verde', 'azul'], en: ['madera_clara', 'blanco', 'piedra'], ti: ['ti-madera', 'ti-negro', 'ti-blanco'] },
-    japandi: { fr: ['madera_clara', 'negro', 'oscuro', 'crema', 'gris'], en: ['piedra', 'madera_clara', 'negro', 'blanco'], ti: ['ti-negro', 'ti-madera', 'ti-unero'] },
-    clasico: { fr: ['crema', 'blanco', 'verde', 'azul', 'gris_claro'], en: ['marmol', 'piedra', 'madera_media'], ti: ['ti-oro', 'ti-bronce', 'ti-plata'] },
+    japandi: { fr: ['madera_clara', 'negro', 'oscuro', 'crema', 'gris'], en: ['piedra', 'madera_clara', 'negro', 'blanco'], ti: ['ti-unero', 'ti-negro', 'ti-madera'] },
+    clasico: { fr: ['crema', 'blanco', 'verde', 'azul', 'gris_claro'], en: ['marmol', 'piedra', 'madera_media'], ti: ['ti-oro', 'ti-bronce'] },
     vintage: { fr: ['verde', 'azul', 'crema', 'terracota', 'blanco'], en: ['marmol', 'madera_media', 'blanco'], ti: ['ti-oro', 'ti-bronce', 'ti-plata'] },
     boho: { fr: ['crema', 'terracota', 'verde', 'madera_clara', 'blanco'], en: ['blanco', 'madera_clara', 'piedra', 'marmol'], ti: ['ti-bronce', 'ti-madera', 'ti-oro'] },
     industrial: { fr: ['oscuro', 'negro', 'gris', 'madera_media', 'madera_oscura'], en: ['piedra', 'madera_media', 'oscuro'], ti: ['ti-negro', 'ti-antracita', 'ti-int-negro'] },
     rustico: { fr: ['madera_media', 'crema', 'verde', 'terracota', 'madera_oscura'], en: ['madera_media', 'piedra', 'marmol'], ti: ['ti-bronce', 'ti-negro', 'ti-madera'] },
   };
   var NOMBRE_ESTILO = { moderno: 'moderno', minimalista: 'minimalista', nordico: 'nórdico', japandi: 'japandi', clasico: 'clásico', vintage: 'vintage', boho: 'boho o mediterráneo', industrial: 'industrial', rustico: 'rústico' };
+  // Propuestas de cada estilo, distintas de un estilo a otro.
+  //  b: bajos { f: familias por orden, t: tono 1-3 o null } · a: altos igual, '=' (como los bajos) o 'claro'
+  //  e: encimera (familias por orden) · col: columnas con los altos ('a') o con los bajos ('b') · ti: tiradores por orden.
+  var C = ['blanco', 'crema', 'gris_claro'];
+  var RECETAS = {
+    moderno: [
+      { t: 'Blanco y roble', b: { f: ['madera_media', 'madera_clara'], t: 2 }, a: { f: ['blanco'], t: 1 }, e: ['piedra', 'blanco', 'marmol'], col: 'b', ti: ['ti-negro', 'ti-int-negro'], r: 'Blanco arriba y madera abajo: luminosa y cálida; las columnas en madera hacen de mueble.' },
+      { t: 'Antracita y gris claro', b: { f: ['oscuro', 'negro'], t: 3 }, a: { f: ['gris_claro', 'blanco'], t: 1 }, e: ['marmol', 'blanco', 'piedra'], col: 'a', ti: ['ti-int-inox', 'ti-plata'], r: 'Antracita abajo y gris claro arriba: elegante y actual; abajo se notan menos las marcas.' },
+      { t: 'Blanco total', b: { f: ['blanco'], t: 1 }, a: '=', e: ['oscuro', 'negro', 'piedra', 'madera_media'], col: 'a', ti: ['ti-gola', 'ti-int-inox'], r: 'Toda blanca: la más luminosa; la encimera pone el contraste.' },
+      { t: 'Negro y madera', b: { f: ['negro', 'oscuro'], t: 3 }, a: { f: ['madera_clara', 'madera_media'], t: null }, e: ['blanco', 'marmol', 'piedra'], col: 'a', ti: ['ti-negro', 'ti-gola'], r: 'Negro mate abajo y madera arriba: contraste con calidez.' },
+      { t: 'Greige', b: { f: ['gris', 'crema'], t: 2 }, a: '=', e: ['madera_media', 'madera_clara', 'blanco'], col: 'a', ti: ['ti-int-inox', 'ti-oro'], r: 'Gris cálido en toda la cocina: neutro y acogedor, pega con cualquier suelo.' },
+    ],
+    minimalista: [
+      { t: 'Blanco sin tirador', b: { f: ['blanco'], t: 1 }, a: '=', e: ['blanco', 'piedra'], col: 'a', ti: ['ti-gola', 'ti-unero'], r: 'Blanco sobre blanco y sin tiradores: líneas limpias, nada distrae.' },
+      { t: 'Gris tono sobre tono', b: { f: ['gris_claro', 'gris'], t: 1 }, a: '=', e: ['gris_claro', 'piedra', 'blanco'], col: 'a', ti: ['ti-unero', 'ti-gola'], r: 'Un solo gris claro en frentes y encimera parecida: serena y uniforme.' },
+      { t: 'Negro mate', b: { f: ['negro', 'oscuro'], t: 3 }, a: '=', e: ['blanco', 'piedra', 'marmol'], col: 'a', ti: ['ti-gola'], r: 'Toda negra mate con la encimera clara: rotunda, para cocinas con luz.' },
+      { t: 'Blanco y negro', b: { f: ['negro', 'oscuro'], t: 3 }, a: { f: ['blanco'], t: 1 }, e: ['blanco', 'piedra'], col: 'b', ti: ['ti-gola', 'ti-int-negro'], r: 'Bajos y columnas negros, altos blancos que desaparecen en la pared.' },
+      { t: 'Arena', b: { f: ['crema'], t: null }, a: '=', e: ['piedra', 'blanco'], col: 'a', ti: ['ti-unero', 'ti-gola'], r: 'Un beige arena liso: minimalista pero cálido.' },
+    ],
+    nordico: [
+      { t: 'Blanco y roble claro', b: { f: ['madera_clara'], t: 1 }, a: { f: ['blanco'], t: 1 }, e: ['blanco', 'piedra'], col: 'a', ti: ['ti-negro', 'ti-madera'], r: 'Roble claro abajo y blanco arriba: el nórdico de siempre, luminoso y cálido.' },
+      { t: 'Verde salvia', b: { f: ['verde'], t: 2 }, a: { f: ['blanco', 'crema'], t: 1 }, e: ['madera_clara', 'blanco'], col: 'a', ti: ['ti-madera', 'ti-negro'], r: 'Un verde suave abajo trae la naturaleza a la cocina sin oscurecerla.' },
+      { t: 'Azul niebla', b: { f: ['azul'], t: null }, a: { f: ['blanco'], t: 1 }, e: ['blanco', 'madera_clara'], col: 'a', ti: ['ti-blanco', 'ti-madera'], r: 'Azul grisáceo y blanco: fresca y tranquila.' },
+      { t: 'Gris claro y madera', b: { f: ['gris_claro'], t: 1 }, a: '=', e: ['madera_clara', 'madera_media'], col: 'a', ti: ['ti-negro', 'ti-madera'], r: 'Frentes gris claro y la madera en la encimera: suave y acogedora.' },
+      { t: 'Toda madera clara', b: { f: ['madera_clara'], t: 1 }, a: '=', e: ['blanco', 'piedra'], col: 'a', ti: ['ti-negro', 'ti-blanco'], r: 'Madera clara en toda la cocina con encimera blanca: cálida y luminosa.' },
+    ],
+    japandi: [
+      { t: 'Roble natural', b: { f: ['madera_clara'], t: null }, a: '=', e: ['piedra', 'blanco'], col: 'a', ti: ['ti-unero', 'ti-negro'], r: 'Madera natural en toda la cocina con encimera de piedra: calma y materia.' },
+      { t: 'Negro y roble', b: { f: ['negro', 'oscuro'], t: 3 }, a: { f: ['madera_clara'], t: null }, e: ['piedra', 'blanco'], col: 'b', ti: ['ti-unero', 'ti-negro'], r: 'Negro abajo y roble arriba: el contraste japonés, sobrio y cálido.' },
+      { t: 'Arena y piedra', b: { f: ['crema'], t: null }, a: '=', e: ['piedra', 'gris'], col: 'a', ti: ['ti-madera', 'ti-unero'], r: 'Tonos arena y piedra: una cocina tranquila, sin estridencias.' },
+      { t: 'Nogal y lino', b: { f: ['madera_oscura'], t: 3 }, a: { f: ['crema', 'gris_claro'], t: 1 }, e: ['piedra', 'blanco'], col: 'b', ti: ['ti-negro', 'ti-unero'], r: 'Nogal oscuro abajo y lino arriba: cálida y con peso.' },
+      { t: 'Gris topo', b: { f: ['gris'], t: 2 }, a: '=', e: ['madera_clara', 'piedra'], col: 'a', ti: ['ti-negro', 'ti-madera'], r: 'Gris cálido y madera en la encimera: equilibrio y calma.' },
+    ],
+    clasico: [
+      { t: 'Crema y mármol', b: { f: ['crema'], t: 1 }, a: '=', e: ['marmol', 'piedra'], col: 'a', ti: ['ti-oro', 'ti-bronce'], r: 'Crema con encimera de mármol: la cocina clásica que no pasa de moda.' },
+      { t: 'Verde inglés', b: { f: ['verde'], t: 3 }, a: { f: ['crema', 'blanco'], t: 1 }, e: ['marmol', 'madera_media'], col: 'b', ti: ['ti-oro', 'ti-bronce'], r: 'Verde profundo abajo y crema arriba con tiradores dorados: señorial.' },
+      { t: 'Azul marino', b: { f: ['azul'], t: 3 }, a: { f: ['blanco', 'crema'], t: 1 }, e: ['marmol', 'blanco'], col: 'a', ti: ['ti-oro', 'ti-bronce'], r: 'Azul marino con blanco y latón: clásico con un punto marinero.' },
+      { t: 'Blanco y madera', b: { f: ['blanco'], t: 1 }, a: '=', e: ['madera_media', 'madera_clara', 'marmol'], col: 'a', ti: ['ti-bronce', 'ti-oro'], r: 'Blanco con encimera de madera: luminosa y cálida, de casa de siempre.' },
+      { t: 'Gris perla', b: { f: ['gris_claro', 'gris'], t: null }, a: '=', e: ['marmol', 'piedra'], col: 'a', ti: ['ti-oro', 'ti-bronce'], r: 'Gris perla con mármol: clásica y suave.' },
+    ],
+    vintage: [
+      { t: 'Verde menta', b: { f: ['verde', 'azul'], t: 1 }, a: { f: ['blanco', 'crema'], t: 1 }, e: ['blanco', 'madera_media'], col: 'a', ti: ['ti-plata', 'ti-oro'], r: 'Un verde agua o menta: el aire de los años 50.' },
+      { t: 'Azul pastel y crema', b: { f: ['azul'], t: 2 }, a: { f: ['crema'], t: 1 }, e: ['madera_media', 'blanco'], col: 'a', ti: ['ti-oro', 'ti-plata'], r: 'Azul suave con crema y madera: retro y alegre.' },
+      { t: 'Terracota y crema', b: { f: ['terracota'], t: null }, a: { f: ['crema', 'blanco'], t: 1 }, e: ['blanco', 'marmol'], col: 'a', ti: ['ti-bronce', 'ti-oro'], r: 'Terracota abajo y crema arriba: cálida, de cocina de pueblo puesta al día.' },
+      { t: 'Crema y madera', b: { f: ['crema'], t: null }, a: '=', e: ['madera_media', 'madera_clara'], col: 'a', ti: ['ti-oro', 'ti-bronce'], r: 'Crema con encimera de madera: el vintage más fácil de vivir.' },
+      { t: 'Rojo óxido', b: { f: ['terracota'], t: 3 }, a: { f: ['blanco'], t: 1 }, e: ['marmol', 'blanco'], col: 'a', ti: ['ti-plata', 'ti-oro'], r: 'Un rojo profundo abajo con blanco: con mucha personalidad.' },
+    ],
+    boho: [
+      { t: 'Terracota y blanco', b: { f: ['terracota'], t: 2 }, a: { f: ['blanco'], t: 1 }, e: ['madera_clara', 'blanco'], col: 'a', ti: ['ti-bronce', 'ti-madera'], r: 'Terracota y blanco con madera: cálida y mediterránea.' },
+      { t: 'Arena y madera', b: { f: ['crema'], t: null }, a: '=', e: ['madera_clara', 'madera_media'], col: 'a', ti: ['ti-madera', 'ti-bronce'], r: 'Tonos arena con madera clara: relajada, de casa de verano.' },
+      { t: 'Verde oliva', b: { f: ['verde'], t: null }, a: { f: ['crema', 'blanco'], t: 1 }, e: ['marmol', 'blanco', 'madera_clara'], col: 'a', ti: ['ti-bronce', 'ti-oro'], r: 'Verde oliva abajo y crema arriba: natural y con carácter.' },
+      { t: 'Toda madera', b: { f: ['madera_clara', 'madera_media'], t: null }, a: '=', e: ['blanco', 'marmol'], col: 'a', ti: ['ti-bronce', 'ti-negro'], r: 'Madera en toda la cocina con encimera blanca: cálida y luminosa.' },
+      { t: 'Azul mediterráneo', b: { f: ['azul'], t: null }, a: { f: ['blanco'], t: 1 }, e: ['blanco', 'madera_clara'], col: 'a', ti: ['ti-madera', 'ti-bronce'], r: 'Azul y blanco: el Mediterráneo en la cocina.' },
+    ],
+    industrial: [
+      { t: 'Antracita y roble', b: { f: ['oscuro'], t: 3 }, a: { f: ['madera_media', 'madera_clara'], t: null }, e: ['piedra', 'oscuro'], col: 'b', ti: ['ti-negro', 'ti-antracita'], r: 'Antracita con roble y negro: el loft de siempre.' },
+      { t: 'Negro total', b: { f: ['negro', 'oscuro'], t: 3 }, a: '=', e: ['madera_media', 'piedra'], col: 'a', ti: ['ti-int-negro', 'ti-negro'], r: 'Toda negra con encimera de madera: potente, para cocinas con luz.' },
+      { t: 'Cemento', b: { f: ['gris'], t: 2 }, a: '=', e: ['oscuro', 'madera_oscura', 'negro'], col: 'a', ti: ['ti-negro', 'ti-antracita'], r: 'Gris cemento con encimera oscura: urbana y fácil de mantener.' },
+      { t: 'Nogal y negro', b: { f: ['madera_oscura'], t: 3 }, a: { f: ['negro', 'oscuro'], t: 3 }, e: ['piedra', 'gris'], col: 'b', ti: ['ti-negro'], r: 'Nogal y negro: cálida y oscura, con encimera de piedra.' },
+      { t: 'Gris y madera', b: { f: ['madera_media', 'madera_oscura', 'madera_clara'], t: 2 }, a: { f: ['gris_claro', 'gris'], t: null }, e: ['oscuro', 'negro'], col: 'b', ti: ['ti-antracita', 'ti-negro'], r: 'Madera abajo, gris arriba y encimera negra: industrial más suave.' },
+    ],
+    rustico: [
+      { t: 'Roble y crema', b: { f: ['madera_media', 'madera_clara', 'madera_oscura'], t: 2 }, a: { f: ['crema'], t: 1 }, e: ['piedra', 'marmol'], col: 'b', ti: ['ti-bronce', 'ti-negro'], r: 'Roble abajo y crema arriba: rústica y luminosa.' },
+      { t: 'Verde campo', b: { f: ['verde'], t: null }, a: { f: ['crema'], t: 1 }, e: ['madera_media', 'piedra'], col: 'a', ti: ['ti-bronce', 'ti-negro'], r: 'Verde con crema y madera: de casa de campo.' },
+      { t: 'Toda madera', b: { f: ['madera_media', 'madera_oscura', 'madera_clara'], t: null }, a: '=', e: ['piedra', 'marmol'], col: 'a', ti: ['ti-negro', 'ti-bronce'], r: 'Madera en toda la cocina con encimera de piedra: acogedora.' },
+      { t: 'Barro y blanco', b: { f: ['terracota'], t: null }, a: { f: ['blanco', 'crema'], t: 1 }, e: ['madera_media', 'blanco'], col: 'a', ti: ['ti-bronce', 'ti-madera'], r: 'Tonos barro con blanco: tradicional y cálida.' },
+      { t: 'Nogal y blanco roto', b: { f: ['madera_oscura'], t: 3 }, a: { f: ['crema', 'blanco'], t: 1 }, e: ['marmol', 'piedra'], col: 'b', ti: ['ti-negro', 'ti-bronce'], r: 'Nogal oscuro con blanco roto: con peso y elegancia.' },
+    ],
+  };
+  // Si con los filtros salen menos de tres, estas completan.
+  var COMODIN = [
+    { t: 'Luminosa', b: { f: C.concat(['marmol']), t: 1 }, a: '=', e: ['madera_media', 'madera_clara', 'marmol', 'piedra', 'oscuro'], col: 'a', r: 'Frentes claros: la cocina se ve amplia y limpia, y no pasa de moda.' },
+    { t: 'Bitono', b: { f: ['madera_media', 'oscuro', 'gris', 'verde', 'azul', 'terracota', 'madera_clara', 'madera_oscura', 'negro'], t: null }, a: 'claro', e: ['marmol', 'piedra', 'blanco', 'madera_media'], col: 'a', r: 'Altos claros que no pesan y bajos con más color: aguanta mejor el día a día.' },
+    { t: 'Con color', b: { f: ['verde', 'azul', 'terracota', 'oscuro', 'negro', 'gris', 'madera_media', 'madera_oscura', 'crema', 'blanco', 'gris_claro', 'madera_clara'], t: null }, a: '=', e: ['marmol', 'piedra', 'blanco', 'madera_media'], col: 'a', r: 'Un color con personalidad en toda la cocina.' },
+  ];
+  // Color del gola (perfil de aluminio): según los frentes o el que diga el cliente.
+  var GOLAS = [['go-plata', 'Aluminio plata', '#b9bcbe'], ['go-negro', 'Negro', '#1f1f1f'], ['go-blanco', 'Blanco', '#f2f2f0'], ['go-champan', 'Champán / oro', '#c8b48a'],
+    ['go-titanio', 'Titanio (antracita)', '#4a4c4e'], ['go-bronce', 'Bronce', '#7a5b3c']];
+  var golaId = function (id) { var g = GOLAS.filter(function (x) { return x[0] === id; })[0]; return g ? { id: g[0], nombre: 'Gola ' + g[1].toLowerCase(), hex: g[2], uso: 'gola' } : null; };
+  function golaPara(e, B, A) {
+    if (e.gola === 'frente') return { id: 'go-frente', nombre: 'Gola lacada del color de los bajos', hex: B.hex, uso: 'gola', porque: 'Lacada como los bajos: no se ve.' };
+    if (e.gola) { var g0 = golaId(e.gola); if (g0) return Object.assign(g0, { porque: 'El color que ha pedido el cliente.' }); }
+    var calido = ['clasico', 'vintage', 'boho', 'rustico'].indexOf(e.estilo) >= 0, id, porque;
+    if (B.fam === 'negro') { id = 'go-negro'; porque = 'Negra como los bajos: la línea desaparece.'; }
+    else if (B.tono === 3 && !esMadera(B.fam)) { id = 'go-titanio'; porque = 'Titanio con los bajos oscuros: se integra sin quedar plana.'; }
+    else if (esMadera(B.fam)) { id = calido || B.temp === 'c' && B.tono === 1 ? 'go-champan' : 'go-negro'; porque = id === 'go-negro' ? 'Negra con la madera: marca la línea y queda actual.' : 'Champán con la madera: cálida y discreta.'; }
+    else if (B.fam === 'blanco') { id = e.estilo === 'minimalista' || A.fam === 'blanco' ? 'go-blanco' : 'go-plata'; porque = id === 'go-blanco' ? 'Blanca con los frentes blancos: no se nota.' : 'Plata con el blanco: limpia y luminosa.'; }
+    else if (B.temp === 'c' || B.fam === 'crema' || B.fam === 'terracota') { id = 'go-champan'; porque = 'Champán con los tonos cálidos: no corta el color.'; }
+    else { id = 'go-plata'; porque = 'Plata con los tonos fríos: la más neutra.'; }
+    return Object.assign(golaId(id), { porque: porque });
+  }
   var NIVEL_ENC = { Laminado: 1, Compacto: 2, Cuarzo: 2, Granito: 2, 'Madera maciza': 2, 'Porcelánico': 3, 'Mármol': 3 };
   var esBrillo = function (c) { return !!c.brillo || /brillo/i.test(c.nombre); };
   var cuida = function (e) { return (e.uso || []).some(function (u) { return u === 'ninos' || u === 'mascotas'; }); };
@@ -252,13 +345,13 @@
   function puntuar(c, e, quiero) {
     var s = 0, est = ESTILO[e.estilo] || ESTILO.moderno, lista = c.uso === E ? est.en : est.fr;
     var k = lista.indexOf(c.fam); if (k >= 0) s += 6 - k;
-    var qi = quiero.fams ? quiero.fams.indexOf(c.fam) : -1; if (qi >= 0) s += Math.max(3, 9 - qi * 2);
+    var qi = quiero.fams ? quiero.fams.indexOf(c.fam) : -1; if (qi >= 0) s += Math.max(4, 13 - qi * 4);
     if (quiero.tono && c.tono === quiero.tono) s += 4;
     if (quiero.fab && c.fab === quiero.fab) s += 10;   // altos y bajos del mismo fabricante: un solo pedido
     if (quiero.noFams && quiero.noFams.indexOf(c.fam) >= 0) s -= 30;
     if (e.sueloTemp && c.temp === e.sueloTemp) s += 2;
     if (e.sueloTemp && e.sueloTemp !== 'n' && c.temp !== 'n' && c.temp !== e.sueloTemp) s -= 2;
-    if (e.sueloTipo === 'madera' && esMadera(c.fam) && Math.abs(c.tono - e.sueloTono) < 2) s -= 12;   // dos maderas parecidas chocan
+    if (e.sueloTipo === 'madera' && esMadera(c.fam) && Math.abs(c.tono - e.sueloTono) < 2) s -= c.uso === F ? 12 : 4;   // dos maderas parecidas chocan (en la encimera, menos: es una franja)
     if (c.uso === F && e.sueloTipo === 'barro' && c.fam === 'terracota') s -= 12;
     if ((e.gusta || []).some(function (g) { return enFamCliente(g, c.fam); })) s += 7;
     if (c.uso === F) {
@@ -297,6 +390,7 @@
       .map(function (x) { return [puntuar(x, e, quiero), x]; }).sort(function (a, b) { return b[0] - a[0] || a[1].nombre.localeCompare(b[1].nombre); });
     return c.length ? c[0][1] : null;
   }
+  var MAX_COMBOS = 5;
 
   function recomendar(e, catTodo) {
     catTodo = catTodo || catalogo();
@@ -305,96 +399,117 @@
     if (!ti.length) ti = catTodo.filter(function (c) { return c.uso === T; });
     var fijo = e.fijo || {}, fA = porId(catTodo, fijo.altos), fB = porId(catTodo, fijo.bajos), fE = porId(catTodo, fijo.encimera);
     var oscuroSuelo = e.sueloTono === 3, claroSuelo = e.sueloTono === 1, cerrada = e.luz === 'poca' || e.tam === 'pequena';
-    var usados = [], encUsadas = [], combos = [];
-    function encimeraPara(frentes, variar) {
+    var usados = [], encUsadas = [], tiUsados = [], combos = [];
+    // Una laca o un PET marrón no es «madera»: para las recetas de madera, solo frentes con veta.
+    var deFams = function (fams) { return fr.filter(function (c) { return fams.indexOf(c.fam) >= 0 && !(esMadera(c.fam) && /Laca|PET/.test(c.mat)); }); };
+    function encimeraPara(B, A, R) {
       if (fE) return fE;
-      var tonos = frentes.map(function (f) { return f.tono; }), todoClaro = tonos.every(function (t) { return t === 1; });
-      var q = todoClaro ? { fams: esMadera(frentes[0].fam) ? ['marmol', 'piedra', 'blanco'] : ['madera_media', 'madera_clara', 'marmol', 'piedra', 'oscuro'] }
-        : tonos.indexOf(3) >= 0 ? { fams: ['marmol', 'madera_media', 'madera_clara', 'piedra'], tono: 1 } : { fams: ['marmol', 'piedra', 'madera_media', 'blanco'] };
-      q.noFams = frentes.map(function (f) { return f.fam; }).filter(function (f) { return !esMadera(f) || frentes[0].id === frentes[frentes.length - 1].id; });
-      q.evitar = encUsadas; return mejor(en, e, q, variar ? encUsadas : []);
+      var q = { fams: R.e, tono: B.tono === 3 && A.tono === 3 ? 1 : undefined, evitar: encUsadas };
+      // No la misma familia que los frentes (salvo el tono sobre tono que pide la receta).
+      q.noFams = [B.fam, A.fam].filter(function (f) { return R.e.indexOf(f) < 0 || R.e.indexOf(f) > 0; });
+      return mejor(en, e, q, encUsadas) || mejor(en, e, q, []);
     }
-    function tiradorPara(frentes) {
-      var est = ESTILO[e.estilo] || ESTILO.moderno, orden = est.ti.slice();
-      if (frentes.some(function (f) { return esMadera(f.fam); }) && e.estilo !== 'minimalista') orden.unshift('ti-negro');
-      for (var i = 0; i < orden.length; i++) { var t = porId(ti, orden[i]); if (t) return t; }
-      return ti.filter(function (t) { return e.tirador || t.tipoTir === 'visto'; })[0] || ti[0];
+    function tiradorPara(B, A, R) {
+      var est = ESTILO[e.estilo] || ESTILO.moderno, orden = (R.ti || []).concat(est.ti), puedeUnero = !!(B.unero && A.unero);
+      var vale = function (t) { return t && (t.id !== 'ti-unero' || puedeUnero); };
+      // El de la receta manda; si no se puede, uno del estilo que no hayan llevado las otras propuestas.
+      for (var k = 0; k < (R.ti || []).length; k++) { var t0 = porId(ti, R.ti[k]); if (vale(t0)) return t0; }
+      for (var i = 0; i < orden.length; i++) { var t = porId(ti, orden[i]); if (vale(t) && tiUsados.indexOf(t.id) < 0) return t; }
+      for (var j = 0; j < orden.length; j++) { var t2 = porId(ti, orden[j]); if (vale(t2)) return t2; }
+      return ti.filter(function (t) { return vale(t) && (e.tirador || t.tipoTir === 'visto'); })[0] || porId(ti, 'ti-gola') || ti[0];
     }
-    function anadir(titulo, altos, bajos, razones) {
-      if (!altos || !bajos) return;
-      var mismo = function (x, enc) { return x.altos.id === altos.id && x.bajos.id === bajos.id && (x.encimera && x.encimera.id) === (enc && enc.id); };
-      var enc = encimeraPara([bajos, altos], false);
-      if (combos.some(function (x) { return mismo(x, enc); })) enc = encimeraPara([bajos, altos], true) || enc;   // por lo fijado salía igual: otra encimera
-      if (combos.some(function (x) { return mismo(x, enc); })) return;
+    function hacer(R) {
+      if (combos.length >= MAX_COMBOS) return;
+      var tb = R.b.t, oscura = tb === 3;
+      if (cerrada && tb === 3) tb = 2;   // con poca luz o cocina pequeña, el oscuro se suaviza
+      // Con suelo de madera, nada de frentes de madera del mismo tono: parece que no casan.
+      var otraMadera = function (c) { return !(e.sueloTipo === 'madera' && esMadera(c.fam) && c.tono === e.sueloTono); };
+      var lb = deFams(R.b.f).filter(otraMadera);
+      if (cerrada) { var suaves = lb.filter(function (c) { return c.tono < 3; }); if (suaves.length) lb = suaves; }
+      var B = fB || mejor(lb, e, { fams: R.b.f, tono: tb, dejarOscuro: !cerrada, rol: 'bajos' }, usados);
+      if (!B) return;
+      var A = fA;
+      if (!A) {
+        if (R.a === '=') A = cerrada && B.tono === 3 ? mejor(deFams(C), e, { fams: C, tono: 1, fab: B.fab, rol: 'altos' }, []) : B;
+        else if (R.a === 'claro') A = mejor(deFams(C), e, { fams: C, tono: 1, fab: B.fab, rol: 'altos' }, [B.id]);
+        else A = mejor(deFams(R.a.f), e, { fams: R.a.f, tono: R.a.t, fab: B.fab, rol: 'altos', dejarOscuro: !cerrada }, [B.id])
+          || mejor(deFams(C), e, { fams: C, tono: 1, fab: B.fab, rol: 'altos' }, [B.id]);
+        if (!A) A = B;
+        if (A !== B && !otraMadera(A)) A = mejor(deFams(C), e, { fams: C, tono: 1, fab: B.fab, rol: 'altos' }, [B.id]) || A;
+        // Con poca luz o cocina pequeña, los altos siempre claros.
+        if (cerrada && A.tono > 1) A = mejor(deFams(C), e, { fams: C, tono: 1, fab: B.fab, rol: 'altos' }, []) || A;
+      }
+      if (fA && !fB && R.a === '=') B = fA;   // «como los bajos» con los altos fijados
+      if (combos.some(function (x) { return x.altos.id === A.id && x.bajos.id === B.id; }) && !fE) {
+        if (!(fA && fB)) return;   // repetida: se pasa a la siguiente
+      }
+      var enc = encimeraPara(B, A, R);
+      if (combos.some(function (x) { return x.altos.id === A.id && x.bajos.id === B.id && (x.encimera && x.encimera.id) === (enc && enc.id); })) return;
+      if (!fB) usados.push(B.id);
       if (enc) encUsadas.push(enc.id);
-      var r = razones.slice();
-      if (enc && !fE) r.push(esMadera(enc.fam) ? 'La encimera de madera da calidez.' : enc.tono === 3 ? 'La encimera oscura marca la línea de trabajo.' : enc.tono === 1 && (altos.tono > 1 || bajos.tono > 1) ? 'La encimera clara equilibra el color de los frentes.' : 'La encimera de aspecto piedra o mármol es fácil de combinar y de limpiar.');
-      if (cuida(e) && !esBrillo(bajos) && bajos.fam !== 'blanco') r.push('Con niños o mascotas: bajos mate' + (bajos.antihuella ? ' y antihuella' : '') + ', que disimulan golpes y huellas.');
+      var tir = tiradorPara(B, A, R); if (tir) tiUsados.push(tir.id);
+      var gola = tir && tir.id === 'ti-gola' ? golaPara(e, B, A) : null;
+      var columna = R.col === 'b' ? B : A;
+      // El título de la receta solo si los colores son los suyos (con lo fijado o lo cambiado por la luz o el suelo, el de los colores).
+      var suyo = R.b.f.indexOf(B.fam) >= 0 && (R.a === 'claro' || (R.a === '=' ? A.id === B.id : R.a.f.indexOf(A.fam) >= 0));
+      var titulo = suyo ? R.t : (A.id === B.id ? B.nombre : B.nombre + ' y ' + A.nombre);
+      var r = [R.r];
+      if (cerrada && oscura && B.tono < 3) r.push('Con poca luz o cocina pequeña, un tono más suave que el habitual.');
+      else if (cerrada && B.tono === 3) r.push('Lo oscuro va abajo y los altos claros: así no se cierra el espacio.');
+      if (oscuroSuelo && A.tono === 1) r.push('Los frentes claros contrastan con el suelo oscuro.');
+      if (claroSuelo && A.tono === 1 && B.tono === 1) r.push('Con un suelo tan claro, la encimera pone el contraste para que no quede todo plano.');
+      if (e.sueloTipo === 'madera' && esMadera(B.fam)) r.push('La madera de los frentes es de otro tono que el suelo, para que no parezca que no casan.');
+      if (enc && !fE) r.push(esMadera(enc.fam) ? 'La encimera de madera da calidez.' : enc.tono === 3 ? 'La encimera oscura marca la línea de trabajo.' : enc.tono === 1 && (A.tono > 1 || B.tono > 1) ? 'La encimera clara equilibra el color de los frentes.' : 'La encimera de aspecto piedra o mármol es fácil de combinar y de limpiar.');
+      if (A.id !== B.id) r.push(R.col === 'b' ? 'Las columnas van como los bajos y hacen de bloque.' : 'Las columnas van como los altos, para que no pesen.');
+      if (gola) r.push(gola.porque);
+      if (cuida(e) && !esBrillo(B) && B.fam !== 'blanco') r.push('Con niños o mascotas: bajos mate' + (B.antihuella ? ' y antihuella' : '') + ', que disimulan golpes y huellas.');
+      if (A.id !== B.id && A.fab && A.fab === B.fab) r.push('Altos y bajos del mismo fabricante: un solo pedido.');
+      if (R.gusta) r.push('Con los colores que le gustan al cliente.');
+      if (e.pared === 'color' && (B.tono > 1 || !/blanco|crema|gris/.test(B.fam))) r.push('Con la pared de color, que no compita con los frentes (mejor pared blanca o suave).');
       if (fA || fB || fE) r.push('Respeta lo que el cliente ya ha elegido.');
-      var g = Math.max(altos.g || 0, bajos.g || 0) || null;
-      combos.push({ titulo: titulo, altos: altos, bajos: bajos, encimera: enc, tirador: tiradorPara([bajos, altos]), razones: r, g: g });
+      var g = Math.max(A.g || 0, B.g || 0) || null;
+      combos.push({ titulo: titulo, altos: A, bajos: B, columna: columna, encimera: enc, tirador: tir, gola: gola, razones: r, g: g });
     }
-    // 1. Luminosa: frentes claros en toda la cocina.
-    var a = mejor(fr, e, { fams: claros, tono: 1, rol: 'ambos' }, usados);
-    var A1 = fA || (fB && fB.tono === 1 ? fB : null) || (fB ? mejor(fr, e, { fams: claros, tono: 1, fab: fB.fab, rol: 'altos' }, []) : a), B1 = fB || A1;
-    if (A1 && B1) {
-      usados.push(A1.id, B1.id);
-      var r1 = [cerrada ? 'Con poca luz o poco espacio, los frentes claros hacen la cocina más grande y luminosa.' : 'Frentes claros: la cocina se ve amplia y limpia, y no pasa de moda.'];
-      if (oscuroSuelo) r1.push('Contrastan con el suelo oscuro, que gana protagonismo.');
-      if (claroSuelo) r1.push('Con un suelo tan claro, la encimera pone el contraste para que no quede todo plano.');
-      anadir('Luminosa', A1, B1, r1);
-    }
-    // 2. Bitono: bajos con más peso y altos claros, del mismo fabricante.
-    var famsB = { moderno: ['madera_media', 'oscuro', 'gris', 'madera_oscura'], industrial: ['oscuro', 'madera_oscura', 'madera_media', 'negro'], nordico: ['madera_clara', 'madera_media', 'verde', 'azul'],
-      clasico: ['verde', 'azul', 'madera_media', 'gris'], rustico: ['madera_media', 'verde', 'madera_oscura', 'terracota'], minimalista: ['gris', 'oscuro', 'negro'], boho: ['terracota', 'verde', 'madera_clara'],
-      japandi: ['madera_clara', 'madera_media', 'oscuro'], vintage: ['verde', 'azul', 'terracota'] }[e.estilo] || ['madera_media', 'oscuro', 'verde'];
-    var suave = oscuroSuelo || ['nordico', 'clasico', 'boho', 'japandi', 'vintage'].indexOf(e.estilo) >= 0;
-    var B2 = fB || mejor(fr, e, { fams: famsB, tono: suave ? 2 : 3, dejarOscuro: true, rol: 'bajos' }, usados);
-    var A2 = fA || (B2 && mejor(fr, e, { fams: ['blanco', 'crema', 'gris_claro'], tono: 1, fab: B2.fab, rol: 'altos' }, [B2.id]));
-    if (A2 && B2) {
-      usados.push(B2.id);
-      var r2 = ['Altos claros que no pesan y bajos con más color: aguanta mejor el día a día (abajo se notan menos las marcas).'];
-      if (e.sueloTipo === 'madera' && esMadera(B2.fam)) r2.push('La madera de los bajos es de otro tono que el suelo, para que no parezca que no casan.');
-      else if (esMadera(B2.fam)) r2.push('La madera en los bajos da calidez sin oscurecer la cocina.');
-      if (cerrada) r2.push('Lo oscuro va abajo: así no se cierra el espacio.');
-      if (A2.fab === B2.fab) r2.push('Altos y bajos del mismo fabricante: un solo pedido.');
-      anadir('Bitono', A2, B2, r2);
-    }
-    // 3. Con carácter: un color con personalidad según el estilo y lo que le gusta (suave si la cocina es pequeña o sin luz).
-    var fams3 = { moderno: ['oscuro', 'negro', 'madera_media'], nordico: ['verde', 'azul', 'madera_clara'], clasico: ['verde', 'azul', 'crema'], industrial: ['negro', 'oscuro', 'madera_oscura'], rustico: ['verde', 'terracota', 'madera_media'],
-      minimalista: ['negro', 'oscuro', 'gris'], boho: ['terracota', 'verde', 'madera_clara'], japandi: ['negro', 'madera_clara', 'oscuro'], vintage: ['verde', 'azul', 'terracota'] }[e.estilo] || ['verde', 'azul'];
-    var gustan = (e.gusta || []).filter(function (g) { return ['verde', 'azul', 'terracota', 'madera', 'oscuro'].indexOf(g) >= 0; });
-    if (gustan.length) fams3 = gustan.map(function (g) { return g === 'madera' ? 'madera_media' : g; }).concat(fams3);
-    var C3 = fB || mejor(fr, e, { fams: fams3, tono: cerrada ? 2 : 3, dejarOscuro: !cerrada, rol: 'bajos' }, usados);
-    if (C3) {
-      var A3 = fA || (C3.tono >= 2 && cerrada ? mejor(fr, e, { fams: ['blanco', 'crema'], tono: 1, fab: C3.fab, rol: 'altos' }, []) : C3);
-      var r3 = [cerrada ? 'Un color con personalidad, pero suave para que la cocina no se cierre.' : 'Un color con personalidad que encaja con el estilo ' + (NOMBRE_ESTILO[e.estilo] || '') + '.'];
-      if (A3 !== C3 && !fA) r3.push('Los altos van claros para que entre la luz.');
-      if (gustan.length && !fB) r3.push('Con los colores que le gustan al cliente.');
-      if (e.pared === 'color') r3.push('Con la pared de color, que no compita con los frentes (mejor pared blanca o suave).');
-      anadir('Con carácter', A3, C3, r3);
-    }
+    // Primero, si el cliente ha dicho lo que le gusta, una con sus colores.
+    var gustan = [];
+    (e.gusta || []).forEach(function (g) {
+      ({ madera: ['madera_media', 'madera_clara', 'madera_oscura'], gris: ['gris', 'gris_claro'], oscuro: ['oscuro', 'negro'] }[g] || [g]).forEach(function (f) { if (gustan.indexOf(f) < 0) gustan.push(f); });
+    });
+    if (gustan.length && !fB) hacer({ t: 'Con sus colores', b: { f: gustan, t: null }, a: gustan.every(function (f) { return C.indexOf(f) >= 0; }) ? '=' : 'claro', e: ['marmol', 'piedra', 'blanco', 'madera_media'], col: 'a', r: 'Con lo que le gusta al cliente.', gusta: true });
+    (RECETAS[e.estilo] || RECETAS.moderno).forEach(hacer);
+    if (combos.length < 3) COMODIN.forEach(function (R) { if (combos.length < 3) hacer(R); });
     return combos;
   }
 
   // ── Dibujo ──
   var eh = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   function dibujo(cb, e, alto) {
-    var w = 300, H = alto || 190, ti = cb.tirador, sinTir = ti && ti.tipoTir === 'sin', integrado = ti && ti.tipoTir === 'integrado';
-    var hx = function (c, d) { return c ? c.hex : d; };
+    var w = 300, H = alto || 190, suelo = H - 34, zb = suelo - 8, ti = cb.tirador, sinTir = ti && ti.tipoTir === 'sin', integrado = ti && ti.tipoTir === 'integrado';
+    var hx = function (c, d) { return c ? c.hex : d; }, col = cb.columna || cb.altos, xc = 22 + 3 * 64, fin = xc - 2, linea = 'rgba(0,0,0,.18)';
+    var gola = cb.gola ? cb.gola.hex : 'rgba(0,0,0,.28)';
     var s = '<svg viewBox="0 0 ' + w + ' ' + H + '" class="gc-svg" role="img" aria-label="Combinación ' + eh(cb.titulo) + '">'
-      + '<rect width="' + w + '" height="' + H + '" fill="' + paredHex(e) + '"/><rect y="' + (H - 34) + '" width="' + w + '" height="34" fill="' + sueloHex(e) + '"/>';
-    for (var i = 0; i < 4; i++) {
+      + '<rect width="' + w + '" height="' + H + '" fill="' + paredHex(e) + '"/><rect y="' + suelo + '" width="' + w + '" height="34" fill="' + sueloHex(e) + '"/>';
+    for (var i = 0; i < 3; i++) {
       var x = 22 + i * 64;
-      s += '<rect x="' + x + '" y="18" width="62" height="52" fill="' + hx(cb.altos, '#eee') + '" stroke="rgba(0,0,0,.18)"/>'
-        + '<rect x="' + x + '" y="96" width="62" height="' + (H - 34 - 96 - 8) + '" fill="' + hx(cb.bajos, '#ddd') + '" stroke="rgba(0,0,0,.18)"/>';
+      s += '<rect x="' + x + '" y="18" width="62" height="52" fill="' + hx(cb.altos, '#eee') + '" stroke="' + linea + '"/>'
+        + '<rect x="' + x + '" y="96" width="62" height="' + (zb - 96) + '" fill="' + hx(cb.bajos, '#ddd') + '" stroke="' + linea + '"/>';
       if (ti && !sinTir) {
         if (integrado) s += '<rect x="' + x + '" y="96" width="62" height="3" fill="' + ti.hex + '"/><rect x="' + x + '" y="67" width="62" height="3" fill="' + ti.hex + '"/>';
         else s += '<rect x="' + (x + 8) + '" y="62" width="20" height="3" rx="1.5" fill="' + ti.hex + '"/><rect x="' + (x + 8) + '" y="103" width="20" height="3" rx="1.5" fill="' + ti.hex + '"/>';
       }
     }
-    if (sinTir) s += '<rect x="22" y="100" width="256" height="3" fill="rgba(0,0,0,.28)"/>';
-    s += '<rect x="18" y="86" width="264" height="10" fill="' + hx(cb.encimera, '#999') + '" stroke="rgba(0,0,0,.25)"/><rect x="22" y="' + (H - 42) + '" width="256" height="8" fill="rgba(0,0,0,.35)"/>';
+    if (sinTir) s += '<rect x="22" y="97" width="' + (fin - 22) + '" height="' + (cb.gola ? 4 : 2) + '" fill="' + gola + '"/>';
+    s += '<rect x="18" y="86" width="' + (fin - 18 + 2) + '" height="10" fill="' + hx(cb.encimera, '#999') + '" stroke="rgba(0,0,0,.25)"/><rect x="22" y="' + zb + '" width="' + (fin - 22) + '" height="8" fill="rgba(0,0,0,.35)"/>';
+    // Columna: enrasada con los altos, con el horno en medio.
+    var h1 = 88, h2 = 118;
+    s += '<rect x="' + xc + '" y="18" width="62" height="' + (zb - 18) + '" fill="' + hx(col, '#eee') + '" stroke="' + linea + '"/>'
+      + '<line x1="' + xc + '" y1="' + h1 + '" x2="' + (xc + 62) + '" y2="' + h1 + '" stroke="' + linea + '"/>'
+      + '<rect x="' + (xc + 4) + '" y="' + (h1 + 2) + '" width="54" height="' + (h2 - h1 - 4) + '" rx="2" fill="#2b2b2b"/><rect x="' + (xc + 9) + '" y="' + (h1 + 7) + '" width="44" height="' + (h2 - h1 - 16) + '" rx="2" fill="#4a4d50"/>'
+      + '<line x1="' + xc + '" y1="' + h2 + '" x2="' + (xc + 62) + '" y2="' + h2 + '" stroke="' + linea + '"/>'
+      + '<rect x="' + xc + '" y="' + zb + '" width="62" height="8" fill="rgba(0,0,0,.35)"/>';
+    if (ti && sinTir) s += '<rect x="' + (xc - 2) + '" y="18" width="' + (cb.gola ? 4 : 2) + '" height="' + (zb - 18) + '" fill="' + gola + '"/>';
+    else if (ti && integrado) s += '<rect x="' + (xc + 59) + '" y="18" width="3" height="' + (zb - 18) + '" fill="' + ti.hex + '"/>';
+    else if (ti) s += '<rect x="' + (xc + 6) + '" y="58" width="3" height="20" rx="1.5" fill="' + ti.hex + '"/><rect x="' + (xc + 6) + '" y="' + (h2 + 4) + '" width="3" height="' + Math.max(6, zb - h2 - 14) + '" rx="1.5" fill="' + ti.hex + '"/>';
     return s + '</svg>';
   }
   function detalle(c) { return [c.fab, c.serie, c.uso === F && c.mat && c.mat !== c.serie ? c.mat : ''].filter(Boolean).join(' · '); }
@@ -420,20 +535,23 @@
     estilo: [['moderno', 'Moderno'], ['minimalista', 'Minimalista'], ['nordico', 'Nórdico'], ['japandi', 'Japandi'], ['clasico', 'Clásico'], ['vintage', 'Vintage / retro'], ['boho', 'Boho / mediterráneo'], ['industrial', 'Industrial'], ['rustico', 'Rústico']],
     acabado: [['', 'Da igual'], ['mate', 'Mate'], ['brillo', 'Brillo'], ['madera', 'Textura madera']],
     tirador: [['', 'Da igual'], ['visto', 'Tirador visto'], ['integrado', 'Integrado (discreto)'], ['sin', 'Sin tirador (gola o uñero)']],
+    gola: [['', 'Según los frentes'], ['go-plata', 'Plata'], ['go-negro', 'Negro'], ['go-blanco', 'Blanco'], ['go-champan', 'Champán / oro'], ['go-titanio', 'Titanio'], ['go-bronce', 'Bronce'], ['frente', 'Lacado como los bajos']],
   };
-  var TIT = { sueloTipo: 'Suelo', sueloTono: 'Tono del suelo', sueloTemp: 'Color del suelo', pared: 'Paredes', luz: 'Luz', tam: 'Tamaño', estilo: 'Estilo', acabado: 'Acabado de los frentes', tirador: 'Tirador' };
+  var TIT = { sueloTipo: 'Suelo', sueloTono: 'Tono del suelo', sueloTemp: 'Color del suelo', pared: 'Paredes', luz: 'Luz', tam: 'Tamaño', estilo: 'Estilo', acabado: 'Acabado de los frentes', tirador: 'Tirador', gola: 'Color del gola (si lleva)' };
   var USOS = [['ninos', 'Niños'], ['mascotas', 'Mascotas'], ['cocina', 'Cocina mucho']];
   var MATS = ['Laminado', 'PET', 'Laca', 'Laca propia', 'Madera'];
   var MATS_ENC = ['Laminado', 'Cuarzo', 'Porcelánico', 'Granito', 'Mármol', 'Compacto', 'Madera maciza'];
-  var DEF = { sueloTipo: 'madera', sueloTono: 2, sueloTemp: 'c', pared: 'blanco', luz: 'normal', tam: 'media', estilo: 'moderno', mats: [], encs: [], gusta: [], noQuiere: [], uso: [], acabado: '', tirador: '', fijo: {}, tope: null, topeAuto: true };
+  var DEF = { sueloTipo: 'madera', sueloTono: 2, sueloTemp: 'c', pared: 'blanco', luz: 'normal', tam: 'media', estilo: 'moderno', mats: [], encs: [], gusta: [], noQuiere: [], uso: [], acabado: '', tirador: '', gola: '', fijo: {}, tope: null, topeAuto: true };
+  // Lo rellenado va con el presupuesto abierto (ST.coloresEntrada): cada cocina empieza de cero.
+  var entradaSuelta = null;
   function entrada() {
-    var g = leer(), e = Object.assign({}, DEF, g.ultimo || {});
+    var e = Object.assign({}, DEF, (window.ST ? ST.coloresEntrada : entradaSuelta) || {});
     ['mats', 'encs', 'gusta', 'noQuiere', 'uso'].forEach(function (k) { e[k] = (e[k] || []).slice(); });
     e.fijo = Object.assign({}, e.fijo || {});
     if (e.topeAuto !== false) e.tope = grupoPresupuesto();
     return e;
   }
-  function cambiar(f) { var g = leer(), u = entrada(); f(u); g.ultimo = u; guardar(g); pintar(); }
+  function cambiar(f) { var u = entrada(); f(u); if (window.ST) ST.coloresEntrada = u; else entradaSuelta = u; pintar(); }
   function chips(k, e) {
     return '<div class="gc-campo"><label>' + TIT[k] + '</label><div class="gc-chips">' + OPC[k].map(function (o) {
       return '<button type="button" class="gc-chip' + (String(e[k] || '') === String(o[0]) ? ' on' : '') + '" data-k="' + k + '" data-v="' + o[0] + '">' + o[1] + '</button>';
@@ -468,7 +586,7 @@
         + (e.paredHex ? '<div class="gc-nota">Pared de la foto <span class="gc-mini" style="background:' + e.paredHex + '"></span></div>' : '') + '</div>'
         + ['pared', 'luz', 'tam', 'estilo'].map(function (k) { return chips(k, e); }).join(''), abierta('suelo', true), 'suelo')
       + seccion('Lo que quiere el cliente', chipsLista('gusta', 'Le gusta', FAM_CLIENTE, e) + chipsLista('noQuiere', 'No quiere ver', FAM_CLIENTE, e, 'Lo que no quiere no sale nunca.')
-        + chipsLista('uso', 'En casa', USOS, e) + chips('acabado', e) + chips('tirador', e), abierta('cliente', false), 'cliente')
+        + chipsLista('uso', 'En casa', USOS, e) + chips('acabado', e) + chips('tirador', e) + chips('gola', e), abierta('cliente', false), 'cliente')
       + seccion('Ya elegido (se respeta)', selFijo('altos', 'Altos', cat, e) + selFijo('bajos', 'Bajos', cat, e) + selFijo('encimera', 'Encimera', cat, e)
         + '<div class="gc-campo"><label>Laca propia: escribe un NCS o RAL</label><div class="gc-codigo"><input id="GC-COD" placeholder="RAL 6021 · NCS S 2010-G30Y">'
         + '<button type="button" class="btn bgh bsm" data-cod="bajos">Bajos</button><button type="button" class="btn bgh bsm" data-cod="altos">Altos</button><button type="button" class="btn bgh bsm" data-cod="todo">Toda</button></div>'
@@ -547,8 +665,8 @@
   function tarjeta(cb, e, i, elegida) {
     var es = !!(elegida && elegida.titulo === cb.titulo && elegida.bajos && elegida.bajos.id === cb.bajos.id && elegida.altos && elegida.altos.id === cb.altos.id);
     return '<div class="gc-combo' + (es ? ' elegida' : '') + '" data-combo="' + i + '"><h4>' + (i + 1) + '. ' + eh(cb.titulo) + '</h4>' + dibujo(cb, e)
-      + (cb.altos.id === cb.bajos.id ? fila('Frentes', cb.bajos) : fila('Altos', cb.altos) + fila('Bajos', cb.bajos))
-      + fila('Encimera', cb.encimera) + fila('Tirador', cb.tirador) + textoGrupo(cb, e.tope)
+      + (cb.altos.id === cb.bajos.id ? fila('Frentes', cb.bajos) : fila('Altos', cb.altos) + fila('Bajos', cb.bajos) + fila('Columnas', cb.columna))
+      + fila('Encimera', cb.encimera) + fila('Tirador', cb.tirador) + fila('Color del gola', cb.gola) + textoGrupo(cb, e.tope)
       + '<ul class="gc-por">' + cb.razones.map(function (r) { return '<li>' + eh(r) + '</li>'; }).join('') + '</ul>'
       + '<button type="button" class="btn ' + (es ? 'bgh' : 'bp') + ' bsm gc-elegir" data-elegir="' + i + '">' + (es ? '✓ Elegida' : 'Elegir para el presupuesto') + '</button></div>';
   }
@@ -556,7 +674,7 @@
   function copia(c) { return c ? { id: c.id, nombre: c.nombre, fab: c.fab, serie: c.serie, mat: c.mat, uso: c.uso, hex: c.hex, g: c.g || null, codigo: c.codigo || null, tipoTir: c.tipoTir || null } : null; }
   function elegir(cb, e) {
     if (!window.ST) return;
-    ST.colores = { titulo: cb.titulo, altos: copia(cb.altos), bajos: copia(cb.bajos), encimera: copia(cb.encimera), tirador: copia(cb.tirador), razones: cb.razones.slice(), g: cb.g,
+    ST.colores = { titulo: cb.titulo, altos: copia(cb.altos), bajos: copia(cb.bajos), columna: copia(cb.columna), encimera: copia(cb.encimera), tirador: copia(cb.tirador), gola: copia(cb.gola), razones: cb.razones.slice(), g: cb.g,
       suelo: sueloHex(e), pared: paredHex(e), estilo: e.estilo, fecha: new Date().toISOString() };
     if (typeof markDirty === 'function') markDirty();
     toastGc('Combinación «' + cb.titulo + '» guardada en el presupuesto: sale en el PDF y en la ficha de taller.');
@@ -570,13 +688,13 @@
       return '<tr><td style="width:44px;padding:4px"><span style="display:inline-block;width:34px;height:24px;border-radius:4px;border:1px solid #bbb;background:' + c.hex + ';-webkit-print-color-adjust:exact;print-color-adjust:exact"></span></td>'
         + '<td style="padding:4px 6px;color:#666;font-size:.8rem;width:80px">' + et + '</td><td style="padding:4px 6px"><b>' + eh(c.nombre) + '</b>' + (detalle(c) ? ' <span style="color:#777;font-size:.8rem">' + eh(detalle(c)) + '</span>' : '') + '</td></tr>';
     };
-    var cb = { titulo: col.titulo, altos: col.altos, bajos: col.bajos, encimera: col.encimera, tirador: col.tirador };
+    var cb = { titulo: col.titulo, altos: col.altos, bajos: col.bajos, columna: col.columna, encimera: col.encimera, tirador: col.tirador, gola: col.gola };
     var svg = taller ? '' : dibujo(cb, { sueloHex: col.suelo, paredHex: col.pared }, 170).replace('class="gc-svg"', 'style="width:100%;max-width:300px;height:auto;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact"');
     return '<div class="pfcolores" style="margin-top:14px;page-break-inside:avoid;break-inside:avoid">'
       + (taller ? '<h3 style="font-size:1rem;margin:14px 0 6px">Colores: ' + eh(col.titulo) + '</h3>' : '<div class="pfsec">Colores elegidos · ' + eh(col.titulo) + '</div>')
       + '<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">' + (svg ? '<div style="flex:0 0 260px">' + svg + '</div>' : '')
-      + '<table style="border-collapse:collapse;flex:1;min-width:240px">' + (col.altos && col.bajos && col.altos.id === col.bajos.id ? fila2('Frentes', col.bajos) : fila2('Altos', col.altos) + fila2('Bajos', col.bajos))
-      + fila2('Encimera', col.encimera) + fila2('Tirador', col.tirador) + '</table></div>'
+      + '<table style="border-collapse:collapse;flex:1;min-width:240px">' + (col.altos && col.bajos && col.altos.id === col.bajos.id ? fila2('Frentes', col.bajos) : fila2('Altos', col.altos) + fila2('Bajos', col.bajos) + fila2('Columnas', col.columna))
+      + fila2('Encimera', col.encimera) + fila2('Tirador', col.tirador) + fila2('Gola', col.gola) + '</table></div>'
       + (taller ? '' : '<div style="font-size:.75rem;color:#888;margin-top:4px">Colores orientativos: el tono real se ve en la muestra del fabricante.</div>') + '</div>';
   }
 
@@ -587,7 +705,8 @@
       if (c.altos.id === c.bajos.id) l.push('Frentes: ' + c.bajos.nombre + (c.bajos.fab ? ' (' + c.bajos.fab + ')' : ''));
       else l.push('Altos: ' + c.altos.nombre + (c.altos.fab ? ' (' + c.altos.fab + ')' : ''), 'Bajos: ' + c.bajos.nombre + (c.bajos.fab ? ' (' + c.bajos.fab + ')' : ''));
       if (c.encimera) l.push('Encimera: ' + c.encimera.nombre + (c.encimera.fab ? ' (' + c.encimera.fab + ')' : ''));
-      if (c.tirador) l.push('Tirador: ' + c.tirador.nombre);
+      if (c.columna && c.altos.id !== c.bajos.id) l.push('Columnas: ' + c.columna.nombre);
+      if (c.tirador) l.push('Tirador: ' + c.tirador.nombre + (c.gola ? ' (' + c.gola.nombre.toLowerCase() + ')' : ''));
       c.razones.forEach(function (r) { l.push('- ' + r); });
     });
     l.push('', 'Colores orientativos: el tono real se ve en la muestra.');
@@ -650,7 +769,7 @@
       document.getElementById('GC-CLIENTE').oninput = function () { if (!m.classList.contains('mios')) pintar(); };
       var st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     }
-    var cli = document.getElementById('GC-CLIENTE'); if (!cli.value) cli.value = clientePresupuesto();
+    document.getElementById('GC-CLIENTE').value = clientePresupuesto();   // el del presupuesto abierto, no el de la vez anterior
     m.classList.remove('mios'); m.querySelector('[data-acc="gc-mios"]').textContent = 'Mis colores';
     pintar(); m.style.display = 'flex';
   }
@@ -689,6 +808,6 @@
     + 'body.gc-imprimiendo .gc-mu,body.gc-imprimiendo .gc-svg *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
 
   window.GUIA_COLORES = { BASE: BASE, FAM: FAM, recomendar: recomendar, catalogo: catalogo, filtrar: filtrar, abrir: abrir, cerrar: cerrar, texto: texto, CLAVE: CLAVE,
-    grupoDe: grupoDe, grupoPresupuesto: grupoPresupuesto, colorDeCodigo: colorDeCodigo, ncsHex: ncsHex, datosHex: datosHex, htmlPresupuesto: htmlPresupuesto, elegir: elegir, tomarColor: tomarColor };
+    grupoDe: grupoDe, RECETAS: RECETAS, GOLAS: GOLAS, golaPara: golaPara, grupoPresupuesto: grupoPresupuesto, colorDeCodigo: colorDeCodigo, ncsHex: ncsHex, datosHex: datosHex, htmlPresupuesto: htmlPresupuesto, elegir: elegir, tomarColor: tomarColor };
   window.abrirGuiaColores = abrir;
 })();
