@@ -556,6 +556,61 @@
       return svg.outerHTML;
     } catch (er) { return ''; }
   }
+  // ── Colores del presupuesto para el 3D (si no se ha elegido combinación en la guía) ──
+  // Frentes y encimera: lo que vino de la Libreta (acabados: modelo y color) y lo escrito en las notas del presupuesto
+  // y de las líneas. Se reconoce un RAL o NCS, un color o encimera de la lista (por nombre o código, p. ej. F-812) o
+  // una palabra de color.
+  var norm = function (t) { return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); };
+  var PALABRAS = [['antracita', '#3c3f42', 'oscuro'], ['grafito', '#4a4b4c', 'oscuro'], ['negro', '#222222', 'negro'], ['blanco', '#f4f3ef', 'blanco'], ['gris', '#a9a8a4', 'gris'],
+    ['nogal', '#6b4c36', 'madera_oscura'], ['roble', '#b08d68', 'madera_media'], ['madera', '#b08d68', 'madera_media'], ['verde', '#7f8e72', 'verde'], ['azul', '#7d93a6', 'azul'],
+    ['crema', '#e4dccb', 'crema'], ['beige', '#d8c9ae', 'crema'], ['hueso', '#ece4d2', 'crema'], ['arena', '#d6c6a8', 'crema'], ['terracota', '#b5684b', 'terracota'], ['marmol', '#ecebe8', 'marmol']];
+  function buscarColor(texto, uso, cat) {
+    var t = norm(texto); if (!t.trim()) return null;
+    var cod = /(RAL ?\d{4}|(NCS )?S ?\d{4}-(N|[YRBG](\d{2}[YRBG])?))/i.exec(String(texto));
+    if (cod && uso === F) { var cc = colorDeCodigo(cod[0]); if (cc) return cc; }
+    var mejor = null;
+    (cat || catalogo()).forEach(function (c) {
+      if (c.uso !== uso) return;
+      var n = norm(c.nombre).replace(/\s+n(o|º)\s*\d+$/, '').trim(), codigo = (c.nombre.match(/\b[A-Z]-?\d{3,4}\b/) || [])[0];
+      var vale = (n.length > 3 && t.indexOf(n) >= 0) || (codigo && t.indexOf(norm(codigo)) >= 0);
+      if (vale && (!mejor || n.length > mejor.n)) mejor = { c: c, n: n.length };
+    });
+    if (mejor) return mejor.c;
+    var w = PALABRAS.filter(function (x) { return t.indexOf(x[0]) >= 0; })[0];
+    return w ? { id: 'palabra-' + w[0], nombre: String(texto).trim(), hex: w[1], fam: w[2], uso: uso } : null;
+  }
+  function textosPresupuesto() {
+    var notas = (document.getElementById('F-NOTAS') || {}).value || '', lineas = [];
+    ((window.ST && ST.groups) || []).forEach(function (g) { (g.lines || []).forEach(function (l) { lineas.push([l.m, l.mo, l.nota].filter(Boolean).join(' ')); }); });
+    var linea = function (re) { var m = re.exec(notas); return m ? m[1] : ''; };
+    return { notas: notas, lineas: lineas, frentes: linea(/Frentes:\s*([^\n]+)/i), altos: linea(/altos:\s*([^·\n]+)/i), bajos: linea(/bajos:\s*([^·\n]+)/i), encimera: linea(/Encimera:\s*([^\n]+)/i) };
+  }
+  function coloresPresupuesto() {
+    var p = plano3d(), ac = (p && p.datos && p.datos.acabados) || {}, T = textosPresupuesto(), cat = catalogo(), enc = ac.encimera || {};
+    var txt = function (a, b) { return [a, b].filter(Boolean).join(' '); };
+    var fBajos = ac.bitono ? txt(ac.modelo_bajos, ac.color_bajos) || T.bajos : txt(ac.modelo, ac.color) || T.frentes || T.bajos;
+    var fAltos = ac.bitono ? txt(ac.modelo_altos, ac.color_altos) || T.altos : txt(ac.modelo, ac.color) || T.frentes || T.altos;
+    var bajos = buscarColor(fBajos, F, cat), altos = buscarColor(fAltos, F, cat) || bajos;
+    var encTxt = [enc.color, enc.modelo, enc.material].filter(Boolean).join(' ') || T.encimera;
+    var encimera = buscarColor(encTxt, E, cat);
+    if (!encimera) T.lineas.some(function (l) { if (!/encimera|silestone|dekton|compac|neolith|granito|marmol|porcelanico|cuarzo/i.test(norm(l))) return false; encimera = buscarColor(l, E, cat); return !!encimera; });
+    if (!bajos && !altos && !encimera) return null;
+    return { titulo: 'Colores del presupuesto', altos: altos, bajos: bajos || altos, columna: altos, encimera: encimera, tirador: null, gola: null, deTexto: { frentes: fBajos, altos: fAltos, encimera: encTxt } };
+  }
+  // Bloque «Tu cocina» del PDF del cliente cuando no se ha elegido combinación: el 3D con los colores del presupuesto.
+  function htmlCocina3d(taller) {
+    var cb = coloresPresupuesto(), s3 = svg3d(cb, null, 760, 440);
+    if (!s3) return '';
+    var pc = '-webkit-print-color-adjust:exact;print-color-adjust:exact';
+    var fila2 = function (et, c) { return c ? '<tr><td style="width:44px;padding:4px"><span style="display:inline-block;width:34px;height:24px;border-radius:4px;border:1px solid #bbb;background:' + c.hex + ';' + pc + '"></span></td>'
+      + '<td style="padding:4px 6px;color:#666;font-size:.8rem;width:80px">' + et + '</td><td style="padding:4px 6px"><b>' + eh(c.nombre) + '</b></td></tr>' : ''; };
+    var tabla = cb ? '<table style="border-collapse:collapse;margin-top:6px">' + (cb.altos && cb.bajos && cb.altos.id !== cb.bajos.id ? fila2('Altos', cb.altos) + fila2('Bajos', cb.bajos) : fila2('Frentes', cb.bajos)) + fila2('Encimera', cb.encimera) + '</table>' : '';
+    return '<div class="pfcolores" style="margin-top:14px;page-break-inside:avoid;break-inside:avoid">'
+      + (taller ? '<h3 style="font-size:1rem;margin:14px 0 6px">La cocina</h3>' : '<div class="pfsec">Tu cocina</div>')
+      + s3.replace('class="gc-svg gc-3d"', 'style="width:100%;max-width:640px;height:auto;border-radius:6px;' + pc + '"') + tabla
+      + '<div style="font-size:.75rem;color:#888;margin-top:4px">' + (cb ? 'Con los colores del presupuesto (vista orientativa).' : 'Vista orientativa; los colores se eligen con la guía de colores.') + '</div></div>';
+  }
+
   // Girar la vista alrededor del centro de la cocina (se guarda con el presupuesto); 0 = la vista de la Libreta.
   function girar3d(grados) {
     var p = plano3d(); if (!M3D || !p) return;
@@ -578,16 +633,12 @@
   }
   document.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('[data-g3d]'); if (b) girar3d(+b.dataset.g3d); });
   // La cocina sin colores elegidos (para la ficha de taller).
-  function htmlSolo3d() {
-    var s3 = svg3d(null, null, 760, 440);
-    return s3 ? '<div style="margin-top:14px;page-break-inside:avoid;break-inside:avoid"><h3 style="font-size:1rem;margin:14px 0 6px">La cocina (de la Libreta)</h3>'
-      + s3.replace('class="gc-svg gc-3d"', 'style="width:100%;max-width:640px;height:auto"') + '</div>' : '';
-  }
+  function htmlSolo3d() { return htmlCocina3d(true); }
 
   // Lo que se enseña de la elegida (o de la cocina sin colores) en el paso 4 del asistente.
   function vistaElegida(col) {
     var e = col ? { sueloHex: col.suelo, paredHex: col.pared } : {};
-    var cb = col ? { titulo: col.titulo, altos: col.altos, bajos: col.bajos, columna: col.columna, encimera: col.encimera, tirador: col.tirador, gola: col.gola } : null;
+    var cb = col ? { titulo: col.titulo, altos: col.altos, bajos: col.bajos, columna: col.columna, encimera: col.encimera, tirador: col.tirador, gola: col.gola } : coloresPresupuesto();
     return svg3d(cb, col ? e : null, 600, 384) || (cb ? dibujo(cb, e) : '');
   }
 
@@ -734,7 +785,6 @@
     m.querySelector('.gc-res').innerHTML = '<div class="gc-cab-imp"><b>Propuesta de colores</b>' + (cli ? ' · ' + eh(cli) : '') + '<br><small>Suelo ' + eh(nomSuelo)
       + ', ' + ['', 'claro', 'medio', 'oscuro'][e.sueloTono] + ' · cocina ' + ({ pequena: 'pequeña', media: 'mediana', grande: 'grande' })[e.tam] + ' · estilo ' + eh(NOMBRE_ESTILO[e.estilo] || '')
       + (e.tope ? ' · hasta grupo ' + NOMBRE_GRUPO[e.tope] : '') + '</small></div>'
-      + (M3D && plano3d() ? controles3d() : '')
       + (elegida ? '<div class="gc-elegida">✓ Elegida para este presupuesto: <b>' + eh(elegida.titulo) + '</b> (' + eh(elegida.bajos && elegida.bajos.nombre) + ') <button type="button" class="btn bgh bsm" data-acc="gc-quitar-elegida">Quitar</button></div>' : '')
       + (cb.length ? '<div class="gc-combos">' + cb.map(function (c, i) { return tarjeta(c, e, i, elegida); }).join('') + '</div>'
         : '<p>No hay colores con estas condiciones. Sube el grupo, quita algún filtro o lo que no quiere ver, o añade colores en «Mis colores».</p>')
@@ -895,6 +945,6 @@
     + 'body.gc-imprimiendo .gc-mu,body.gc-imprimiendo .gc-svg *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
 
   window.GUIA_COLORES = { BASE: BASE, FAM: FAM, recomendar: recomendar, catalogo: catalogo, filtrar: filtrar, abrir: abrir, cerrar: cerrar, texto: texto, CLAVE: CLAVE,
-    cargar3d: cargar3d, girar3d: girar3d, controles3d: controles3d, htmlSolo3d: htmlSolo3d, hay3d: function () { return !!(M3D && plano3d()); }, vistaElegida: vistaElegida, cascoPara: cascoPara, grupoDe: grupoDe, RECETAS: RECETAS, GOLAS: GOLAS, golaPara: golaPara, grupoPresupuesto: grupoPresupuesto, colorDeCodigo: colorDeCodigo, ncsHex: ncsHex, datosHex: datosHex, htmlPresupuesto: htmlPresupuesto, elegir: elegir, tomarColor: tomarColor };
+    cargar3d: cargar3d, coloresPresupuesto: coloresPresupuesto, htmlCocina3d: htmlCocina3d, buscarColor: buscarColor, girar3d: girar3d, controles3d: controles3d, htmlSolo3d: htmlSolo3d, hay3d: function () { return !!(M3D && plano3d()); }, vistaElegida: vistaElegida, cascoPara: cascoPara, grupoDe: grupoDe, RECETAS: RECETAS, GOLAS: GOLAS, golaPara: golaPara, grupoPresupuesto: grupoPresupuesto, colorDeCodigo: colorDeCodigo, ncsHex: ncsHex, datosHex: datosHex, htmlPresupuesto: htmlPresupuesto, elegir: elegir, tomarColor: tomarColor };
   window.abrirGuiaColores = abrir;
 })();
