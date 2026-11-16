@@ -101,3 +101,5 @@ body.asis .ban .ba { margin-left: auto; flex-wrap: wrap; justify-content: flex-e
 .asis-aviso{background:#fdecea;border:1px solid #e0a39b;color:#7a1f14;border-radius:10px;padding:10px 14px;margin:6px 0 12px;font-size:1rem}
 .asis-aviso[hidden]{display:none}.asis-aviso ul{margin:6px 0 0;padding-left:20px;line-height:1.9}
 body:not(.asis) .asis-abrir,body:not(.asis) .asis-calidades{display:none}
+/* v162: la cocina en 3D en el paso 4 */
+.asis-3d{margin:10px 0}.asis-3d svg{width:100%;max-width:640px;height:auto;border-radius:8px;display:block}.asis-3d small{color:#6b7280}

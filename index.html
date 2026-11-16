@@ -373,7 +373,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v161</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v162</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -3354,7 +3354,7 @@ function newBudget() {
     try { _updProyectoBadge(); } catch(e){}
     ST.curNum = null;
     ST.estado = 'borrador'; ST.fechaEnvio = null; ST.fechaAceptado = null; ST.opcionDe = null;
-    ST.bloqueado = false; ST.fzInst = null; ST.colores = null; ST.coloresEntrada = null;
+    ST.bloqueado = false; ST.fzInst = null; ST.colores = null; ST.coloresEntrada = null; ST.libreta3d = null;
     _aplicarEstadoUI();
   }
 
@@ -8515,6 +8515,7 @@ function serializeBudget() {
   d.bloqueado = !!ST.bloqueado;
   d.colores = ST.colores || null;   // v159: combinación elegida en la guía de colores
   d.coloresEntrada = ST.coloresEntrada || null;   // v161: lo rellenado en la guía (suelo, estilo, filtros)
+  d.libreta3d = ST.libreta3d || null;   // v162: el plano de la Libreta para la vista 3D
   if (ST.bloqueado) d.fzInst = ST.fzInst;
   if (ST.opcionDe) d.opcionDe = ST.opcionDe;
   // Las fotos subidas a la nube viajan solo como referencia (el presupuesto pesa poco)
@@ -8633,6 +8634,8 @@ function _abPasoEstado(d) {
   ST.opcionDe = d.opcionDe || null;
   ST.colores = d.colores || null;
   ST.coloresEntrada = d.coloresEntrada || null;
+  ST.libreta3d = d.libreta3d || null;
+  if (ST.libreta3d && window.GUIA_COLORES) GUIA_COLORES.cargar3d();
 }
 function _applyBudgetBase(d) {
   document.getElementById('FC').value = d.cliente || '';

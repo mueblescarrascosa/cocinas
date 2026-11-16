@@ -83,6 +83,8 @@
     if (!ok) return false;
     ST.groups = grupos(p);
     ST.proyectoActual = null; ST.curNum = null; ST.estado = 'borrador'; ST.fechaEnvio = null; ST.fechaAceptado = null; ST.opcionDe = null; ST.bloqueado = false; ST.fzInst = null; ST.colores = null; ST.coloresEntrada = null;
+    ST.libreta3d = p.plano3d && p.plano3d.datos ? p.plano3d : null;   // para la vista 3D con los colores
+    if (ST.libreta3d && window.GUIA_COLORES) GUIA_COLORES.cargar3d();
     ST.images = [];
     var poner = function (id, v) { var e = document.getElementById(id); if (e) e.value = v || ''; };
     poner('FC', p.cliente); poner('FD', p.direccion); poner('FT', p.telefono);

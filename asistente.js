@@ -158,6 +158,12 @@
     var col = window.ST && ST.colores, r = $('ASIS-COL-RES');
     if (r) r.innerHTML = col ? '<p>Elegida: <b>' + eh(col.titulo) + '</b> · bajos ' + eh((col.bajos || {}).nombre) + (col.altos && col.bajos && col.altos.id !== col.bajos.id ? ', altos ' + eh(col.altos.nombre) : '') + (col.encimera ? ', encimera ' + eh(col.encimera.nombre) : '') + '.</p>'
       : '<p class="mut">Aún no hay colores elegidos. No es obligatorio: si el cliente ya lo tiene claro, pasa al siguiente paso.</p>';
+    // La cocina en 3D (si viene de la Libreta) o el dibujo de la elegida.
+    if (r && window.GUIA_COLORES && (paso === 3 || document.body.classList.contains('asis-todo'))) {
+      var G = window.GUIA_COLORES, vista = (col || G.hay3d()) ? G.vistaElegida(col) : '';
+      if (vista) r.innerHTML += '<div class="asis-3d">' + vista + (G.hay3d() ? '<small>' + (col ? 'La cocina medida en la Libreta con estos colores.' : 'La cocina medida en la Libreta. Elige colores para verla con ellos.') + '</small>' : '') + '</div>';
+      else if (window.ST && ST.libreta3d) G.cargar3d().then(function (m) { if (m) refrescar(); });
+    }
     var av = $('ASIS-AVISO');
     if (av) {
       var falta = [];
@@ -249,7 +255,7 @@
     });
     var cal = (window.CALS || [])[1] || 'BÁSICO';
     ST.groups = [{ id: nid(), name: 'Cocina de ejemplo', tipo: 'muebles', cal: cal, ci: 0, lines: lineas, open: true, casco: typeof cascoNuevo === 'function' ? cascoNuevo() : undefined, herr: typeof herrNuevo === 'function' ? herrNuevo() : undefined }];
-    ST.colores = null; ST.coloresEntrada = null; ST.proyectoActual = null; ST._ejemplo = true;
+    ST.colores = null; ST.coloresEntrada = null; ST.libreta3d = null; ST.proyectoActual = null; ST._ejemplo = true;
     $('FC').value = 'Cliente de ejemplo'; $('FD').value = 'Calle de práctica 1'; $('FT').value = '';
     var notas = $('F-NOTAS'); if (notas) notas.value = 'Presupuesto de ejemplo para practicar. Puedes cambiar todo lo que quieras.';
     if (typeof renderGroups === 'function') renderGroups();
