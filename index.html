@@ -373,7 +373,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v167</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v168</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -5152,6 +5152,7 @@ function _fichaHerrajesGrupo(g) {
           + '<td style="padding:3px 6px;border:1px solid #ccc;text-align:center">'+eh(h.color||'')+'</td><td style="padding:3px 6px;border:1px solid #ccc;text-align:center">'+tot[cod]+'</td></tr>'; }).join('')
     + '</tbody></table>';
 }
+// Mismas reglas que piezasCascoCocina de la Libreta (material.js), que se usa en su lugar si el presupuesto viene de ella.
 // v167: piezas de los cascos de cocina a partir de cada línea de muebles (tipo, ancho y unidades), por acabado de casco.
 // Bajos (alto del grupo: 70 u 80): 2 costados, suelo, 2 travesaños y un estante si son de puertas. Altos (alto del
 // nombre del tipo, p. ej. «ALTO 70-80» → 75): costados, techo, suelo y un estante. Columnas: costados, techo, suelo y
@@ -5170,7 +5171,7 @@ function _piezasCascoCocina(grupos) {
       var alto = bajo ? num(cs.alto) * 10 : col ? Math.max(1200, medio - 100) : (medio || 500), fondo = bajo || col || sobreFrigo ? 560 : /SOBRE ENCIMERA/.test(m) ? 250 : 330;
       pz(fondo, alto, 2);
       if (bajo) { pz(w - 2 * G, fondo, 1); pz(w - 2 * G, 100, 2); if (/PUERTA/.test(mo)) pz(w - 2 * G - 2, fondo - 20, 1); }
-      else { pz(w - 2 * G, fondo, 2); pz(w - 2 * G - 2, fondo - 20, col ? 2 : alto > 500 ? 1 : 0); }
+      else { pz(w - 2 * G, fondo, 2); pz(w - 2 * G - 2, fondo - 20, col ? (/H\/MO|HORNO/.test(mo) ? 1 : 2) : alto > 500 ? 1 : 0); }
     });
   });
   return porAcab;
@@ -5181,8 +5182,11 @@ function _tallerTableros() {
   if (!window.ARM || !ARM.tablerosPresupuesto || !ARM.empaquetar) return '';
   var l = [], c = [];
   try { l = ARM.tablerosPresupuesto(ST.groups); } catch (e) { l = []; }
+  var deLibreta = false;
   try {
-    var pc = _piezasCascoCocina(ST.groups);
+    // Si el presupuesto viene de la Libreta, las medidas reales de cada mueble; si no, las líneas del presupuesto.
+    var pc = _piezasCascoCocina(ST.groups), lib = window.GUIA_COLORES && GUIA_COLORES.piezasCascoLibreta ? GUIA_COLORES.piezasCascoLibreta() : null;
+    if (lib && lib.length) { var g0 = (ST.groups || []).filter(function(g){ return (g.tipo || 'muebles') === 'muebles'; })[0]; pc = {}; pc[cascoSel(g0 || null).acab] = lib; deLibreta = true; }
     Object.keys(pc).forEach(function(acab){
       if (!pc[acab].length) return;
       var e = ARM.empaquetar(pc[acab]);
@@ -5192,7 +5196,7 @@ function _tallerTableros() {
   if (!l.length && !c.length) return '';
   var lista = function(t, filas){ return filas.length ? '<h3 style="font-size:1rem;margin:14px 0 6px">'+t+'</h3><ul style="margin:0;padding-left:18px;font-size:.88rem">' + filas.map(function(x){ return '<li>'+x+'</li>'; }).join('') + '</ul>' : ''; };
   return '<div style="margin-top:14px;page-break-inside:avoid">'
-    + lista('Tableros para cascos de cocina', c)
+    + lista('Tableros para cascos de cocina' + (c.length ? (deLibreta ? ' (con las medidas de la Libreta)' : ' (con las líneas del presupuesto)') : ''), c)
     + lista('Tableros para armarios y vestidores', ARM.textoTableros(l))
     + '<div style="font-size:.75rem;color:#888;margin-top:4px">Piezas colocadas en el tablero con 4 mm de corte y 1 cm de recorte al borde. Orientativo: el despiece de la seccionadora puede aprovechar algo más.</div></div>';
 }

@@ -403,7 +403,8 @@
   // (2800×2070, o la medida del material si la tiene, p. ej. 244x122) con ARM.empaquetar.
   // Cuántos tableros hacen falta para unas piezas (mm), colocándolas por filas (como se corta en la seccionadora):
   // tablero de 2800×2070 por defecto, 4 mm de corte entre piezas y 10 mm de recorte en cada borde; las piezas se pueden
-  // girar. Una pieza más grande que el tablero se parte en trozos iguales (y se avisa). Se prueba cortando las filas a lo
+  // girar. Una pieza más grande que el tablero se parte en trozos iguales (y se avisa). OJO: la misma cuenta está en
+  // la Libreta (medidas/docs/js/material.js, empaquetar); si se cambia una, cambiar la otra (prueba test_tableros_iguales.js). Se prueba cortando las filas a lo
   // largo y a lo ancho del tablero, y vale la que gasta menos. Es una estimación buena para pedir material: el despiece
   // real de la seccionadora puede aprovechar algo más.
   function empaquetar(piezas, op) {

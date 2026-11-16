@@ -535,8 +535,8 @@
   function plano3d() { return window.ST && ST.libreta3d && ST.libreta3d.datos ? ST.libreta3d : null; }
   function cargar3d() {
     if (M3D || !plano3d()) return Promise.resolve(M3D);
-    if (!cargando3d) cargando3d = Promise.all([import(RUTA_LIB + 'perspectiva.js'), import(RUTA_LIB + 'alzado.js')])
-      .then(function (m) { M3D = { escenaPerspectiva: m[0].escenaPerspectiva, svgPerspectiva: m[0].svgPerspectiva, vistaDe: m[0].vistaDe, fijarCocinaTipo: m[1].fijarCocinaTipo }; return M3D; },
+    if (!cargando3d) cargando3d = Promise.all([import(RUTA_LIB + 'perspectiva.js'), import(RUTA_LIB + 'alzado.js'), import(RUTA_LIB + 'material.js')])
+      .then(function (m) { M3D = { escenaPerspectiva: m[0].escenaPerspectiva, svgPerspectiva: m[0].svgPerspectiva, vistaDe: m[0].vistaDe, fijarCocinaTipo: m[1].fijarCocinaTipo, piezasCascoCocina: m[2].piezasCascoCocina }; return M3D; },
         function () { cargando3d = null; return null; });
     return cargando3d;
   }
@@ -611,27 +611,11 @@
       + '<div style="font-size:.75rem;color:#888;margin-top:4px">' + (cb ? 'Con los colores del presupuesto (vista orientativa).' : 'Vista orientativa; los colores se eligen con la guía de colores.') + '</div></div>';
   }
 
-  // Girar la vista alrededor del centro de la cocina (se guarda con el presupuesto); 0 = la vista de la Libreta.
-  function girar3d(grados) {
-    var p = plano3d(); if (!M3D || !p) return;
-    if (!grados) { delete p.vista; }
-    else {
-      var aj = p.ajustes || {}, esc = M3D.escenaPerspectiva(p.datos, { margen: aj.margen || 10, ajustes: aj }); if (!esc) return;
-      var v = M3D.vistaDe(esc, p.vista || p.datos.vista), c = esc.caja, cx = (c.x0 + c.x1) / 2, cy = (c.y0 + c.y1) / 2, a = grados * Math.PI / 180, dx = v.x - cx, dy = v.y - cy;
-      p.vista = Object.assign({}, v, { x: cx + dx * Math.cos(a) - dy * Math.sin(a), y: cy + dx * Math.sin(a) + dy * Math.cos(a), ang: v.ang + grados });
-    }
-    if (typeof markDirty === 'function') markDirty();
-    var m = document.getElementById('GC-MOD');
-    if (m && m.style.display !== 'none' && !m.classList.contains('mios')) pintar();
-    if (typeof window.upBan === 'function') window.upBan();
+  // Piezas de los cascos de cocina con las medidas reales de la Libreta (para la ficha de taller), o null.
+  function piezasCascoLibreta() {
+    var p = plano3d(); if (!M3D || !p || !M3D.piezasCascoCocina) return null;
+    try { var aj = p.ajustes || {}; if (aj.cocina_tipo) M3D.fijarCocinaTipo(aj.cocina_tipo); return M3D.piezasCascoCocina(p.datos); } catch (e) { return null; }
   }
-  function controles3d() {
-    return '<div class="gc-girar" role="group" aria-label="Girar la vista 3D"><span>Vista 3D:</span>'
-      + '<button type="button" class="btn bgh bsm" data-g3d="-45" title="Girar a la izquierda">&#x21BA; Girar</button>'
-      + '<button type="button" class="btn bgh bsm" data-g3d="45" title="Girar a la derecha">Girar &#x21BB;</button>'
-      + '<button type="button" class="btn bgh bsm" data-g3d="0" title="La vista que se dejó en la Libreta">Vista inicial</button></div>';
-  }
-  document.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('[data-g3d]'); if (b) girar3d(+b.dataset.g3d); });
   // La cocina sin colores elegidos (para la ficha de taller).
   function htmlSolo3d() { return htmlCocina3d(true); }
 
@@ -929,7 +913,6 @@
     + '.gc-combo{border:1px solid #e5e7eb;border-radius:10px;padding:10px;break-inside:avoid;display:flex;flex-direction:column}.gc-combo.elegida{border:2px solid #2d6a4f;background:#f3faf6}'
     + '.gc-combo h4{margin:0 0 6px;font-size:1rem}.gc-elegir{margin-top:auto;align-self:flex-start}'
     + '.gc-svg{width:100%;height:auto;border-radius:6px;display:block;margin-bottom:8px}.gc-3d{background:#f7f5f0}'
-    + '.gc-girar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px;font-size:.85rem;font-weight:700}body.gc-imprimiendo .gc-girar{display:none!important}'
     + '.gc-fila{display:flex;gap:8px;align-items:center;margin:5px 0}.gc-fila small{display:block;font-size:.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:.04em}'
     + '.gc-fila b{display:block;font-size:.88rem}.gc-fila em{display:block;font-style:normal;font-size:.74rem;color:#6b7280}'
     + '.gc-mu{flex:0 0 34px;height:34px;border-radius:6px;border:1px solid rgba(0,0,0,.2)}'
@@ -945,6 +928,6 @@
     + 'body.gc-imprimiendo .gc-mu,body.gc-imprimiendo .gc-svg *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
 
   window.GUIA_COLORES = { BASE: BASE, FAM: FAM, recomendar: recomendar, catalogo: catalogo, filtrar: filtrar, abrir: abrir, cerrar: cerrar, texto: texto, CLAVE: CLAVE,
-    cargar3d: cargar3d, coloresPresupuesto: coloresPresupuesto, htmlCocina3d: htmlCocina3d, buscarColor: buscarColor, girar3d: girar3d, controles3d: controles3d, htmlSolo3d: htmlSolo3d, hay3d: function () { return !!(M3D && plano3d()); }, vistaElegida: vistaElegida, cascoPara: cascoPara, grupoDe: grupoDe, RECETAS: RECETAS, GOLAS: GOLAS, golaPara: golaPara, grupoPresupuesto: grupoPresupuesto, colorDeCodigo: colorDeCodigo, ncsHex: ncsHex, datosHex: datosHex, htmlPresupuesto: htmlPresupuesto, elegir: elegir, tomarColor: tomarColor };
+    cargar3d: cargar3d, coloresPresupuesto: coloresPresupuesto, htmlCocina3d: htmlCocina3d, buscarColor: buscarColor, piezasCascoLibreta: piezasCascoLibreta, htmlSolo3d: htmlSolo3d, hay3d: function () { return !!(M3D && plano3d()); }, vistaElegida: vistaElegida, cascoPara: cascoPara, grupoDe: grupoDe, RECETAS: RECETAS, GOLAS: GOLAS, golaPara: golaPara, grupoPresupuesto: grupoPresupuesto, colorDeCodigo: colorDeCodigo, ncsHex: ncsHex, datosHex: datosHex, htmlPresupuesto: htmlPresupuesto, elegir: elegir, tomarColor: tomarColor };
   window.abrirGuiaColores = abrir;
 })();
