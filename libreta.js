@@ -68,6 +68,20 @@
           return l;
         });
         if (lines2.length) out.push({ id: nid(), name: g.nombre, tipo: 'armario', cal: '', ci: color(), lines: lines2, open: true });
+      } else if (g.tipo === 'extras') {
+        // Encimera de la libreta: cada línea, si está en los extras (o con su nombre antiguo); si no, a «Revisar».
+        var exg = (typeof ST !== 'undefined' && ST.exg) || {}, hay = function (c, n) { return !!(exg[c] && Object.prototype.hasOwnProperty.call(exg[c], n)); };
+        var lineasEx = [];
+        (g.lineas || []).forEach(function (l) {
+          var cat = l.cat, item = l.item;
+          if (!hay(cat, item) && l.otro && hay(l.otro[0], l.otro[1])) { cat = l.otro[0]; item = l.otro[1]; }
+          if (hay(cat, item)) lineasEx.push({ id: nid(), m: cat, mo: item, med: '—', und: l.und || 1 });
+          else revisar.push('⚠ ' + (l.texto || (l.cat + ' ' + l.item)) + ' × ' + (l.und || 1) + ': no está en los extras');
+        });
+        if (lineasEx.length) out.push({ id: nid(), name: g.nombre || 'Encimera', tipo: 'extras', cal: 'ENTRADA', ci: color(), lines: lineasEx, open: true, casco: cascoNuevo(), herr: herrNuevo() });
+      } else if (g.tipo === 'libre') {
+        var lib = (g.lineas || []).map(function (l) { return { id: nid(), m: l.texto, mo: '', med: '—', und: l.und || 1, precio: l.precio || 0, extras: [], dif: 0 }; });
+        if (lib.length) out.push({ id: nid(), name: g.nombre || 'Otros', tipo: 'libre', cal: 'ENTRADA', ci: color(), lines: lib, open: true, casco: cascoNuevo(), herr: herrNuevo() });
       } else if (g.tipo === 'revisar') {
         (g.lineas || []).forEach(function (t) { revisar.push(t); });
       }
