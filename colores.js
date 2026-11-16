@@ -80,6 +80,22 @@
     ['do-azulpiedra', 'Azul piedra nº 45', 'azul', 2, 'f', '#6e8391'], ['do-musgo', 'Verde musgo nº 46', 'verde', 3, 'c', '#4f5a3c'], ['do-cafe', 'Café nº 51', 'madera_oscura', 3, 'c', '#6a5544'],
     ['do-terracota', 'Terracota nova nº 60', 'terracota', 2, 'c', '#b5684b'], ['do-griosc', 'Gris oscuro nº 67', 'oscuro', 3, 'n', '#4c4c4b'], ['do-varcilla', 'Verde arcilla nº 73', 'verde', 2, 'c', '#8f8d6f'],
     ['do-pergamon', 'Pergamon nº 216', 'crema', 1, 'c', '#e4dbc6']]);
+  // ── Alvic (otro proveedor, sin tarifa): nombres de alvic.com/es/disenos; tonos orientativos. Grupo de precio a ojo
+  //    para que la guía sepa dónde encajan (Zenit y Luxe como lacas, grupo 4; Syncron, grupo 3). ──
+  serie('Alvic', 'Zenit (supermate)', 'Laca', F, null, [['al-zen-polar', 'Blanco Polar', 'blanco', 1, 'n', '#f4f4f2'], ['al-zen-cashmere', 'Cashmere', 'crema', 1, 'c', '#ddd3c4'],
+    ['al-zen-magnolia', 'Magnolia', 'crema', 1, 'c', '#ece4d6'], ['al-zen-arena', 'Arena', 'crema', 1, 'c', '#d8ccb8'], ['al-zen-nube', 'Gris Nube', 'gris_claro', 1, 'n', '#cfcfcc'],
+    ['al-zen-tortora', 'Tortora', 'gris', 2, 'c', '#9e9387'], ['al-zen-taupe', 'Taupe', 'gris', 2, 'c', '#8c8073'], ['al-zen-plomo', 'Gris Plomo', 'oscuro', 3, 'n', '#545659'],
+    ['al-zen-antracita', 'Antracita', 'oscuro', 3, 'f', '#3d3f42'], ['al-zen-negro', 'Negro', 'negro', 3, 'n', '#222222'], ['al-zen-salvia', 'Verde Salvia', 'verde', 2, 'n', '#9aa58f'],
+    ['al-zen-matcha', 'Verde Matcha', 'verde', 2, 'n', '#8b9a6c'], ['al-zen-iceblue', 'Ice Blue', 'azul', 1, 'f', '#b8c8d2'], ['al-zen-indigo', 'Azul Índigo', 'azul', 3, 'f', '#3a4a66'],
+    ['al-zen-marino', 'Azul Marino', 'azul', 3, 'f', '#28344a'], ['al-zen-terra', 'Terra 01', 'terracota', 2, 'c', '#a8735a'], ['al-zen-almagra', 'Almagra', 'terracota', 3, 'c', '#8e3f2f'],
+    ['al-zen-camel', 'Camel', 'madera_media', 2, 'c', '#a77f57'], ['al-zen-pompei', 'Rojo Pompei', 'terracota', 3, 'c', '#8f2f2a'], ['al-zen-espresso', 'Espresso', 'madera_oscura', 3, 'c', '#4b3a31'],
+    ['al-zen-macchiato', 'Macchiato', 'crema', 2, 'c', '#b9a58c']], { antihuella: true, g: 4, prov: 'Alvic' });
+  serie('Alvic', 'Luxe (brillo)', 'Laca', F, null, [['al-lux-blanco', 'Blanco brillo', 'blanco', 1, 'f', '#f7f7f7'], ['al-lux-perla', 'Gris Perla brillo', 'gris_claro', 1, 'n', '#cfcdc8'],
+    ['al-lux-antracita', 'Antracita brillo', 'oscuro', 3, 'f', '#3d4043'], ['al-lux-negro', 'Negro brillo', 'negro', 3, 'n', '#1f1f1f']], { brillo: true, g: 4, prov: 'Alvic' });
+  serie('Alvic', 'Syncron (textura)', 'Laminado', F, null, [['al-syn-anniversary', 'Anniversary Oak 01', 'madera_clara', 1, 'c', '#c9a882'], ['al-syn-muratti', 'Roble Muratti 01', 'madera_media', 2, 'c', '#a88563'],
+    ['al-syn-lakeland', 'Lakeland Oak 03', 'madera_media', 2, 'c', '#9b7a58'], ['al-syn-como', 'Como Ash 02', 'madera_clara', 1, 'n', '#c2b5a3'], ['al-syn-nogal', 'Nogal Rosales 01', 'madera_oscura', 3, 'c', '#6a4d38'],
+    ['al-syn-woodline', 'Woodline 03', 'madera_media', 2, 'c', '#9c7b5c'], ['al-syn-linoperla', 'Lino Perla 01', 'crema', 1, 'c', '#ddd6ca'], ['al-syn-linomarengo', 'Lino Marengo 03', 'oscuro', 3, 'n', '#55565a'],
+    ['al-syn-basalto', 'Basalto', 'oscuro', 3, 'n', '#4a4b4d'], ['al-syn-versilia', 'Mármol Versilia', 'marmol', 1, 'f', '#ecebe8']], { g: 3, prov: 'Alvic' });
   // ── Laca propia: selección de NCS y RAL para cocina (cualquier otro código se escribe) ──
   var LACA_PROPIA = [
     ['RAL 9016', 'Blanco tráfico', 'blanco', 1, 'f', '#f6f6f4'], ['RAL 9010', 'Blanco puro', 'blanco', 1, 'n', '#f3f1e8'], ['RAL 9003', 'Blanco señales', 'blanco', 1, 'f', '#f4f4f2'],
@@ -160,8 +176,6 @@
     ['en-tau-marquina', 'Marquina Black', 'negro', 3, 'n', '#232323']]);
   serie('Venux', 'Sinterizado (STN)', 'Porcelánico', E, null, [['en-ven-montblanc', 'Montblanc', 'blanco', 1, 'n', '#f5f5f3'], ['en-ven-ceppo', 'Dolce Ceppo', 'piedra', 1, 'c', '#d9d2c5'],
     ['en-ven-tajmahal', 'Taj Mahal', 'crema', 1, 'c', '#e5dccb']]);
-  serie('Egger', 'Encimera laminada', 'Laminado', E, null, [['en-egg-f243', 'Mármol Candela gris claro F-243', 'marmol', 1, 'n', '#e3e2df'], ['en-egg-f244', 'Mármol Candela antracita F-244', 'oscuro', 3, 'n', '#4d4d4c'],
-    ['en-egg-f311', 'Cerámica antracita F-311', 'oscuro', 3, 'n', '#4a4a49'], ['en-egg-h3730', 'Nogal Hickory natural H-3730', 'madera_media', 2, 'c', '#9b7553'], ['en-egg-h1176', 'Roble Halifax blanco H-1176', 'madera_clara', 1, 'c', '#d8cdbd']]);
   serie('Alvic', 'Twin (compacto)', 'Compacto', E, null, [['en-alv-blanco', 'Blanco SM', 'blanco', 1, 'n', '#f2f2f0'], ['en-alv-plomo', 'Gris Plomo SM', 'oscuro', 3, 'n', '#545659'],
     ['en-alv-negro', 'Negro SM', 'negro', 3, 'n', '#232323'], ['en-alv-lino', 'Syncron Lino Perla', 'crema', 1, 'c', '#ddd6ca']]);
   // ── Tiradores (tipo: visto, integrado, sin) ──
