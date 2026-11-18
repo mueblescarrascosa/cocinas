@@ -373,7 +373,7 @@ body.bloq #ESTADO-AVISO { display:block; }
 </head>
 <body>
 <nav>
-  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v173</span></div>
+  <div class="logo">&#x1FAB5; <span class="logo-name" id="NOMBRE-EMP">Presupuestos </span><span style="font-size:.79rem;opacity:.45;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.03em" id="APPVER">v174</span></div>
   <button onclick="go('b')" class="on" id="nb">Presupuesto</button>
   <button onclick="go('c')" id="nc" class="hide-cliente">Cat&#225;logo</button>
   <button onclick="go('s')" id="ns" class="hide-cliente">Configuraci&#243;n</button>
@@ -7275,7 +7275,7 @@ async function _importExcelBase(e) {
     });
     try { localStorage.setItem(_mK('map_costados'), JSON.stringify(MAP_COSTADOS)); localStorage.setItem(_mK('map_regletas'), JSON.stringify(MAP_REGLETAS)); } catch(err){}
     // Reconstruir catálogo de muebles
-    var TYPES = ['BAJO','ALTO 35-40','ALTO 45','ALTO 60','ALTO 70-80','ALTO 90-100','ALTO MO 130','ALTO S-FRIGO 30-40','ALTO S-FRIGO 50-60','ALTO PUENTE 30-40','ALTO PUENTE 50-60','SOBRE ENCIMERA','SEMICOLUMNA 135-145','COLUMNA 200-215','COLUMNA 220-240'];
+    var TYPES = ['BAJO','ALTO 35-40','ALTO 45','ALTO 60','ALTO 70-80','ALTO 90-100','ALTO MO 130','ALTO S-FRIGO 30-40','ALTO S-FRIGO 50-60','ALTO PUENTE 30-40','ALTO PUENTE 50-60','ALTO PUENTE 70-80','SOBRE ENCIMERA','SEMICOLUMNA 135-145','COLUMNA 200-215','COLUMNA 220-240'];
     var newCat = {};
     Object.keys(newModmap).forEach(function(nombre){
       var mtype = null;

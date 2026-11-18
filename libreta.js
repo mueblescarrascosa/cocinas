@@ -5,15 +5,24 @@
 (function () {
   var CLAVE = 'libreta_a_presupuesto', MAX_EDAD = 60 * 60 * 1000;
 
+  // El catálogo de un tipo: el de la app y el vivo (el de la plantilla importada, que puede traer muebles nuevos:
+  // ALTO PUENTE 70-80, columnas desayunador…), juntos.
+  function tipoCatalogo(m) {
+    var a = (typeof CAT_MODULES !== 'undefined') && CAT_MODULES[m], vivo = (typeof ST !== 'undefined' && ST && (ST.cats && ST.cats.muebles || ST.cat)) || null, b = vivo && vivo[m];
+    if (!a && !b) return null;
+    var t = {};
+    [a, b].forEach(function (x) { if (x) Object.keys(x).forEach(function (mo) { t[mo] = (t[mo] || []).concat((x[mo] || []).filter(function (v) { return (t[mo] || []).indexOf(v) < 0; })); }); });
+    return t;
+  }
   // ¿Existe en el catálogo? (tipo, modelo y medida tal cual)
   function enCatalogo(l) {
-    var t = (typeof CAT_MODULES !== 'undefined') && CAT_MODULES[l.m];
+    var t = tipoCatalogo(l.m);
     return !!(t && t[l.mo] && t[l.mo].indexOf(String(l.med)) >= 0);
   }
   // Medida del catálogo para una medida que no está: la inmediatamente superior (55 → 60; si no hay ninguna mayor,
   // la más grande). Los rincones, la más cercana (un rincón de 93×93 es el de 90), y si empatan, la menor.
   function medidaCatalogo(l) {
-    var t = (typeof CAT_MODULES !== 'undefined') && CAT_MODULES[l.m], ms = t && t[l.mo];
+    var t = tipoCatalogo(l.m), ms = t && t[l.mo];
     if (!ms || !ms.length) return null;
     var n = parseFloat(String(l.med).replace(',', '.')), nums = ms.map(function (x) { return parseFloat(x); });
     if (isNaN(n)) return null;
@@ -28,7 +37,7 @@
   }
   // Medida más cercana que sí exista para ese tipo y modelo (para la nota de «revisar»).
   function cercana(l) {
-    var t = (typeof CAT_MODULES !== 'undefined') && CAT_MODULES[l.m], ms = t && t[l.mo];
+    var t = tipoCatalogo(l.m), ms = t && t[l.mo];
     if (!ms || !ms.length) return null;
     var n = parseFloat(l.med), d = Math.min.apply(null, ms.map(function (x) { return Math.abs(parseFloat(x) - n); }));
     return ms.filter(function (x) { return Math.abs(parseFloat(x) - n) === d; }).join(' o ');
