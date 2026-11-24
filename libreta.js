@@ -45,14 +45,14 @@
 
   // Construye los grupos del presupuesto a partir del paquete de la libreta.
   function grupos(p) {
-    var out = [], revisar = [], ci = 0;
+    var out = [], revisar = [], ci = 0, recs = [];
     var color = function () { return (ci++) % (typeof GCOLS !== 'undefined' ? GCOLS.length : 8); };
     (p.grupos || []).forEach(function (g) {
       if (g.tipo === 'muebles') {
         var cal = (typeof CALS !== 'undefined' && CALS.indexOf(g.cal) >= 0) ? g.cal : (typeof CALS !== 'undefined' ? CALS[1] : 'BÁSICO');
         var casco = cascoNuevo();
         if (g.casco && typeof CASCO_ACABADOS !== 'undefined' && CASCO_ACABADOS.indexOf(g.casco) >= 0) casco.acab = g.casco;
-        var lines = [];
+        var lines = [], recRecargo = [];
         (g.lineas || []).forEach(function (l) {
           var otra = enCatalogo(l) ? null : medidaCatalogo(l);
           if (enCatalogo(l)) lines.push({ id: nid(), m: l.m, mo: l.mo, med: String(l.med), und: l.und || 1, extras: [] });
@@ -60,13 +60,21 @@
             // Se pone la del catálogo y se avisa en «Revisar» de que se ha cambiado la medida.
             lines.push({ id: nid(), m: l.m, mo: l.mo, med: String(otra), und: l.und || 1, extras: [] });
             revisar.push('ℹ ' + (l.texto || (l.m + ' ' + l.mo + ' ' + l.med)) + ': medido ' + String(l.med).replace('.', ',') + ', puesto el de ' + otra);
-          } else {
+          }
+          // Recargo por complicación (cajeado por pilar…): una línea aparte con su % del precio de este mueble.
+          if (l.recargo && (enCatalogo(l) || otra)) recRecargo.push({ line: lines[lines.length - 1], r: l.recargo, frac: 1 });
+          if (!enCatalogo(l) && !otra) {
             var c = cercana(l);
             revisar.push('⚠ ' + (l.texto || (l.m + ' ' + l.mo + ' ' + l.med)) + ': no está en el catálogo' + (c ? ' (la más cercana: ' + l.m + ' ' + l.mo + ' ' + c + ')' : ''));
           }
         });
-        if (lines.length) out.push({ id: nid(), name: g.nombre, tipo: 'muebles', cal: cal, ci: color(), lines: lines, open: true, casco: casco, herr: herrNuevo() });
+        if (lines.length) {
+          var gm = { id: nid(), name: g.nombre, tipo: 'muebles', cal: cal, ci: color(), lines: lines, open: true, casco: casco, herr: herrNuevo() };
+          out.push(gm);
+          recRecargo.forEach(function (x) { x.g = gm; recs.push(x); });
+        }
       } else if (g.tipo === 'armario' && window.ARM) {
+        var recRec2 = [];
         var lines2 = (g.tramos || []).map(function (t) {
           var l = ARM.lineaNueva('vestidor'), a = l.arm;
           a.nombre = t.nombre || '';
@@ -74,9 +82,15 @@
           if (t.alto) a.alto = t.alto;
           if (t.cuerpos && t.cuerpos.length) a.cuerpos = t.cuerpos.map(function (c) { return { ancho: c.ancho, estantes: c.estantes || 0, maletero: false, barra: c.barra || 0, cajones: c.cajones || 0, extras: [] }; });
           if (t.puertas) a.puertas.tipo = t.puertas;
+          // Recargos de cuerpos: su parte del tramo (ancho del cuerpo / ancho del tramo).
+          (t.recargos || []).forEach(function (r) { if (t.ancho > 0 && r.ancho > 0) recRec2.push({ line: l, r: r, frac: Math.min(1, r.ancho / t.ancho) }); });
           return l;
         });
-        if (lines2.length) out.push({ id: nid(), name: g.nombre, tipo: 'armario', cal: '', ci: color(), lines: lines2, open: true });
+        if (lines2.length) {
+          var ga = { id: nid(), name: g.nombre, tipo: 'armario', cal: '', ci: color(), lines: lines2, open: true };
+          out.push(ga);
+          recRec2.forEach(function (x) { x.g = ga; recs.push(x); });
+        }
       } else if (g.tipo === 'extras') {
         // Encimera de la libreta: cada línea, si está en los extras (o con su nombre antiguo); si no, a «Revisar».
         var exg = (typeof ST !== 'undefined' && ST.exg) || {}, hay = function (c, n) { return !!(exg[c] && Object.prototype.hasOwnProperty.call(exg[c], n)); };
@@ -95,6 +109,16 @@
         (g.lineas || []).forEach(function (t) { revisar.push(t); });
       }
     });
+    // Complicaciones (recargos de la libreta): «Cajeado por pilar – Bajo 60 (pared A) (+20 %)» con su importe, editable.
+    if (recs.length) {
+      var lc = recs.map(function (x) {
+        var base = 0;
+        try { base = (typeof _enVivo === 'function' ? _enVivo(function () { return lineTotal(x.line, x.g); }) : lineTotal(x.line, x.g)) * x.frac; } catch (e) { base = 0; }
+        var pct = parseFloat(x.r.pct) || 0;
+        return { id: nid(), m: (x.r.texto || 'Complicación') + ' (+' + String(pct).replace('.', ',') + ' %)', mo: '', med: '—', und: 1, precio: Math.round(base * pct) / 100, extras: [], dif: 0 };
+      });
+      out.push({ id: nid(), name: 'Complicaciones', tipo: 'libre', cal: 'ENTRADA', ci: color(), lines: lc, open: true, casco: cascoNuevo(), herr: herrNuevo() });
+    }
     if (revisar.length) out.push({ id: nid(), name: 'Revisar (de la libreta)', tipo: 'libre', cal: 'ENTRADA', ci: color(),
       lines: revisar.map(function (t) { return { id: nid(), m: t, mo: '', med: '—', und: 1, precio: 0, extras: [], dif: 0 }; }), open: true, casco: cascoNuevo(), herr: herrNuevo() });
     return out;
@@ -125,8 +149,37 @@
   // Espera a que arranque la app y a que termine de bajar la nube: si la nube trae cambios la app se recarga, y lo de
   // la libreta se perdería. Por eso el paquete solo se quita de localStorage cuando ya se ha preguntado; si hay que
   // entrar (login) o la página se recarga, se ofrece al volver.
+  // ── Solo calcular: el «Coste estimado» de la Libreta abre esta app por dentro (iframe oculto, ?estimar=1), le manda lo
+  // medido y recibe los totales con la tarifa de este dispositivo. No se guarda nada: el presupuesto abierto se deja como estaba.
+  var r2 = function (x) { return Math.round(x * 100) / 100; };
+  function estimar(p) {
+    var antes = { groups: ST.groups, bloqueado: ST.bloqueado, fzInst: ST.fzInst }, dif = document.getElementById('F-DIFICULTAD'), difAntes = dif ? dif.checked : null;
+    try {
+      ST.groups = grupos(p); ST.bloqueado = false; ST.fzInst = null; if (dif) dif.checked = false;
+      var gs = ST.groups.map(function (g) {
+        var sin = g.tipo === 'libre' ? g.lines.filter(function (l) { return !(parseFloat(l.precio) > 0); }).map(function (l) { return l.m; }) : [];
+        return { nombre: g.name, tipo: g.tipo, total: r2(gsub(g)), sinPrecio: sin };
+      });
+      var sub = grandT(), inst = getInstalacion();
+      return { grupos: gs, subtotal: sub, instalacion: inst, total: r2(sub + inst) };
+    } finally { ST.groups = antes.groups; ST.bloqueado = antes.bloqueado; ST.fzInst = antes.fzInst; if (dif) dif.checked = difAntes; }
+  }
+  var MODO_ESTIMAR = /[?&]estimar(=|&|$)/.test(location.search) && window.parent !== window;
+  if (MODO_ESTIMAR) {
+    window.addEventListener('message', function (ev) {
+      if (ev.origin !== location.origin || !ev.data || ev.data.tipo !== 'libreta-estimar') return;
+      var responder = function (o) { ev.source.postMessage(Object.assign({ tipo: 'libreta-estimacion', id: ev.data.id }, o), location.origin); };
+      (function listo(n) {
+        var ok = typeof ST !== 'undefined' && ST && ST.params && typeof CAT_MODULES !== 'undefined' && typeof nid === 'function' && typeof gsub === 'function' && typeof getInstalacion === 'function';
+        if (!ok) { if (n < 100) { setTimeout(function () { listo(n + 1); }, 200); return; } responder({ ok: false, error: 'no-arranca' }); return; }
+        try { responder({ ok: true, resultado: estimar(ev.data.paquete) }); } catch (e) { responder({ ok: false, error: String((e && e.message) || e) }); }
+      })(0);
+    });
+    try { window.parent.postMessage({ tipo: 'libreta-lista' }, location.origin); } catch (e) {}
+  }
+
   var intentos = 0;
-  (function esperar() {
+  if (!MODO_ESTIMAR) (function esperar() {
     var fase = window._syncFase, arrancada = typeof renderGroups === 'function' && typeof ST !== 'undefined' && typeof CAT_MODULES !== 'undefined' && typeof nid === 'function';
     // Hasta 30 s esperando a la nube; si no contesta, se sigue con lo del dispositivo.
     if (!arrancada || fase === 'recargando' || fase === 'login' || (!fase && intentos < 100)) {
@@ -144,5 +197,5 @@
     }, 300);
   })();
 
-  window.LIBRETA = { grupos: grupos, importar: importar, enCatalogo: enCatalogo, medidaCatalogo: medidaCatalogo };
+  window.LIBRETA = { grupos: grupos, importar: importar, estimar: estimar, enCatalogo: enCatalogo, medidaCatalogo: medidaCatalogo, modoEstimar: MODO_ESTIMAR };
 })();
