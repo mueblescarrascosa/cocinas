@@ -70,6 +70,8 @@
         });
         if (lines.length) {
           var gm = { id: nid(), name: g.nombre, tipo: 'muebles', cal: cal, ci: color(), lines: lines, open: true, casco: casco, herr: herrNuevo() };
+          // v177: el tirador de los acabados de la Libreta (medio, gola, uñero, gamma…), con el sistema de tiradores del grupo
+          if (g.tir && typeof TIR_TIPOS !== 'undefined' && TIR_TIPOS.indexOf(g.tir.tipo) >= 0) gm.tir = { tipo: g.tir.tipo, color: g.tir.color || 'plata' };
           out.push(gm);
           recRecargo.forEach(function (x) { x.g = gm; recs.push(x); });
         }
@@ -94,6 +96,16 @@
           out.push(ga);
           recRec2.forEach(function (x) { x.g = ga; recs.push(x); });
         }
+      } else if ((g.tipo === 'costados' || g.tipo === 'regletas') && typeof MAP_COSTADOS !== 'undefined') {
+        // v177: costados y regletas de la Libreta, por medida de la tarifa (ancho×alto) y grupo de material; si la medida
+        // no está en la tarifa, a «Revisar».
+        var mapaR = g.tipo === 'costados' ? MAP_COSTADOS : MAP_REGLETAS, calsR = g.tipo === 'costados' ? CALS_COSTADOS : CALS_REGLETAS;
+        var calR = calsR.indexOf(g.cal) >= 0 ? g.cal : calsR[0], lr = [];
+        (g.lineas || []).forEach(function (l) {
+          if (mapaR[l.ancho + 'x' + l.alto]) lr.push({ id: nid(), m: String(l.ancho), mo: String(l.alto), med: '—', und: l.und || 1, extras: [] });
+          else revisar.push('⚠ ' + (l.texto || (g.tipo + ' ' + l.ancho + 'x' + l.alto)) + ' × ' + (l.und || 1) + ': no está en la tarifa');
+        });
+        if (lr.length) out.push({ id: nid(), name: g.nombre || (g.tipo === 'costados' ? 'Costados' : 'Regletas'), tipo: g.tipo, cal: calR, ci: color(), lines: lr, open: true, casco: cascoNuevo(), herr: herrNuevo() });
       } else if (g.tipo === 'extras') {
         // Encimera de la libreta: cada línea, si está en los extras (o con su nombre antiguo); si no, a «Revisar».
         var exg = (typeof ST !== 'undefined' && ST.exg) || {}, hay = function (c, n) { return !!(exg[c] && Object.prototype.hasOwnProperty.call(exg[c], n)); };
