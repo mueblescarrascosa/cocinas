@@ -76,12 +76,15 @@
       } else if (g.tipo === 'armario' && window.ARM) {
         var recRec2 = [];
         var lines2 = (g.tramos || []).map(function (t) {
-          var l = ARM.lineaNueva('vestidor'), a = l.arm;
+          // Vestidor, o armario empotrado (v176: clase «armario», con fondo y número de hojas de la corredera).
+          var l = ARM.lineaNueva(t.clase === 'armario' ? 'armario' : 'vestidor'), a = l.arm;
           a.nombre = t.nombre || '';
           if (t.ancho) a.ancho = t.ancho;
           if (t.alto) a.alto = t.alto;
-          if (t.cuerpos && t.cuerpos.length) a.cuerpos = t.cuerpos.map(function (c) { return { ancho: c.ancho, estantes: c.estantes || 0, maletero: false, barra: c.barra || 0, cajones: c.cajones || 0, extras: [] }; });
+          if (t.fondo) a.fondo = t.fondo;
+          if (t.cuerpos && t.cuerpos.length) a.cuerpos = t.cuerpos.map(function (c) { return { ancho: c.ancho, estantes: c.estantes || 0, maletero: !!c.maletero, barra: c.barra || 0, cajones: c.cajones || 0, extras: [] }; });
           if (t.puertas) a.puertas.tipo = t.puertas;
+          if (t.hojas > 0) { a.puertas.hojas = t.hojas; a.puertas.hojasAuto = false; }
           // Recargos de cuerpos: su parte del tramo (ancho del cuerpo / ancho del tramo).
           (t.recargos || []).forEach(function (r) { if (t.ancho > 0 && r.ancho > 0) recRec2.push({ line: l, r: r, frac: Math.min(1, r.ancho / t.ancho) }); });
           return l;
