@@ -1,4 +1,4 @@
-// Guía de colores (v161). Con el suelo, la cocina y lo que quiere el cliente propone hasta cinco combinaciones (distintas
+// Guía de colores (v161; v178 con las combinaciones de tendencia del archivo de la Libreta). Con el suelo, la cocina y lo que quiere el cliente propone hasta cinco combinaciones (distintas
 // en cada estilo) de frentes, columnas, encimera, tirador y color del gola con los colores que se venden, sin pasar del grupo de precio del presupuesto, y la elegida se
 // guarda en el presupuesto (sale en el PDF para el cliente y en la ficha de taller).
 //  · Frentes: tarifas de Briforma, Monpuertas y Dossia, y la laca propia en cualquier NCS o RAL (selección + código).
@@ -501,6 +501,21 @@
     return c.length ? c[0][1] : null;
   }
   var MAX_COMBOS = 5;
+  // Tendencias (v178): las combinaciones del archivo de tendencias de la Libreta (../libreta-taller/api/tendencias.json, se
+  // actualiza sin sacar versión). La Libreta lo guarda en la misma clave (misma web): sin conexión vale lo último leído.
+  var TEND = null, CLAVE_TEND = 'tendencias_v1', TEND_FIJAS = false;   // fijas: puestas a mano (pruebas), no se cambian al leer
+  function tendenciasGuardadas() { try { var t = JSON.parse(localStorage.getItem(CLAVE_TEND) || 'null'); return t && t.combinaciones ? t : null; } catch (e) { return null; } }
+  function cargarTendencias() {
+    if (TEND_FIJAS) return Promise.resolve(TEND);
+    TEND = TEND || tendenciasGuardadas();
+    if (typeof fetch !== 'function') return Promise.resolve(TEND);
+    var url = new URL('../libreta-taller/api/tendencias.json', (document.currentScript && document.currentScript.src) || location.href).href;
+    return fetch(url, { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (t) {
+      if (t && t.combinaciones && !TEND_FIJAS) { TEND = t; try { localStorage.setItem(CLAVE_TEND, JSON.stringify(t)); } catch (e) {} }
+      return TEND;
+    }).catch(function () { return TEND; });
+  }
+  var anoTend = function () { return TEND && TEND.actualizado ? TEND.actualizado.slice(0, 4) : ''; };
 
   function recomendar(e, catTodo) {
     catTodo = catTodo || catalogo();
@@ -520,10 +535,12 @@
       return mejor(en, e, q, encUsadas) || mejor(en, e, q, []);
     }
     function tiradorPara(B, A, R) {
-      var est = ESTILO[e.estilo] || ESTILO.moderno, orden = (R.ti || []).concat(est.ti), puedeUnero = !!(B.unero && A.unero);
+      var est = ESTILO[e.estilo] || ESTILO.moderno, orden = R.tendencia ? est.ti.concat(R.ti || []) : (R.ti || []).concat(est.ti), puedeUnero = !!(B.unero && A.unero);
       var vale = function (t) { return t && (t.id !== 'ti-unero' || puedeUnero); };
       // El de la receta manda; si no se puede, uno del estilo que no hayan llevado las otras propuestas.
-      for (var k = 0; k < (R.ti || []).length; k++) { var t0 = porId(ti, R.ti[k]); if (vale(t0)) return t0; }
+      // (en las de tendencia, de la receta solo los que van con el estilo: un clásico sigue con oro o bronce)
+      var deReceta = R.tendencia ? (R.ti || []).filter(function (x) { return est.ti.indexOf(x) >= 0; }) : (R.ti || []);
+      for (var k = 0; k < deReceta.length; k++) { var t0 = porId(ti, deReceta[k]); if (vale(t0)) return t0; }
       for (var i = 0; i < orden.length; i++) { var t = porId(ti, orden[i]); if (vale(t) && tiUsados.indexOf(t.id) < 0) return t; }
       for (var j = 0; j < orden.length; j++) { var t2 = porId(ti, orden[j]); if (vale(t2)) return t2; }
       return ti.filter(function (t) { return vale(t) && (e.tirador || t.tipoTir === 'visto'); })[0] || porId(ti, 'ti-gola') || ti[0];
@@ -564,6 +581,7 @@
       var suyo = R.b.f.indexOf(B.fam) >= 0 && (R.a === 'claro' || (R.a === '=' ? A.id === B.id : R.a.f.indexOf(A.fam) >= 0));
       var titulo = suyo ? R.t : (A.id === B.id ? B.nombre : B.nombre + ' y ' + A.nombre);
       var r = [R.r];
+      if (R.tendencia) r.push('Tendencia ' + anoTend() + ': ' + ((TEND && TEND.fuentes || []).slice(0, 3).map(function (f) { return f.nombre.split(':')[0]; }).join(', ')) + '.');
       if (cerrada && oscura && B.tono < 3) r.push('Con poca luz o cocina pequeña, un tono más suave que el habitual.');
       else if (cerrada && B.tono === 3) r.push('Lo oscuro va abajo y los altos claros: así no se cierra el espacio.');
       if (oscuroSuelo && A.tono === 1) r.push('Los frentes claros contrastan con el suelo oscuro.');
@@ -587,6 +605,9 @@
       ({ madera: ['madera_media', 'madera_clara', 'madera_oscura'], gris: ['gris', 'gris_claro'], oscuro: ['oscuro', 'negro'] }[g] || [g]).forEach(function (f) { if (gustan.indexOf(f) < 0) gustan.push(f); });
     });
     if (gustan.length && !fB) hacer({ t: 'Con sus colores', b: { f: gustan, t: null }, a: gustan.every(function (f) { return C.indexOf(f) >= 0; }) ? '=' : 'claro', e: ['marmol', 'piedra', 'blanco', 'madera_media'], col: 'a', r: 'Con lo que le gusta al cliente.', gusta: true });
+    // Las de tendencia que pegan con el estilo: una o dos, delante de las de siempre
+    var tend = ((TEND && TEND.combinaciones) || []).filter(function (R) { return !R.estilos || R.estilos.indexOf(e.estilo || 'moderno') >= 0; });
+    tend.slice(0, combos.length ? 1 : 2).forEach(function (R) { hacer(Object.assign({}, R, { t: 'Tendencia ' + anoTend() + ': ' + R.t, tendencia: true })); });
     (RECETAS[e.estilo] || RECETAS.moderno).forEach(hacer);
     if (combos.length < 3) COMODIN.forEach(function (R) { if (combos.length < 3) hacer(R); });
     return combos;
@@ -1006,6 +1027,7 @@
     document.getElementById('GC-CLIENTE').value = clientePresupuesto();   // el del presupuesto abierto, no el de la vez anterior
     m.classList.remove('mios'); m.querySelector('[data-acc="gc-mios"]').textContent = 'Mis colores';
     pintar(); m.style.display = 'flex';
+    var antesT = TEND; cargarTendencias().then(function (t) { if (t && t !== antesT && m.style.display !== 'none' && !m.classList.contains('mios')) pintar(); });
     if (plano3d() && !M3D) cargar3d().then(function (r) { if (r && m.style.display !== 'none' && !m.classList.contains('mios')) pintar(); });
   }
   function cerrar() { var m = document.getElementById('GC-MOD'); if (m) m.style.display = 'none'; }
@@ -1045,4 +1067,9 @@
   window.GUIA_COLORES = { BASE: BASE, FAM: FAM, recomendar: recomendar, catalogo: catalogo, filtrar: filtrar, abrir: abrir, cerrar: cerrar, texto: texto, CLAVE: CLAVE,
     MATS_ENC: MATS_ENC, encimerasCatalogo: encimerasCatalogo, elegirEncimera: elegirEncimera, htmlEncimera: htmlEncimera, cargar3d: cargar3d, coloresPresupuesto: coloresPresupuesto, htmlCocina3d: htmlCocina3d, buscarColor: buscarColor, piezasCascoLibreta: piezasCascoLibreta, htmlSolo3d: htmlSolo3d, hay3d: function () { return !!(M3D && plano3d()); }, vistaElegida: vistaElegida, cascoPara: cascoPara, grupoDe: grupoDe, RECETAS: RECETAS, GOLAS: GOLAS, golaPara: golaPara, grupoPresupuesto: grupoPresupuesto, colorDeCodigo: colorDeCodigo, ncsHex: ncsHex, datosHex: datosHex, htmlPresupuesto: htmlPresupuesto, elegir: elegir, tomarColor: tomarColor };
   window.abrirGuiaColores = abrir;
+  window.GUIA_COLORES.cargarTendencias = cargarTendencias;
+  window.GUIA_COLORES.tendencias = function () { return TEND; };
+  // Para las pruebas de las propuestas de siempre: sin tendencias (null) o con unas concretas
+  window.GUIA_COLORES.ponerTendencias = function (t) { TEND = t; TEND_FIJAS = true; };
+  cargarTendencias();
 })();
